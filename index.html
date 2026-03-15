@@ -194,7 +194,7 @@ applyLang();
 // Fake email helper — Firebase Auth requires email format
 const toEmail = user => user + '@lessonschedule.app';
 
-window.doLogin = async () => {
+const doLogin = async () => {
   const user = document.getElementById('loginUser').value.trim().toLowerCase();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
@@ -214,7 +214,7 @@ window.doLogin = async () => {
   }
 };
 
-window.doRegister = async () => {
+const doLogin = async () => {
   const user = document.getElementById('regUser').value.trim().replace(/\s+/g,'_').toLowerCase();
   const pass = document.getElementById('regPass').value;
   const pass2 = document.getElementById('regPass2').value;
