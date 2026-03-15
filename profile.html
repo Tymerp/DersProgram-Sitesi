@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ders Programı Profili</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="window">
+  <!-- Title Bar -->
+  <div class="window-titlebar">
+    <div class="window-title">
+      <div class="window-title-icon"></div>
+      <span id="titlebarName">Ders Programı Profili</span>
+    </div>
+    <div class="window-controls">
+      <div class="win-btn">_</div>
+      <div class="win-btn">□</div>
+      <div class="win-btn">✕</div>
+    </div>
+  </div>
+  <!-- Menubar -->
+  <div class="menubar">
+    <div class="menu-item">Dosya</div>
+    <div class="menu-item">Düzenle</div>
+    <div class="menu-item">Görünüm</div>
+    <div class="menu-item">Favoriler</div>
+    <div class="menu-item">Yardım</div>
+  </div>
+  <!-- Address Bar -->
+  <div class="addressbar">
+    <div class="addr-btn" onclick="history.back()">◀</div>
+    <div class="addr-btn">▶</div>
+    <div class="addr-btn" onclick="window.location.href='index.html'">⌂</div>
+    <div class="addr-label">Adres:</div>
+    <input class="addr-input" id="addrBar" value="" readonly>
+    <div class="addr-go">▶</div>
+  </div>
+  <!-- Content -->
+  <div class="window-content" id="mainContent">
+    <div style="text-align:center;padding:40px;color:#888;font-family:var(--font-main)">
+      Yükleniyor...
+    </div>
+  </div>
+  <!-- Statusbar -->
+  <div class="statusbar">
+    <div class="status-panel" id="statusText">Yükleniyor...</div>
+    <div class="status-panel" style="flex:0 0 120px" id="statusRight">Profil</div>
+  </div>
+</div>
+
+<script>
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  return t;
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  const user = getParam('user');
+  const content = document.getElementById('mainContent');
+
+  document.getElementById('addrBar').value = 'http://dersprogram.im/' + (user || '?');
+
+  if (!user) {
+    content.innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Kullanıcı belirtilmedi. Örnek: profile.html?user=ali_hoca</div></div>';
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('dp_users') || '{}');
+  if (!users[user]) {
+    content.innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Bu kullanıcı bulunamadı: <strong>' + user + '</strong></div></div>';
+    document.getElementById('statusText').textContent = 'Kullanıcı bulunamadı';
+    return;
+  }
+
+  const p = users[user].profile || {};
+  const name = p.name || user;
+
+  document.getElementById('titlebarName').textContent = name + ' - Ders Programı';
+  document.getElementById('statusText').textContent = 'Yüklendi - ' + name;
+  document.getElementById('statusRight').textContent = '@' + user;
+
+  // Build initials
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || '??';
+
+  // Days display
+  const daysHtml = (p.days && p.days.length > 0)
+    ? p.days.map(d => '<span class="day-badge">' + d + '</span>').join('')
+    : '<span style="color:#888;font-size:12px">Belirtilmemiş</span>';
+
+  // Time display
+  let timeHtml = '';
+  if (p.startTime || p.endTime) {
+    timeHtml = '<span class="schedule-time-badge">' + (p.startTime||'?') + ' - ' + (p.endTime||'?') + '</span>';
+  }
+  if (p.scheduleNote) {
+    timeHtml += '<span style="font-size:12px;color:#555;margin-left:8px">' + p.scheduleNote + '</span>';
+  }
+
+  // Social links
+  let socialHtml = '';
+  if (p.socialYT) socialHtml += '<a href="' + p.socialYT + '" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">▶ YouTube</a>';
+  if (p.socialIG) socialHtml += '<a href="' + p.socialIG + '" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">📷 Instagram</a>';
+  if (p.socialTW) socialHtml += '<a href="' + p.socialTW + '" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">🐦 Twitter</a>';
+
+  // Schedule image
+  const schedImgHtml = p.scheduleImg
+    ? '<img src="' + p.scheduleImg + '" class="schedule-img" alt="Ders programı">'
+    : '<div class="upload-area" style="cursor:default;color:#999">Henüz program resmi eklenmemiş</div>';
+
+  // Donate button
+  const donateHtml = p.donateUrl
+    ? '<a href="' + p.donateUrl + '" target="_blank" class="donate-btn">' + (p.donateText || '💰 Destek Ol') + '</a>'
+    : '<div class="donate-btn" style="cursor:default;color:#999;pointer-events:none">Bağış linki eklenmemiş</div>';
+
+  content.innerHTML = `
+    <!-- Marquee -->
+    <div class="marquee-box">
+      <marquee behavior="scroll" direction="left" scrollamount="3">
+        ⭐ ${name} — Ders Programı Sayfasına Hoşgeldiniz! &nbsp;&nbsp;&nbsp;
+        📅 Günler: ${(p.days && p.days.length > 0) ? p.days.join(', ') : 'Belirtilmemiş'} &nbsp;&nbsp;&nbsp;
+        🕐 Saat: ${p.startTime && p.endTime ? p.startTime + ' - ' + p.endTime : 'Belirtilmemiş'} &nbsp;&nbsp;&nbsp;
+        ⭐ ${name} — Ders Programı Sayfasına Hoşgeldiniz!
+      </marquee>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-avatar">${initials}</div>
+      <div>
+        <div class="profile-name">${name}</div>
+        <div class="profile-handle">${p.title ? p.title + ' | ' : ''}@${user}</div>
+        <div style="margin-top:6px">${socialHtml || ''}</div>
+      </div>
+    </div>
+
+    <!-- 3 Tabbed Sections -->
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showPTab(event,'prog')">📋 Program</div>
+      <div class="nav-tab" onclick="showPTab(event,'about')">👤 Hakkımda</div>
+      <div class="nav-tab" onclick="showPTab(event,'donate')">💰 Bağış</div>
+    </div>
+
+    <!-- Program Tab -->
+    <div id="ptab-prog" class="tab-panel active">
+      <div class="section-title">📅 Yayın Programı</div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;color:#555;margin-bottom:4px;font-family:var(--font-main)">Yayın Günleri:</div>
+        <div>${daysHtml}</div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:#555;margin-bottom:4px;font-family:var(--font-main)">Yayın Saati:</div>
+        <div>${timeHtml || '<span style="color:#888;font-size:12px">Belirtilmemiş</span>'}</div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:#555;margin-bottom:6px;font-family:var(--font-main)">Program Resmi:</div>
+        ${schedImgHtml}
+      </div>
+    </div>
+
+    <!-- About Tab -->
+    <div id="ptab-about" class="tab-panel">
+      <div class="section-title">👤 Hakkımda</div>
+      ${p.title ? '<div style="font-size:13px;font-weight:bold;margin-bottom:10px;font-family:var(--font-main)">'+p.title+'</div>' : ''}
+      <div class="about-content">${p.about ? p.about.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style="color:#888">Henüz hakkımda yazısı eklenmemiş.</span>'}</div>
+      ${socialHtml ? '<hr class="retro"><div style="margin-top:8px"><div style="font-size:12px;color:#555;margin-bottom:6px">Sosyal Medya:</div>'+socialHtml+'</div>' : ''}
+    </div>
+
+    <!-- Donate Tab -->
+    <div id="ptab-donate" class="tab-panel">
+      <div class="section-title">💰 Bağış / Destek</div>
+      <div class="alert-box">
+        <div class="alert-icon">🙏</div>
+        <div class="alert-msg">
+          <strong>${name}</strong>'ı desteklemek için aşağıdaki butona tıklayabilirsiniz.
+          Her destek büyük anlam ifade eder!
+        </div>
+      </div>
+      ${donateHtml}
+    </div>
+
+    <hr class="retro">
+    <div style="text-align:center;font-size:11px;color:#888;font-family:var(--font-main)">
+      DersProgramım.com ile oluşturuldu &nbsp;|&nbsp;
+      <a href="index.html" style="color:#000080">Siz de oluşturun!</a>
+    </div>
+  `;
+});
+
+function showPTab(e, name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ptab-' + name).classList.add('active');
+  e.target.classList.add('active');
+}
+</script>
+</body>
+</html>

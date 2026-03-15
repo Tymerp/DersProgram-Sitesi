@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ders Programım - Giriş</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="window">
+  <!-- Title Bar -->
+  <div class="window-titlebar">
+    <div class="window-title">
+      <div class="window-title-icon"></div>
+      Ders Programım - Giriş
+    </div>
+    <div class="window-controls">
+      <div class="win-btn">_</div>
+      <div class="win-btn">□</div>
+      <div class="win-btn">✕</div>
+    </div>
+  </div>
+  <!-- Menubar -->
+  <div class="menubar">
+    <div class="menu-item">Dosya</div>
+    <div class="menu-item">Düzenle</div>
+    <div class="menu-item">Görünüm</div>
+    <div class="menu-item">Favoriler</div>
+    <div class="menu-item">Yardım</div>
+  </div>
+  <!-- Address Bar -->
+  <div class="addressbar">
+    <div class="addr-btn">◀</div>
+    <div class="addr-btn">▶</div>
+    <div class="addr-btn">⌂</div>
+    <div class="addr-label">Adres:</div>
+    <input class="addr-input" id="addrBar" value="http://dersprogram.im/giris" readonly>
+    <div class="addr-go">▶</div>
+  </div>
+  <!-- Content -->
+  <div class="window-content">
+    <div class="site-logo">📅 DersProgramım</div>
+    <div class="site-tagline">Ders programını paylaş, bağış topla, takipçilerini bilgilendir!</div>
+    <hr class="retro">
+
+    <!-- Tabs -->
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showTab('login')">Giriş Yap</div>
+      <div class="nav-tab" onclick="showTab('register')">Kayıt Ol</div>
+    </div>
+
+    <!-- Login Panel -->
+    <div id="tab-login" class="tab-panel active">
+      <div class="groupbox">
+        <span class="groupbox-title">Hesabınıza Giriş Yapın</span>
+        <div class="form-row">
+          <label class="form-label">Kullanıcı Adı:</label>
+          <input class="retro-input" type="text" id="loginUser" placeholder="kullanici_adi">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Şifre:</label>
+          <input class="retro-input" type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <div id="loginError" style="color:red;font-size:12px;margin-bottom:8px;display:none">
+          ⚠ Kullanıcı adı veya şifre hatalı!
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="retro-btn primary" onclick="doLogin()">Giriş Yap</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Panel -->
+    <div id="tab-register" class="tab-panel">
+      <div class="groupbox">
+        <span class="groupbox-title">Yeni Hesap Oluştur</span>
+        <div class="form-row">
+          <label class="form-label">Kullanıcı Adı: <span style="color:#888;font-size:11px">(URL'niz bu olacak)</span></label>
+          <input class="retro-input" type="text" id="regUser" placeholder="ornek: ali_hoca" oninput="updatePreview()">
+          <div style="font-size:11px;color:#000080;margin-top:3px">
+            Profiliniz: <strong id="urlPreview">dersprogram.im/kullanici</strong>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">E-posta:</label>
+          <input class="retro-input" type="email" id="regEmail" placeholder="ornek@email.com">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Şifre:</label>
+          <input class="retro-input" type="password" id="regPass" placeholder="En az 6 karakter">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Şifre (tekrar):</label>
+          <input class="retro-input" type="password" id="regPass2" placeholder="Şifrenizi tekrar girin">
+        </div>
+        <div id="regError" style="color:red;font-size:12px;margin-bottom:8px;display:none"></div>
+        <div id="regSuccess" style="color:green;font-size:12px;margin-bottom:8px;display:none"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="retro-btn primary" onclick="doRegister()">Kayıt Ol</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-box" style="margin-top:16px">
+      <div class="alert-icon">💡</div>
+      <div class="alert-msg">
+        Kayıt olduktan sonra ders programınızı, hakkınızda bilgilerinizi ve bağış linkinizi ekleyebilirsiniz.
+        Size özel bir URL oluşturulacak!
+      </div>
+    </div>
+  </div>
+  <!-- Statusbar -->
+  <div class="statusbar">
+    <div class="status-panel">Hazır</div>
+    <div class="status-panel" style="flex:0 0 120px">Bölge: Türkiye</div>
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function updatePreview() {
+  const val = document.getElementById('regUser').value.trim().replace(/\s+/g, '_').toLowerCase() || 'kullanici';
+  document.getElementById('urlPreview').textContent = 'dersprogram.im/' + val;
+}
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+
+  if (!user || !pass) { err.style.display = 'block'; err.textContent = '⚠ Kullanıcı adı ve şifre gerekli!'; return; }
+
+  const users = JSON.parse(localStorage.getItem('dp_users') || '{}');
+  if (users[user] && users[user].pass === pass) {
+    localStorage.setItem('dp_current', user);
+    window.location.href = 'dashboard.html';
+  } else {
+    err.style.display = 'block';
+    err.textContent = '⚠ Kullanıcı adı veya şifre hatalı!';
+  }
+}
+
+function doRegister() {
+  const user = document.getElementById('regUser').value.trim().replace(/\s+/g, '_').toLowerCase();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const err = document.getElementById('regError');
+  const ok = document.getElementById('regSuccess');
+
+  err.style.display = 'none'; ok.style.display = 'none';
+
+  if (!user) { err.style.display='block'; err.textContent='⚠ Kullanıcı adı gerekli!'; return; }
+  if (!/^[a-z0-9_]+$/.test(user)) { err.style.display='block'; err.textContent='⚠ Sadece harf, rakam ve _ kullanın.'; return; }
+  if (!email) { err.style.display='block'; err.textContent='⚠ E-posta gerekli!'; return; }
+  if (pass.length < 6) { err.style.display='block'; err.textContent='⚠ Şifre en az 6 karakter olmalı!'; return; }
+  if (pass !== pass2) { err.style.display='block'; err.textContent='⚠ Şifreler eşleşmiyor!'; return; }
+
+  const users = JSON.parse(localStorage.getItem('dp_users') || '{}');
+  if (users[user]) { err.style.display='block'; err.textContent='⚠ Bu kullanıcı adı alınmış!'; return; }
+
+  users[user] = { pass, email, profile: { name: '', about: '', donateUrl: '', schedule: [], days: [], startTime: '', endTime: '', scheduleImg: '' } };
+  localStorage.setItem('dp_users', JSON.stringify(users));
+  localStorage.setItem('dp_current', user);
+
+  ok.style.display = 'block';
+  ok.textContent = '✔ Kayıt başarılı! Dashboard\'a yönlendiriliyorsunuz...';
+  setTimeout(() => window.location.href = 'dashboard.html', 1500);
+}
+</script>
+</body>
+</html>
