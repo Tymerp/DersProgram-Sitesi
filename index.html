@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LessonSchedule - Giriş</title>
 <link rel="stylesheet" href="style.css">
+<style>
+.lang-btn{font-size:11px;padding:2px 6px}
+.active-lang{background:#000080;color:#fff}
+</style>
 </head>
 <body>
 <div class="window">
@@ -27,7 +31,7 @@
   </div>
   <div class="addressbar">
     <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
-    <div class="addr-label" id="t-addr">Adres:</div>
+    <div class="addr-label">Adres:</div>
     <input class="addr-input" value="http://lessonschedule.app/login" readonly>
     <div class="addr-go">▶</div>
   </div>
@@ -35,6 +39,7 @@
     <div class="site-logo">📅 LessonSchedule</div>
     <div class="site-tagline" id="t-tagline">Ders programını paylaş, bağış topla, takipçilerini bilgilendir!</div>
     <hr class="retro">
+
     <div class="nav-tabs">
       <div class="nav-tab active" id="t-tab-login" onclick="showTab(event,'login')">Giriş Yap</div>
       <div class="nav-tab" id="t-tab-reg" onclick="showTab(event,'register')">Kayıt Ol</div>
@@ -42,13 +47,18 @@
 
     <!-- LOGIN -->
     <div id="tab-login" class="tab-panel active">
-      <div class="groupbox"><span class="groupbox-title" id="t-login-title">Giriş Yap</span>
-        <div class="form-row"><label class="form-label" id="t-user-label">Kullanıcı Adı:</label>
-          <input class="retro-input" type="text" id="loginUser" placeholder="kullanici_adi"></div>
-        <div class="form-row"><label class="form-label" id="t-pass-label">Şifre:</label>
-          <input class="retro-input" type="password" id="loginPass" placeholder="••••••••"></div>
+      <div class="groupbox">
+        <span class="groupbox-title" id="t-login-title">Giriş Yap</span>
+        <div class="form-row">
+          <label class="form-label" id="t-user-lbl">Kullanıcı Adı:</label>
+          <input class="retro-input" type="text" id="loginUser" placeholder="kullanici_adi">
+        </div>
+        <div class="form-row">
+          <label class="form-label" id="t-pass-lbl">Şifre:</label>
+          <input class="retro-input" type="password" id="loginPass" placeholder="••••••••">
+        </div>
         <div id="loginError" style="color:red;font-size:12px;margin-bottom:8px;display:none"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
           <button class="retro-btn primary" id="t-login-btn" onclick="doLogin()">Giriş Yap</button>
         </div>
       </div>
@@ -56,19 +66,26 @@
 
     <!-- REGISTER -->
     <div id="tab-register" class="tab-panel">
-      <div class="groupbox"><span class="groupbox-title" id="t-reg-title">Yeni Hesap Oluştur</span>
+      <div class="groupbox">
+        <span class="groupbox-title" id="t-reg-title">Yeni Hesap Oluştur</span>
         <div class="form-row">
-          <label class="form-label" id="t-reg-user-label">Kullanıcı Adı: <span style="color:#888;font-size:11px" id="t-url-hint">(URL'niz bu olacak)</span></label>
+          <label class="form-label" id="t-reg-user-lbl">Kullanıcı Adı:</label>
           <input class="retro-input" type="text" id="regUser" placeholder="ornek: ali_hoca" oninput="updatePreview()">
-          <div style="font-size:11px;color:#000080;margin-top:3px"><span id="t-prev-label">Profiliniz:</span> <strong id="urlPreview">lessonschedule.app/kullanici</strong></div>
+          <div style="font-size:11px;color:#000080;margin-top:3px">
+            <span id="t-prev-lbl">Profiliniz:</span> <strong id="urlPreview">lessonschedule.app/kullanici</strong>
+          </div>
         </div>
-        <div class="form-row"><label class="form-label" id="t-reg-pass-label">Şifre:</label>
-          <input class="retro-input" type="password" id="regPass" placeholder="En az 6 karakter"></div>
-        <div class="form-row"><label class="form-label" id="t-reg-pass2-label">Şifre (tekrar):</label>
-          <input class="retro-input" type="password" id="regPass2" placeholder="Tekrar girin"></div>
+        <div class="form-row">
+          <label class="form-label" id="t-reg-pass-lbl">Şifre:</label>
+          <input class="retro-input" type="password" id="regPass" placeholder="En az 6 karakter">
+        </div>
+        <div class="form-row">
+          <label class="form-label" id="t-reg-pass2-lbl">Şifre (tekrar):</label>
+          <input class="retro-input" type="password" id="regPass2" placeholder="Tekrar girin">
+        </div>
         <div id="regError" style="color:red;font-size:12px;margin-bottom:8px;display:none"></div>
         <div id="regSuccess" style="color:green;font-size:12px;margin-bottom:8px;display:none"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
           <button class="retro-btn primary" id="t-reg-btn" onclick="doRegister()">Kayıt Ol</button>
         </div>
       </div>
@@ -79,20 +96,16 @@
       <div class="alert-msg" id="t-alert">Şifreleriniz güvenli şekilde Firebase Authentication ile korunmaktadır.</div>
     </div>
   </div>
+
   <div class="statusbar">
     <div class="status-panel" id="statusText">Hazır</div>
-    <div class="status-panel" style="flex:0 0 140px" id="t-status-r">Güvenli Bağlantı 🔒</div>
+    <div class="status-panel" style="flex:0 0 160px">Güvenli Bağlantı 🔒</div>
   </div>
 </div>
 
-<style>
-.lang-btn{font-size:11px;padding:2px 6px}
-.active-lang{background:#000080;color:#fff}
-</style>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -103,78 +116,82 @@ const firebaseConfig = {
   messagingSenderId: "910271309823",
   appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Zaten giriş yapılmışsa dashboard'a yönlendir
+onAuthStateChanged(auth, user => {
+  if (user) {
+    const u = localStorage.getItem('dp_current');
+    if (u) window.location.href = 'dashboard.html';
+  }
+});
+
 const T = {
   tr: {
-    title:'LessonSchedule - Giriş', tagline:'Ders programını paylaş, bağış topla, takipçilerini bilgilendir!',
-    m1:'Dosya',m2:'Düzenle',m3:'Görünüm',m4:'Favoriler',m5:'Yardım', addr:'Adres:',
-    tabLogin:'Giriş Yap', tabReg:'Kayıt Ol', loginTitle:'Giriş Yap', userLabel:'Kullanıcı Adı:',
-    passLabel:'Şifre:', loginBtn:'Giriş Yap', regTitle:'Yeni Hesap Oluştur',
-    regUserLabel:'Kullanıcı Adı:', urlHint:'(URL\'niz bu olacak)', prevLabel:'Profiliniz:',
-    regPassLabel:'Şifre:', regPass2Label:'Şifre (tekrar):', regBtn:'Kayıt Ol',
+    title:'LessonSchedule - Giriş',
+    tagline:'Ders programını paylaş, bağış topla, takipçilerini bilgilendir!',
+    tabLogin:'Giriş Yap', tabReg:'Kayıt Ol',
+    loginTitle:'Giriş Yap', userLbl:'Kullanıcı Adı:', passLbl:'Şifre:',
+    loginBtn:'Giriş Yap', regTitle:'Yeni Hesap Oluştur',
+    regUserLbl:'Kullanıcı Adı:', prevLbl:'Profiliniz:',
+    regPassLbl:'Şifre:', regPass2Lbl:'Şifre (tekrar):', regBtn:'Kayıt Ol',
     alert:'Şifreleriniz güvenli şekilde Firebase Authentication ile korunmaktadır.',
-    statusR:'Güvenli Bağlantı 🔒', ready:'Hazır', loggingIn:'Giriş yapılıyor...',
-    registering:'Kayıt yapılıyor...', loginOk:'Giriş başarılı!', regOk:'Kayıt başarılı!',
+    ready:'Hazır', loggingIn:'Giriş yapılıyor...', registering:'Kayıt yapılıyor...',
+    loginOk:'Giriş başarılı! Yönlendiriliyorsunuz...', regOk:'Kayıt başarılı! Yönlendiriliyorsunuz...',
     errReq:'⚠ Tüm alanları doldurun!', errUser:'⚠ Kullanıcı adı gerekli!',
-    errUserChars:'⚠ Sadece harf, rakam ve _ kullanın.', errUserTaken:'⚠ Bu kullanıcı adı alınmış!',
+    errUserChars:'⚠ Sadece harf, rakam ve _ kullanın.',
+    errTaken:'⚠ Bu kullanıcı adı alınmış!',
     errPassShort:'⚠ Şifre en az 6 karakter!', errPassMatch:'⚠ Şifreler eşleşmiyor!',
-    errWrong:'⚠ Kullanıcı adı veya şifre hatalı!', errConn:'⚠ Hata: ',
-    successReg:'✔ Kayıt başarılı! Yönlendiriliyorsunuz...'
+    errWrong:'⚠ Kullanıcı adı veya şifre hatalı!', errConn:'⚠ Hata: '
   },
   en: {
-    title:'LessonSchedule - Login', tagline:'Share your schedule, collect donations, inform your followers!',
-    m1:'File',m2:'Edit',m3:'View',m4:'Favorites',m5:'Help', addr:'Address:',
-    tabLogin:'Login', tabReg:'Register', loginTitle:'Login to Your Account', userLabel:'Username:',
-    passLabel:'Password:', loginBtn:'Login', regTitle:'Create New Account',
-    regUserLabel:'Username:', urlHint:'(this will be your URL)', prevLabel:'Your profile:',
-    regPassLabel:'Password:', regPass2Label:'Repeat Password:', regBtn:'Register',
+    title:'LessonSchedule - Login',
+    tagline:'Share your schedule, collect donations, inform your followers!',
+    tabLogin:'Login', tabReg:'Register',
+    loginTitle:'Login', userLbl:'Username:', passLbl:'Password:',
+    loginBtn:'Login', regTitle:'Create New Account',
+    regUserLbl:'Username:', prevLbl:'Your profile:',
+    regPassLbl:'Password:', regPass2Lbl:'Repeat Password:', regBtn:'Register',
     alert:'Passwords are securely protected with Firebase Authentication.',
-    statusR:'Secure Connection 🔒', ready:'Ready', loggingIn:'Logging in...',
-    registering:'Registering...', loginOk:'Login successful!', regOk:'Registration successful!',
+    ready:'Ready', loggingIn:'Logging in...', registering:'Registering...',
+    loginOk:'Login successful! Redirecting...', regOk:'Registration successful! Redirecting...',
     errReq:'⚠ Please fill all fields!', errUser:'⚠ Username is required!',
-    errUserChars:'⚠ Only letters, numbers and _ allowed.', errUserTaken:'⚠ This username is already taken!',
+    errUserChars:'⚠ Only letters, numbers and _ allowed.',
+    errTaken:'⚠ This username is already taken!',
     errPassShort:'⚠ Password must be at least 6 characters!', errPassMatch:'⚠ Passwords do not match!',
-    errWrong:'⚠ Invalid username or password.', errConn:'⚠ Error: ',
-    successReg:'✔ Registration successful! Redirecting...'
+    errWrong:'⚠ Invalid username or password.', errConn:'⚠ Error: '
   }
 };
 
 let lang = localStorage.getItem('dp_lang') || 'tr';
 const t = () => T[lang];
 const setStatus = msg => document.getElementById('statusText').textContent = msg;
+const toEmail = user => user.toLowerCase() + '@lessonschedule.app';
 
 function applyLang() {
   const tr = t();
   document.getElementById('t-title').textContent = tr.title;
   document.getElementById('t-tagline').textContent = tr.tagline;
-  document.getElementById('t-m1').textContent = tr.m1;
-  document.getElementById('t-m2').textContent = tr.m2;
-  document.getElementById('t-m3').textContent = tr.m3;
-  document.getElementById('t-m4').textContent = tr.m4;
-  document.getElementById('t-m5').textContent = tr.m5;
-  document.getElementById('t-addr').textContent = tr.addr;
   document.getElementById('t-tab-login').textContent = tr.tabLogin;
   document.getElementById('t-tab-reg').textContent = tr.tabReg;
   document.getElementById('t-login-title').textContent = tr.loginTitle;
-  document.getElementById('t-user-label').textContent = tr.userLabel;
-  document.getElementById('t-pass-label').textContent = tr.passLabel;
+  document.getElementById('t-user-lbl').textContent = tr.userLbl;
+  document.getElementById('t-pass-lbl').textContent = tr.passLbl;
   document.getElementById('t-login-btn').textContent = tr.loginBtn;
   document.getElementById('t-reg-title').textContent = tr.regTitle;
-  document.getElementById('t-reg-user-label').textContent = tr.regUserLabel;
-  document.getElementById('t-url-hint').textContent = tr.urlHint;
-  document.getElementById('t-prev-label').textContent = tr.prevLabel;
-  document.getElementById('t-reg-pass-label').textContent = tr.regPassLabel;
-  document.getElementById('t-reg-pass2-label').textContent = tr.regPass2Label;
+  document.getElementById('t-reg-user-lbl').textContent = tr.regUserLbl;
+  document.getElementById('t-prev-lbl').textContent = tr.prevLbl;
+  document.getElementById('t-reg-pass-lbl').textContent = tr.regPassLbl;
+  document.getElementById('t-reg-pass2-lbl').textContent = tr.regPass2Lbl;
   document.getElementById('t-reg-btn').textContent = tr.regBtn;
   document.getElementById('t-alert').textContent = tr.alert;
-  document.getElementById('t-status-r').textContent = tr.statusR;
-  document.getElementById('statusText').textContent = tr.ready;
   document.getElementById('btn-tr').classList.toggle('active-lang', lang==='tr');
   document.getElementById('btn-en').classList.toggle('active-lang', lang==='en');
   document.title = tr.title;
+  setStatus(tr.ready);
 }
 
 window.setLang = l => { lang = l; localStorage.setItem('dp_lang', l); applyLang(); };
@@ -191,15 +208,14 @@ window.updatePreview = () => {
 
 applyLang();
 
-// Fake email helper — Firebase Auth requires email format
-const toEmail = user => user + '@lessonschedule.app';
-
-const doLogin = async () => {
-  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+window.doLogin = async () => {
+  const user = document.getElementById('loginUser').value.trim().replace(/\s+/g,'_').toLowerCase();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   err.style.display = 'none';
+
   if (!user || !pass) { err.style.display='block'; err.textContent=t().errReq; return; }
+
   setStatus(t().loggingIn);
   try {
     await signInWithEmailAndPassword(auth, toEmail(user), pass);
@@ -207,47 +223,60 @@ const doLogin = async () => {
     setStatus(t().loginOk);
     window.location.href = 'dashboard.html';
   } catch(e) {
-    err.style.display='block';
-    err.textContent = (e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found')
+    const msg = (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found')
       ? t().errWrong : t().errConn + e.message;
+    err.style.display='block'; err.textContent=msg;
     setStatus('Error');
   }
 };
 
-const doLogin = async () => {
+window.doRegister = async () => {
   const user = document.getElementById('regUser').value.trim().replace(/\s+/g,'_').toLowerCase();
   const pass = document.getElementById('regPass').value;
   const pass2 = document.getElementById('regPass2').value;
   const err = document.getElementById('regError');
   const ok = document.getElementById('regSuccess');
   err.style.display='none'; ok.style.display='none';
+
   if (!user) { err.style.display='block'; err.textContent=t().errUser; return; }
   if (!/^[a-z0-9_]+$/.test(user)) { err.style.display='block'; err.textContent=t().errUserChars; return; }
   if (pass.length < 6) { err.style.display='block'; err.textContent=t().errPassShort; return; }
   if (pass !== pass2) { err.style.display='block'; err.textContent=t().errPassMatch; return; }
+
   setStatus(t().registering);
+
   try {
     // Kullanıcı adı alınmış mı kontrol et
     const snap = await getDoc(doc(db, 'users', user));
-    if (snap.exists()) { err.style.display='block'; err.textContent=t().errUserTaken; setStatus('Error'); return; }
+    if (snap.exists()) {
+      err.style.display='block'; err.textContent=t().errTaken; setStatus('Error'); return;
+    }
+
     // Firebase Auth ile hesap oluştur
     const cred = await createUserWithEmailAndPassword(auth, toEmail(user), pass);
-    // Firestore'a profil kaydet (şifre YOK — sadece profil bilgileri)
+
+    // Firestore'a profil kaydet (şifre YOK)
     await setDoc(doc(db, 'users', user), {
       uid: cred.user.uid,
       username: user,
       createdAt: new Date().toISOString(),
-      profile: { name:'', title:'', about:'', donateUrl:'', donateText:'💰 Support',
-        days:[], startTime:'', endTime:'', scheduleNote:'', scheduleImg:'',
-        socialYT:'', socialIG:'', socialTW:'' }
+      profile: {
+        name:'', title:'', about:'',
+        donateUrl:'', donateText:'💰 Support',
+        days:[], startTime:'', endTime:'',
+        scheduleNote:'', scheduleImg:'',
+        socialYT:'', socialIG:'', socialTW:''
+      }
     });
+
     localStorage.setItem('dp_current', user);
-    ok.style.display='block'; ok.textContent=t().successReg;
+    ok.style.display='block'; ok.textContent=t().regOk;
     setStatus(t().regOk);
     setTimeout(() => window.location.href = 'dashboard.html', 1500);
+
   } catch(e) {
-    err.style.display='block';
-    err.textContent = e.code==='auth/email-already-in-use' ? t().errUserTaken : t().errConn + e.message;
+    const msg = e.code === 'auth/email-already-in-use' ? t().errTaken : t().errConn + e.message;
+    err.style.display='block'; err.textContent=msg;
     setStatus('Error');
   }
 };
