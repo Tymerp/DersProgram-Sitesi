@@ -9,66 +9,86 @@
 <body>
 <div class="window">
   <div class="window-titlebar">
-    <div class="window-title"><div class="window-title-icon"></div>Ders Programım - Giriş</div>
+    <div class="window-title"><div class="window-title-icon"></div><span id="t-title">Ders Programım - Giriş</span></div>
     <div class="window-controls">
       <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
     </div>
   </div>
   <div class="menubar">
-    <div class="menu-item">Dosya</div><div class="menu-item">Düzenle</div>
-    <div class="menu-item">Görünüm</div><div class="menu-item">Favoriler</div><div class="menu-item">Yardım</div>
+    <div class="menu-item" id="t-menu1">Dosya</div>
+    <div class="menu-item" id="t-menu2">Düzenle</div>
+    <div class="menu-item" id="t-menu3">Görünüm</div>
+    <div class="menu-item" id="t-menu4">Favoriler</div>
+    <div class="menu-item" id="t-menu5">Yardım</div>
+    <div style="margin-left:auto;display:flex;gap:2px;padding:0 4px">
+      <div class="menu-item lang-btn active-lang" id="btn-tr" onclick="setLang('tr')">🇹🇷 TR</div>
+      <div class="menu-item lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</div>
+    </div>
   </div>
   <div class="addressbar">
     <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
-    <div class="addr-label">Adres:</div>
-    <input class="addr-input" value="http://dersprogram.im/giris" readonly>
+    <div class="addr-label" id="t-addr">Adres:</div>
+    <input class="addr-input" value="http://lessonschedule.app/login" readonly>
     <div class="addr-go">▶</div>
   </div>
   <div class="window-content">
-    <div class="site-logo">📅 DersProgramım</div>
-    <div class="site-tagline">Ders programını paylaş, bağış topla, takipçilerini bilgilendir!</div>
+    <div class="site-logo">📅 LessonSchedule</div>
+    <div class="site-tagline" id="t-tagline">Ders programını paylaş, bağış topla, takipçilerini bilgilendir!</div>
     <hr class="retro">
     <div class="nav-tabs">
-      <div class="nav-tab active" onclick="showTab(event,'login')">Giriş Yap</div>
-      <div class="nav-tab" onclick="showTab(event,'register')">Kayıt Ol</div>
+      <div class="nav-tab active" id="t-tab-login" onclick="showTab(event,'login')">Giriş Yap</div>
+      <div class="nav-tab" id="t-tab-register" onclick="showTab(event,'register')">Kayıt Ol</div>
     </div>
+
+    <!-- Login -->
     <div id="tab-login" class="tab-panel active">
-      <div class="groupbox"><span class="groupbox-title">Hesabınıza Giriş Yapın</span>
-        <div class="form-row"><label class="form-label">Kullanıcı Adı:</label>
-          <input class="retro-input" type="text" id="loginUser" placeholder="kullanici_adi"></div>
-        <div class="form-row"><label class="form-label">Şifre:</label>
+      <div class="groupbox"><span class="groupbox-title" id="t-login-title">Hesabınıza Giriş Yapın</span>
+        <div class="form-row"><label class="form-label" id="t-username-label">Kullanıcı Adı:</label>
+          <input class="retro-input" type="text" id="loginUser" placeholder="username"></div>
+        <div class="form-row"><label class="form-label" id="t-pass-label">Şifre:</label>
           <input class="retro-input" type="password" id="loginPass" placeholder="••••••••"></div>
         <div id="loginError" style="color:red;font-size:12px;margin-bottom:8px;display:none"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="retro-btn primary" onclick="doLogin()">Giriş Yap</button></div>
+          <button class="retro-btn primary" id="t-login-btn" onclick="doLogin()">Giriş Yap</button></div>
       </div>
     </div>
+
+    <!-- Register -->
     <div id="tab-register" class="tab-panel">
-      <div class="groupbox"><span class="groupbox-title">Yeni Hesap Oluştur</span>
-        <div class="form-row"><label class="form-label">Kullanıcı Adı: <span style="color:#888;font-size:11px">(URL'niz bu olacak)</span></label>
+      <div class="groupbox"><span class="groupbox-title" id="t-reg-title">Yeni Hesap Oluştur</span>
+        <div class="form-row">
+          <label class="form-label" id="t-reg-user-label">Kullanıcı Adı: <span style="color:#888;font-size:11px" id="t-url-hint">(URL'niz bu olacak)</span></label>
           <input class="retro-input" type="text" id="regUser" placeholder="ornek: ali_hoca" oninput="updatePreview()">
-          <div style="font-size:11px;color:#000080;margin-top:3px">Profiliniz: <strong id="urlPreview">dersprogram.im/kullanici</strong></div>
+          <div style="font-size:11px;color:#000080;margin-top:3px">
+            <span id="t-profile-preview-label">Profiliniz:</span> <strong id="urlPreview">lessonschedule.app/username</strong>
+          </div>
         </div>
-        <div class="form-row"><label class="form-label">Şifre:</label>
-          <input class="retro-input" type="password" id="regPass" placeholder="En az 6 karakter"></div>
-        <div class="form-row"><label class="form-label">Şifre (tekrar):</label>
-          <input class="retro-input" type="password" id="regPass2" placeholder="Şifrenizi tekrar girin"></div>
+        <div class="form-row"><label class="form-label" id="t-reg-pass-label">Şifre:</label>
+          <input class="retro-input" type="password" id="regPass" placeholder="Min. 6 characters"></div>
+        <div class="form-row"><label class="form-label" id="t-reg-pass2-label">Şifre (tekrar):</label>
+          <input class="retro-input" type="password" id="regPass2" placeholder="Repeat password"></div>
         <div id="regError" style="color:red;font-size:12px;margin-bottom:8px;display:none"></div>
         <div id="regSuccess" style="color:green;font-size:12px;margin-bottom:8px;display:none"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="retro-btn primary" onclick="doRegister()">Kayıt Ol</button></div>
+          <button class="retro-btn primary" id="t-reg-btn" onclick="doRegister()">Kayıt Ol</button></div>
       </div>
     </div>
+
     <div class="alert-box" style="margin-top:16px">
       <div class="alert-icon">💡</div>
-      <div class="alert-msg">Kayıt olduktan sonra ders programınızı, hakkınızda bilgilerinizi ve bağış linkinizi ekleyebilirsiniz.</div>
+      <div class="alert-msg" id="t-alert-msg">Kayıt olduktan sonra ders programınızı, hakkınızda bilgilerinizi ve bağış linkinizi ekleyebilirsiniz.</div>
     </div>
   </div>
   <div class="statusbar">
     <div class="status-panel" id="statusText">Hazır</div>
-    <div class="status-panel" style="flex:0 0 120px">Bölge: Türkiye</div>
+    <div class="status-panel" style="flex:0 0 140px" id="t-status-region">Bölge: Türkiye</div>
   </div>
 </div>
+
+<style>
+.lang-btn { font-size:11px; padding:2px 6px; }
+.active-lang { background:#000080; color:#fff; }
+</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -82,20 +102,98 @@ const firebaseConfig = {
   messagingSenderId: "910271309823",
   appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const translations = {
+  tr: {
+    title: 'Ders Programım - Giriş', tagline: 'Ders programını paylaş, bağış topla, takipçilerini bilgilendir!',
+    menu1:'Dosya', menu2:'Düzenle', menu3:'Görünüm', menu4:'Favoriler', menu5:'Yardım',
+    addr:'Adres:', tabLogin:'Giriş Yap', tabRegister:'Kayıt Ol',
+    loginTitle:'Hesabınıza Giriş Yapın', usernameLabel:'Kullanıcı Adı:', passLabel:'Şifre:',
+    loginBtn:'Giriş Yap', regTitle:'Yeni Hesap Oluştur', regUserLabel:'Kullanıcı Adı:',
+    urlHint:'(URL\'niz bu olacak)', profilePreview:'Profiliniz:', regPassLabel:'Şifre:',
+    regPass2Label:'Şifre (tekrar):', regBtn:'Kayıt Ol',
+    alertMsg:'Kayıt olduktan sonra ders programınızı, hakkınızda bilgilerinizi ve bağış linkinizi ekleyebilirsiniz.',
+    statusReady:'Hazır', statusRegion:'Bölge: Türkiye',
+    errRequired:'⚠ Kullanıcı adı ve şifre gerekli!', errWrong:'⚠ Kullanıcı adı veya şifre hatalı!',
+    errUserRequired:'⚠ Kullanıcı adı gerekli!', errUserChars:'⚠ Sadece harf, rakam ve _ kullanın.',
+    errPassShort:'⚠ Şifre en az 6 karakter!', errPassMatch:'⚠ Şifreler eşleşmiyor!',
+    errTaken:'⚠ Bu kullanıcı adı alınmış!', successReg:'✔ Kayıt başarılı! Yönlendiriliyorsunuz...',
+    loggingIn:'Giriş yapılıyor...', registering:'Kayıt yapılıyor...', loginSuccess:'Giriş başarılı!',
+    regSuccess2:'Kayıt başarılı!', errConn:'⚠ Bağlantı hatası: ', errGeneral:'⚠ Hata: '
+  },
+  en: {
+    title: 'LessonSchedule - Login', tagline: 'Share your schedule, collect donations, inform your followers!',
+    menu1:'File', menu2:'Edit', menu3:'View', menu4:'Favorites', menu5:'Help',
+    addr:'Address:', tabLogin:'Login', tabRegister:'Register',
+    loginTitle:'Login to Your Account', usernameLabel:'Username:', passLabel:'Password:',
+    loginBtn:'Login', regTitle:'Create New Account', regUserLabel:'Username:',
+    urlHint:'(this will be your URL)', profilePreview:'Your profile:', regPassLabel:'Password:',
+    regPass2Label:'Repeat Password:', regBtn:'Register',
+    alertMsg:'After registering you can add your lesson schedule, about info, and donation link.',
+    statusReady:'Ready', statusRegion:'Region: Global',
+    errRequired:'⚠ Username and password are required!', errWrong:'⚠ Invalid username or password!',
+    errUserRequired:'⚠ Username is required!', errUserChars:'⚠ Only letters, numbers and _ allowed.',
+    errPassShort:'⚠ Password must be at least 6 characters!', errPassMatch:'⚠ Passwords do not match!',
+    errTaken:'⚠ This username is already taken!', successReg:'✔ Registration successful! Redirecting...',
+    loggingIn:'Logging in...', registering:'Registering...', loginSuccess:'Login successful!',
+    regSuccess2:'Registration successful!', errConn:'⚠ Connection error: ', errGeneral:'⚠ Error: '
+  }
+};
+
+let lang = localStorage.getItem('dp_lang') || 'tr';
+
+function applyLang() {
+  const t = translations[lang];
+  document.getElementById('t-title').textContent = t.title;
+  document.getElementById('t-tagline').textContent = t.tagline;
+  document.getElementById('t-menu1').textContent = t.menu1;
+  document.getElementById('t-menu2').textContent = t.menu2;
+  document.getElementById('t-menu3').textContent = t.menu3;
+  document.getElementById('t-menu4').textContent = t.menu4;
+  document.getElementById('t-menu5').textContent = t.menu5;
+  document.getElementById('t-addr').textContent = t.addr;
+  document.getElementById('t-tab-login').textContent = t.tabLogin;
+  document.getElementById('t-tab-register').textContent = t.tabRegister;
+  document.getElementById('t-login-title').textContent = t.loginTitle;
+  document.getElementById('t-username-label').textContent = t.usernameLabel;
+  document.getElementById('t-pass-label').textContent = t.passLabel;
+  document.getElementById('t-login-btn').textContent = t.loginBtn;
+  document.getElementById('t-reg-title').textContent = t.regTitle;
+  document.getElementById('t-reg-user-label').textContent = t.regUserLabel;
+  document.getElementById('t-url-hint').textContent = t.urlHint;
+  document.getElementById('t-profile-preview-label').textContent = t.profilePreview;
+  document.getElementById('t-reg-pass-label').textContent = t.regPassLabel;
+  document.getElementById('t-reg-pass2-label').textContent = t.regPass2Label;
+  document.getElementById('t-reg-btn').textContent = t.regBtn;
+  document.getElementById('t-alert-msg').textContent = t.alertMsg;
+  document.getElementById('statusText').textContent = t.statusReady;
+  document.getElementById('t-status-region').textContent = t.statusRegion;
+  document.getElementById('btn-tr').classList.toggle('active-lang', lang==='tr');
+  document.getElementById('btn-en').classList.toggle('active-lang', lang==='en');
+  document.title = t.title;
+}
+
+window.setLang = function(l) {
+  lang = l;
+  localStorage.setItem('dp_lang', lang);
+  applyLang();
+}
+
+applyLang();
+
 function setStatus(msg) { document.getElementById('statusText').textContent = msg; }
+const t = () => translations[lang];
 
 window.updatePreview = function() {
-  const val = document.getElementById('regUser').value.trim().replace(/\s+/g,'_').toLowerCase() || 'kullanici';
-  document.getElementById('urlPreview').textContent = 'dersprogram.im/' + val;
+  const val = document.getElementById('regUser').value.trim().replace(/\s+/g,'_').toLowerCase() || 'username';
+  document.getElementById('urlPreview').textContent = 'lessonschedule.app/' + val;
 }
 
 window.showTab = function(e, name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(tb => tb.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   e.target.classList.add('active');
 }
@@ -105,21 +203,17 @@ window.doLogin = async function() {
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   err.style.display = 'none';
-  if (!user || !pass) { err.style.display='block'; err.textContent='⚠ Kullanıcı adı ve şifre gerekli!'; return; }
-  setStatus('Giriş yapılıyor...');
+  if (!user || !pass) { err.style.display='block'; err.textContent=t().errRequired; return; }
+  setStatus(t().loggingIn);
   try {
     const snap = await getDoc(doc(db, 'users', user));
     if (snap.exists() && snap.data().pass === pass) {
       localStorage.setItem('dp_current', user);
       window.location.href = 'dashboard.html';
     } else {
-      err.style.display='block'; err.textContent='⚠ Kullanıcı adı veya şifre hatalı!';
-      setStatus('Hatalı giriş');
+      err.style.display='block'; err.textContent=t().errWrong; setStatus(t().errWrong);
     }
-  } catch(e) {
-    err.style.display='block'; err.textContent='⚠ Bağlantı hatası: ' + e.message;
-    setStatus('Hata');
-  }
+  } catch(e) { err.style.display='block'; err.textContent=t().errConn+e.message; setStatus('Error'); }
 }
 
 window.doRegister = async function() {
@@ -129,28 +223,25 @@ window.doRegister = async function() {
   const err = document.getElementById('regError');
   const ok = document.getElementById('regSuccess');
   err.style.display='none'; ok.style.display='none';
-  if (!user) { err.style.display='block'; err.textContent='⚠ Kullanıcı adı gerekli!'; return; }
-  if (!/^[a-z0-9_]+$/.test(user)) { err.style.display='block'; err.textContent='⚠ Sadece harf, rakam ve _ kullanın.'; return; }
-  if (pass.length < 6) { err.style.display='block'; err.textContent='⚠ Şifre en az 6 karakter!'; return; }
-  if (pass !== pass2) { err.style.display='block'; err.textContent='⚠ Şifreler eşleşmiyor!'; return; }
-  setStatus('Kayıt yapılıyor...');
+  if (!user) { err.style.display='block'; err.textContent=t().errUserRequired; return; }
+  if (!/^[a-z0-9_]+$/.test(user)) { err.style.display='block'; err.textContent=t().errUserChars; return; }
+  if (pass.length < 6) { err.style.display='block'; err.textContent=t().errPassShort; return; }
+  if (pass !== pass2) { err.style.display='block'; err.textContent=t().errPassMatch; return; }
+  setStatus(t().registering);
   try {
     const snap = await getDoc(doc(db, 'users', user));
-    if (snap.exists()) { err.style.display='block'; err.textContent='⚠ Bu kullanıcı adı alınmış!'; setStatus('Hata'); return; }
+    if (snap.exists()) { err.style.display='block'; err.textContent=t().errTaken; setStatus('Error'); return; }
     await setDoc(doc(db, 'users', user), {
       pass, username: user, createdAt: new Date().toISOString(),
-      profile: { name:'', title:'', about:'', donateUrl:'', donateText:'💰 Destek Ol',
+      profile: { name:'', title:'', about:'', donateUrl:'', donateText:'💰 Support',
         days:[], startTime:'', endTime:'', scheduleNote:'', scheduleImg:'',
         socialYT:'', socialIG:'', socialTW:'' }
     });
     localStorage.setItem('dp_current', user);
-    ok.style.display='block'; ok.textContent='✔ Kayıt başarılı! Yönlendiriliyorsunuz...';
-    setStatus('Kayıt başarılı!');
+    ok.style.display='block'; ok.textContent=t().successReg;
+    setStatus(t().regSuccess2);
     setTimeout(() => window.location.href = 'dashboard.html', 1500);
-  } catch(e) {
-    err.style.display='block'; err.textContent='⚠ Hata: ' + e.message;
-    setStatus('Hata');
-  }
+  } catch(e) { err.style.display='block'; err.textContent=t().errGeneral+e.message; setStatus('Error'); }
 }
 </script>
 </body>

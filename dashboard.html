@@ -3,96 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ders Programım - Dashboard</title>
+<title>LessonSchedule - Dashboard</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="window">
   <div class="window-titlebar">
-    <div class="window-title"><div class="window-title-icon"></div>Ders Programım - Profil Düzenle</div>
+    <div class="window-title"><div class="window-title-icon"></div><span id="t-title">Ders Programım - Profil Düzenle</span></div>
     <div class="window-controls">
       <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn" onclick="doLogout()">✕</div>
     </div>
   </div>
   <div class="menubar">
-    <div class="menu-item">Dosya</div><div class="menu-item">Düzenle</div>
-    <div class="menu-item" onclick="doLogout()">Giriş/Çıkış</div><div class="menu-item">Yardım</div>
+    <div class="menu-item" id="t-menu1">Dosya</div>
+    <div class="menu-item" id="t-menu2">Düzenle</div>
+    <div class="menu-item" id="t-menu3" onclick="doLogout()">Giriş/Çıkış</div>
+    <div class="menu-item" id="t-menu4">Yardım</div>
+    <div style="margin-left:auto;display:flex;gap:2px;padding:0 4px">
+      <div class="menu-item lang-btn" id="btn-tr" onclick="setLang('tr')">🇹🇷 TR</div>
+      <div class="menu-item lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</div>
+    </div>
   </div>
   <div class="addressbar">
     <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
-    <div class="addr-label">Adres:</div>
-    <input class="addr-input" value="http://dersprogram.im/dashboard" readonly>
+    <div class="addr-label" id="t-addr">Adres:</div>
+    <input class="addr-input" value="http://lessonschedule.app/dashboard" readonly>
     <div class="addr-go">▶</div>
   </div>
   <div class="window-content">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="site-logo" style="margin:0;font-size:24px">📅 Profilini Düzenle</div>
+      <div class="site-logo" style="margin:0;font-size:24px">📅 <span id="t-page-title">Profilini Düzenle</span></div>
       <div style="font-size:12px;color:#555">
-        Giriş: <strong id="currentUserLabel">-</strong> &nbsp;|&nbsp;
-        <a href="index.html" onclick="doLogout()" style="color:#000080">Çıkış</a>
+        <span id="t-logged-as">Giriş:</span> <strong id="currentUserLabel">-</strong> &nbsp;|&nbsp;
+        <a href="index.html" onclick="doLogout()" style="color:#000080" id="t-logout">Çıkış</a>
       </div>
     </div>
 
     <div class="nav-tabs">
-      <div class="nav-tab active" onclick="switchTab(event,'schedule')">📋 Program</div>
-      <div class="nav-tab" onclick="switchTab(event,'about')">👤 Hakkımda</div>
-      <div class="nav-tab" onclick="switchTab(event,'donate')">💰 Bağış</div>
+      <div class="nav-tab active" id="t-tab1" onclick="switchTab(event,'schedule')">📋 Program</div>
+      <div class="nav-tab" id="t-tab2" onclick="switchTab(event,'about')">👤 Hakkımda</div>
+      <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
     </div>
 
-    <!-- PROGRAM -->
+    <!-- PROGRAM / SCHEDULE -->
     <div id="tab-schedule" class="tab-panel active">
-      <div class="groupbox"><span class="groupbox-title">Ders Programı Resmi</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-sched-img-title">Ders Programı Resmi</span>
         <div class="form-row">
-          <label class="form-label">Programınızın resmini yükleyin:</label>
+          <label class="form-label" id="t-upload-label">Programınızın resmini yükleyin:</label>
           <div class="upload-area" onclick="document.getElementById('scheduleImgInput').click()">
-            📁 Resim seçmek için tıklayın (JPG, PNG)<br>
-            <span style="font-size:11px;color:#888">veya buraya sürükleyin</span>
+            <span id="t-upload-hint">📁 Resim seçmek için tıklayın (JPG, PNG)</span><br>
+            <span style="font-size:11px;color:#888" id="t-upload-drag">veya buraya sürükleyin</span>
           </div>
           <input type="file" id="scheduleImgInput" accept="image/*" style="display:none" onchange="previewImage(this)">
-          <img id="schedulePreview" class="upload-preview" alt="Önizleme">
+          <img id="schedulePreview" class="upload-preview" alt="Preview">
         </div>
       </div>
-      <div class="groupbox"><span class="groupbox-title">Yayın Günleri</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-days-title">Yayın Günleri</span>
         <div class="form-row">
-          <label class="form-label">Hangi günler yayındasınız? (Birden fazla seçebilirsiniz)</label>
-          <div class="days-grid">
-            <div class="day-btn" onclick="toggleDay(this,'Pzt')">Pzt</div>
-            <div class="day-btn" onclick="toggleDay(this,'Sal')">Sal</div>
-            <div class="day-btn" onclick="toggleDay(this,'Çar')">Çar</div>
-            <div class="day-btn" onclick="toggleDay(this,'Per')">Per</div>
-            <div class="day-btn" onclick="toggleDay(this,'Cum')">Cum</div>
-            <div class="day-btn" onclick="toggleDay(this,'Cmt')">Cmt</div>
-            <div class="day-btn" onclick="toggleDay(this,'Paz')">Paz</div>
-          </div>
+          <label class="form-label" id="t-days-label">Hangi günler yayındasınız?</label>
+          <div class="days-grid" id="daysGrid"></div>
         </div>
       </div>
-      <div class="groupbox"><span class="groupbox-title">Yayın Saatleri</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-hours-title">Yayın Saatleri</span>
         <div class="time-row">
-          <label class="form-label" style="margin:0;min-width:80px">Başlangıç:</label>
+          <label class="form-label" style="margin:0;min-width:90px" id="t-start-label">Başlangıç:</label>
           <input class="retro-input" type="time" id="startTime" style="width:130px">
         </div>
         <div class="time-row">
-          <label class="form-label" style="margin:0;min-width:80px">Bitiş:</label>
+          <label class="form-label" style="margin:0;min-width:90px" id="t-end-label">Bitiş:</label>
           <input class="retro-input" type="time" id="endTime" style="width:130px">
         </div>
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label">Ek not (opsiyonel):</label>
-          <input class="retro-input" type="text" id="scheduleNote" placeholder="Örn: Canlı soru-cevap, Alıştırma saati...">
+          <label class="form-label" id="t-note-label">Ek not (opsiyonel):</label>
+          <input class="retro-input" type="text" id="scheduleNote" placeholder="">
         </div>
       </div>
     </div>
 
-    <!-- HAKKIMDA -->
+    <!-- HAKKIMDA / ABOUT -->
     <div id="tab-about" class="tab-panel">
-      <div class="groupbox"><span class="groupbox-title">Kişisel Bilgiler</span>
-        <div class="form-row"><label class="form-label">Adınız / Takma adınız:</label>
-          <input class="retro-input" type="text" id="profileName" placeholder="Ali Hoca..."></div>
-        <div class="form-row"><label class="form-label">Kısa başlık / unvan:</label>
-          <input class="retro-input" type="text" id="profileTitle" placeholder="Matematik Öğretmeni..."></div>
-        <div class="form-row"><label class="form-label">Hakkımda yazısı:</label>
-          <textarea class="retro-textarea" id="profileAbout" rows="5" placeholder="Kendinizi tanıtın..."></textarea></div>
+      <div class="groupbox"><span class="groupbox-title" id="t-personal-title">Kişisel Bilgiler</span>
+        <div class="form-row"><label class="form-label" id="t-name-label">Adınız / Takma adınız:</label>
+          <input class="retro-input" type="text" id="profileName" placeholder=""></div>
+        <div class="form-row"><label class="form-label" id="t-role-label">Kısa başlık / unvan:</label>
+          <input class="retro-input" type="text" id="profileTitle" placeholder=""></div>
+        <div class="form-row"><label class="form-label" id="t-about-label">Hakkımda yazısı:</label>
+          <textarea class="retro-textarea" id="profileAbout" rows="5" placeholder=""></textarea></div>
       </div>
-      <div class="groupbox"><span class="groupbox-title">Sosyal Medya Linkleri (opsiyonel)</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-social-title">Sosyal Medya (opsiyonel)</span>
         <div class="form-row"><label class="form-label">YouTube:</label>
           <input class="retro-input" type="url" id="socialYT" placeholder="https://youtube.com/..."></div>
         <div class="form-row"><label class="form-label">Instagram:</label>
@@ -102,35 +100,35 @@
       </div>
     </div>
 
-    <!-- BAĞIŞ -->
+    <!-- BAĞIŞ / DONATE -->
     <div id="tab-donate" class="tab-panel">
-      <div class="groupbox"><span class="groupbox-title">Bağış Linki</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-donate-title">Bağış Linki</span>
         <div class="alert-box">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">Patreon, Buy Me a Coffee, Papara vb. bağış platformu linkinizi girin.</div>
+          <div class="alert-msg" id="t-donate-hint">Patreon, Buy Me a Coffee, Papara vb. bağış platformu linkinizi girin.</div>
         </div>
-        <div class="form-row"><label class="form-label">Bağış/Destek linki:</label>
+        <div class="form-row"><label class="form-label" id="t-donate-url-label">Bağış/Destek linki:</label>
           <input class="retro-input" type="url" id="donateUrl" placeholder="https://patreon.com/..."></div>
-        <div class="form-row"><label class="form-label">Buton yazısı:</label>
+        <div class="form-row"><label class="form-label" id="t-donate-btn-label">Buton yazısı:</label>
           <input class="retro-input" type="text" id="donateText" placeholder="💰 Destek Ol"></div>
       </div>
-      <div class="groupbox"><span class="groupbox-title">Önizleme</span>
+      <div class="groupbox"><span class="groupbox-title" id="t-preview-title">Önizleme</span>
         <a id="donateBtnPreview" href="#" class="donate-btn" style="pointer-events:none">💰 Destek Ol</a>
       </div>
     </div>
 
     <hr class="retro">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button class="retro-btn primary" onclick="saveProfile()">💾 Kaydet</button>
-      <button class="retro-btn" onclick="previewProfile()">🌐 Profili Görüntüle</button>
+      <button class="retro-btn primary" id="t-save-btn" onclick="saveProfile()">💾 Kaydet</button>
+      <button class="retro-btn" id="t-view-btn" onclick="previewProfile()">🌐 Profili Görüntüle</button>
     </div>
-    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px">✔ Kaydedildi!</div>
+    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px" id="t-saved-msg">✔ Kaydedildi!</div>
     <div id="urlSection" style="display:none">
       <div class="url-box">
         <div class="url-display" id="profileUrl"></div>
-        <button class="retro-btn" onclick="copyUrl()">📋 Kopyala</button>
+        <button class="retro-btn" id="t-copy-btn" onclick="copyUrl()">📋 Kopyala</button>
       </div>
-      <div style="font-size:11px;color:#555;margin-top:4px">Bu linki yayınlarınızın altına ekleyin!</div>
+      <div style="font-size:11px;color:#555;margin-top:4px" id="t-url-hint-msg">Bu linki yayınlarınızın altına ekleyin!</div>
     </div>
   </div>
   <div class="statusbar">
@@ -138,6 +136,11 @@
     <div class="status-panel" style="flex:0 0 120px">Dashboard</div>
   </div>
 </div>
+
+<style>
+.lang-btn { font-size:11px; padding:2px 6px; }
+.active-lang { background:#000080; color:#fff; }
+</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -151,14 +154,150 @@ const firebaseConfig = {
   messagingSenderId: "910271309823",
   appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let selectedDays = [];
 let scheduleImgData = '';
 
+const DAYS = {
+  tr: ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],
+  en: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+};
+
+const translations = {
+  tr: {
+    title:'Ders Programım - Profil Düzenle', menu1:'Dosya', menu2:'Düzenle', menu3:'Giriş/Çıkış', menu4:'Yardım',
+    addr:'Adres:', pageTitle:'Profilini Düzenle', loggedAs:'Giriş:', logout:'Çıkış',
+    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış',
+    schedImgTitle:'Ders Programı Resmi', uploadLabel:'Programınızın resmini yükleyin:',
+    uploadHint:'📁 Resim seçmek için tıklayın (JPG, PNG)', uploadDrag:'veya buraya sürükleyin',
+    daysTitle:'Yayın Günleri', daysLabel:'Hangi günler yayındasınız? (Birden fazla seçebilirsiniz)',
+    hoursTitle:'Yayın Saatleri', startLabel:'Başlangıç:', endLabel:'Bitiş:',
+    noteLabel:'Ek not (opsiyonel):', notePlaceholder:'Örn: Canlı soru-cevap...',
+    personalTitle:'Kişisel Bilgiler', nameLabel:'Adınız / Takma adınız:', namePlaceholder:'Ali Hoca...',
+    roleLabel:'Kısa başlık / unvan:', rolePlaceholder:'Matematik Öğretmeni...',
+    aboutLabel:'Hakkımda yazısı:', aboutPlaceholder:'Kendinizi tanıtın...',
+    socialTitle:'Sosyal Medya (opsiyonel)',
+    donateTitle:'Bağış Linki', donateHint:'Patreon, Buy Me a Coffee, Papara vb. bağış platformu linkinizi girin.',
+    donateUrlLabel:'Bağış/Destek linki:', donateBtnLabel:'Buton yazısı:',
+    donateBtnPlaceholder:'💰 Destek Ol', previewTitle:'Önizleme',
+    saveBtn:'💾 Kaydet', viewBtn:'🌐 Profili Görüntüle', savedMsg:'✔ Kaydedildi!',
+    copyBtn:'📋 Kopyala', urlHintMsg:'Bu linki yayınlarınızın altına ekleyin!',
+    loading:'Yükleniyor...', loaded:'Profil yüklendi ✔', saving:'Kaydediliyor...', saved:'Kaydedildi ✔',
+    imgLoaded:'Resim yüklendi', errSave:'Kaydetme hatası: '
+  },
+  en: {
+    title:'LessonSchedule - Edit Profile', menu1:'File', menu2:'Edit', menu3:'Login/Logout', menu4:'Help',
+    addr:'Address:', pageTitle:'Edit Your Profile', loggedAs:'Logged in:', logout:'Logout',
+    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate',
+    schedImgTitle:'Schedule Image', uploadLabel:'Upload your schedule image:',
+    uploadHint:'📁 Click to select image (JPG, PNG)', uploadDrag:'or drag and drop here',
+    daysTitle:'Broadcast Days', daysLabel:'Which days are you live? (Multiple selection)',
+    hoursTitle:'Broadcast Hours', startLabel:'Start:', endLabel:'End:',
+    noteLabel:'Extra note (optional):', notePlaceholder:'e.g. Live Q&A, Practice session...',
+    personalTitle:'Personal Info', nameLabel:'Your name / nickname:', namePlaceholder:'Ali the Teacher...',
+    roleLabel:'Short title / role:', rolePlaceholder:'Math Teacher, 10th Grade Guide...',
+    aboutLabel:'About me:', aboutPlaceholder:'Introduce yourself...',
+    socialTitle:'Social Media (optional)',
+    donateTitle:'Donation Link', donateHint:'Enter your Patreon, Buy Me a Coffee, or other support platform link.',
+    donateUrlLabel:'Donation/Support link:', donateBtnLabel:'Button text:',
+    donateBtnPlaceholder:'💰 Support Me', previewTitle:'Preview',
+    saveBtn:'💾 Save', viewBtn:'🌐 View Profile', savedMsg:'✔ Saved!',
+    copyBtn:'📋 Copy', urlHintMsg:'Add this link below your streams!',
+    loading:'Loading...', loaded:'Profile loaded ✔', saving:'Saving...', saved:'Saved ✔',
+    imgLoaded:'Image loaded', errSave:'Save error: '
+  }
+};
+
+let lang = localStorage.getItem('dp_lang') || 'tr';
+
+function t() { return translations[lang]; }
 function setStatus(msg) { document.getElementById('statusText').textContent = msg; }
+
+function buildDaysGrid() {
+  const grid = document.getElementById('daysGrid');
+  const days = DAYS[lang];
+  const otherDays = DAYS[lang === 'tr' ? 'en' : 'tr'];
+  grid.innerHTML = '';
+  days.forEach((day, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'day-btn' + (selectedDays.includes(day) || selectedDays.includes(otherDays[i]) ? ' selected' : '');
+    btn.textContent = day;
+    btn.onclick = function() { toggleDay(this, day, i); };
+    grid.appendChild(btn);
+  });
+}
+
+window.toggleDay = function(el, day, idx) {
+  const days = DAYS[lang];
+  const otherDays = DAYS[lang === 'tr' ? 'en' : 'tr'];
+  // Store by index to be language-agnostic
+  const key = 'day_' + idx;
+  if (el.classList.contains('selected')) {
+    selectedDays = selectedDays.filter(d => d !== day && d !== otherDays[idx] && d !== key);
+    el.classList.remove('selected');
+  } else {
+    if (!selectedDays.includes(key)) selectedDays.push(key);
+    el.classList.add('selected');
+  }
+}
+
+function applyLang() {
+  const tr = t();
+  document.getElementById('t-title').textContent = tr.title;
+  document.getElementById('t-menu1').textContent = tr.menu1;
+  document.getElementById('t-menu2').textContent = tr.menu2;
+  document.getElementById('t-menu3').textContent = tr.menu3;
+  document.getElementById('t-menu4').textContent = tr.menu4;
+  document.getElementById('t-addr').textContent = tr.addr;
+  document.getElementById('t-page-title').textContent = tr.pageTitle;
+  document.getElementById('t-logged-as').textContent = tr.loggedAs;
+  document.getElementById('t-logout').textContent = tr.logout;
+  document.getElementById('t-tab1').textContent = tr.tab1;
+  document.getElementById('t-tab2').textContent = tr.tab2;
+  document.getElementById('t-tab3').textContent = tr.tab3;
+  document.getElementById('t-sched-img-title').textContent = tr.schedImgTitle;
+  document.getElementById('t-upload-label').textContent = tr.uploadLabel;
+  document.getElementById('t-upload-hint').textContent = tr.uploadHint;
+  document.getElementById('t-upload-drag').textContent = tr.uploadDrag;
+  document.getElementById('t-days-title').textContent = tr.daysTitle;
+  document.getElementById('t-days-label').textContent = tr.daysLabel;
+  document.getElementById('t-hours-title').textContent = tr.hoursTitle;
+  document.getElementById('t-start-label').textContent = tr.startLabel;
+  document.getElementById('t-end-label').textContent = tr.endLabel;
+  document.getElementById('t-note-label').textContent = tr.noteLabel;
+  document.getElementById('scheduleNote').placeholder = tr.notePlaceholder;
+  document.getElementById('t-personal-title').textContent = tr.personalTitle;
+  document.getElementById('t-name-label').textContent = tr.nameLabel;
+  document.getElementById('profileName').placeholder = tr.namePlaceholder;
+  document.getElementById('t-role-label').textContent = tr.roleLabel;
+  document.getElementById('profileTitle').placeholder = tr.rolePlaceholder;
+  document.getElementById('t-about-label').textContent = tr.aboutLabel;
+  document.getElementById('profileAbout').placeholder = tr.aboutPlaceholder;
+  document.getElementById('t-social-title').textContent = tr.socialTitle;
+  document.getElementById('t-donate-title').textContent = tr.donateTitle;
+  document.getElementById('t-donate-hint').textContent = tr.donateHint;
+  document.getElementById('t-donate-url-label').textContent = tr.donateUrlLabel;
+  document.getElementById('t-donate-btn-label').textContent = tr.donateBtnLabel;
+  document.getElementById('donateText').placeholder = tr.donateBtnPlaceholder;
+  document.getElementById('t-preview-title').textContent = tr.previewTitle;
+  document.getElementById('t-save-btn').textContent = tr.saveBtn;
+  document.getElementById('t-view-btn').textContent = tr.viewBtn;
+  document.getElementById('saveMsg').textContent = tr.savedMsg;
+  document.getElementById('t-copy-btn').textContent = tr.copyBtn;
+  document.getElementById('t-url-hint-msg').textContent = tr.urlHintMsg;
+  document.getElementById('btn-tr').classList.toggle('active-lang', lang==='tr');
+  document.getElementById('btn-en').classList.toggle('active-lang', lang==='en');
+  document.title = tr.title;
+  buildDaysGrid();
+}
+
+window.setLang = function(l) {
+  lang = l;
+  localStorage.setItem('dp_lang', lang);
+  applyLang();
+}
 
 window.doLogout = function() {
   localStorage.removeItem('dp_current');
@@ -167,19 +306,9 @@ window.doLogout = function() {
 
 window.switchTab = function(e, name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(tb => tb.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   e.target.classList.add('active');
-}
-
-window.toggleDay = function(el, day) {
-  if (selectedDays.includes(day)) {
-    selectedDays = selectedDays.filter(d => d !== day);
-    el.classList.remove('selected');
-  } else {
-    selectedDays.push(day);
-    el.classList.add('selected');
-  }
 }
 
 window.previewImage = function(input) {
@@ -188,42 +317,31 @@ window.previewImage = function(input) {
   reader.onload = function(e) {
     scheduleImgData = e.target.result;
     const prev = document.getElementById('schedulePreview');
-    prev.src = scheduleImgData;
-    prev.style.display = 'block';
-    setStatus('Resim yüklendi');
+    prev.src = scheduleImgData; prev.style.display = 'block';
+    setStatus(t().imgLoaded);
   };
   reader.readAsDataURL(input.files[0]);
 }
 
 document.addEventListener('input', function(e) {
   if (e.target.id === 'donateUrl' || e.target.id === 'donateText') {
-    const text = document.getElementById('donateText').value || '💰 Destek Ol';
-    const url = document.getElementById('donateUrl').value || '#';
-    document.getElementById('donateBtnPreview').textContent = text;
-    document.getElementById('donateBtnPreview').href = url;
+    document.getElementById('donateBtnPreview').textContent = document.getElementById('donateText').value || '💰 Support';
+    document.getElementById('donateBtnPreview').href = document.getElementById('donateUrl').value || '#';
   }
 });
 
-// Sayfa yüklenince profili getir
+// Load profile
 const user = localStorage.getItem('dp_current');
 if (!user) { window.location.href = 'index.html'; }
 else {
   document.getElementById('currentUserLabel').textContent = user;
-  setStatus('Profil yükleniyor...');
+  applyLang();
+  setStatus(t().loading);
   getDoc(doc(db, 'users', user)).then(snap => {
     if (!snap.exists()) { window.location.href = 'index.html'; return; }
     const p = snap.data().profile || {};
-    if (p.scheduleImg) {
-      scheduleImgData = p.scheduleImg;
-      document.getElementById('schedulePreview').src = p.scheduleImg;
-      document.getElementById('schedulePreview').style.display = 'block';
-    }
-    if (p.days) {
-      selectedDays = [...p.days];
-      document.querySelectorAll('.day-btn').forEach(btn => {
-        if (p.days.includes(btn.textContent)) btn.classList.add('selected');
-      });
-    }
+    if (p.scheduleImg) { scheduleImgData = p.scheduleImg; document.getElementById('schedulePreview').src = p.scheduleImg; document.getElementById('schedulePreview').style.display='block'; }
+    if (p.days) { selectedDays = [...p.days]; buildDaysGrid(); }
     if (p.startTime) document.getElementById('startTime').value = p.startTime;
     if (p.endTime) document.getElementById('endTime').value = p.endTime;
     if (p.scheduleNote) document.getElementById('scheduleNote').value = p.scheduleNote;
@@ -235,13 +353,21 @@ else {
     if (p.socialTW) document.getElementById('socialTW').value = p.socialTW;
     if (p.donateUrl) document.getElementById('donateUrl').value = p.donateUrl;
     if (p.donateText) document.getElementById('donateText').value = p.donateText;
-    setStatus('Profil yüklendi ✔');
-  }).catch(e => setStatus('Hata: ' + e.message));
+    setStatus(t().loaded);
+  }).catch(e => setStatus('Error: ' + e.message));
 }
 
 window.saveProfile = async function() {
   if (!user) return;
-  setStatus('Kaydediliyor...');
+  setStatus(t().saving);
+  // Convert day indices to current language day names
+  const dayNames = selectedDays.map(d => {
+    if (d.startsWith('day_')) {
+      const idx = parseInt(d.replace('day_',''));
+      return DAYS[lang][idx];
+    }
+    return d;
+  });
   const profile = {
     name: document.getElementById('profileName').value.trim(),
     title: document.getElementById('profileTitle').value.trim(),
@@ -250,8 +376,9 @@ window.saveProfile = async function() {
     socialIG: document.getElementById('socialIG').value.trim(),
     socialTW: document.getElementById('socialTW').value.trim(),
     donateUrl: document.getElementById('donateUrl').value.trim(),
-    donateText: document.getElementById('donateText').value.trim() || '💰 Destek Ol',
+    donateText: document.getElementById('donateText').value.trim() || '💰 Support',
     days: selectedDays,
+    dayNames,
     startTime: document.getElementById('startTime').value,
     endTime: document.getElementById('endTime').value,
     scheduleNote: document.getElementById('scheduleNote').value.trim(),
@@ -259,15 +386,12 @@ window.saveProfile = async function() {
   };
   try {
     await updateDoc(doc(db, 'users', user), { profile });
-    setStatus('Kaydedildi ✔');
-    document.getElementById('saveMsg').style.display = 'block';
-    document.getElementById('urlSection').style.display = 'block';
+    setStatus(t().saved);
+    document.getElementById('saveMsg').style.display='block';
+    document.getElementById('urlSection').style.display='block';
     const url = window.location.origin + window.location.pathname.replace('dashboard.html','') + 'profile.html?user=' + user;
     document.getElementById('profileUrl').textContent = url;
-  } catch(e) {
-    setStatus('Hata: ' + e.message);
-    alert('Kaydetme hatası: ' + e.message);
-  }
+  } catch(e) { setStatus('Error'); alert(t().errSave + e.message); }
 }
 
 window.previewProfile = async function() {
@@ -277,11 +401,7 @@ window.previewProfile = async function() {
 
 window.copyUrl = function() {
   const url = document.getElementById('profileUrl').textContent;
-  navigator.clipboard.writeText(url).then(() => {
-    setStatus('Link kopyalandı! ✔');
-  }).catch(() => {
-    prompt('Bu linki kopyalayın:', url);
-  });
+  navigator.clipboard.writeText(url).then(() => setStatus(t().saved)).catch(() => prompt('Copy this link:', url));
 }
 </script>
 </body>
