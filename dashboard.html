@@ -8,85 +8,65 @@
 </head>
 <body>
 <div class="window">
-  <!-- Title Bar -->
   <div class="window-titlebar">
-    <div class="window-title">
-      <div class="window-title-icon"></div>
-      Ders Programım - Profil Düzenle
-    </div>
+    <div class="window-title"><div class="window-title-icon"></div>Ders Programım - Profil Düzenle</div>
     <div class="window-controls">
-      <div class="win-btn">_</div>
-      <div class="win-btn">□</div>
-      <div class="win-btn" onclick="doLogout()">✕</div>
+      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn" onclick="doLogout()">✕</div>
     </div>
   </div>
-  <!-- Menubar -->
   <div class="menubar">
-    <div class="menu-item">Dosya</div>
-    <div class="menu-item">Düzenle</div>
-    <div class="menu-item" onclick="window.location.href='index.html'">Giriş/Çıkış</div>
-    <div class="menu-item">Yardım</div>
+    <div class="menu-item">Dosya</div><div class="menu-item">Düzenle</div>
+    <div class="menu-item" onclick="doLogout()">Giriş/Çıkış</div><div class="menu-item">Yardım</div>
   </div>
-  <!-- Address Bar -->
   <div class="addressbar">
-    <div class="addr-btn">◀</div>
-    <div class="addr-btn">▶</div>
-    <div class="addr-btn">⌂</div>
+    <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
     <div class="addr-label">Adres:</div>
-    <input class="addr-input" id="addrBar" value="http://dersprogram.im/dashboard" readonly>
+    <input class="addr-input" value="http://dersprogram.im/dashboard" readonly>
     <div class="addr-go">▶</div>
   </div>
-  <!-- Content -->
   <div class="window-content">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div class="site-logo" style="margin:0;font-size:24px">📅 Profilini Düzenle</div>
       <div style="font-size:12px;color:#555">
-        Giriş: <strong id="currentUserLabel">-</strong>
-        &nbsp;|&nbsp;
+        Giriş: <strong id="currentUserLabel">-</strong> &nbsp;|&nbsp;
         <a href="index.html" onclick="doLogout()" style="color:#000080">Çıkış</a>
       </div>
     </div>
 
-    <!-- 3 Bölüm Tabları -->
     <div class="nav-tabs">
-      <div class="nav-tab active" onclick="switchTab(event, 'schedule')">📋 Program</div>
-      <div class="nav-tab" onclick="switchTab(event, 'about')">👤 Hakkımda</div>
-      <div class="nav-tab" onclick="switchTab(event, 'donate')">💰 Bağış</div>
+      <div class="nav-tab active" onclick="switchTab(event,'schedule')">📋 Program</div>
+      <div class="nav-tab" onclick="switchTab(event,'about')">👤 Hakkımda</div>
+      <div class="nav-tab" onclick="switchTab(event,'donate')">💰 Bağış</div>
     </div>
 
-    <!-- === PROGRAM TAB === -->
+    <!-- PROGRAM -->
     <div id="tab-schedule" class="tab-panel active">
-      <div class="groupbox">
-        <span class="groupbox-title">Ders Programı Resmi</span>
+      <div class="groupbox"><span class="groupbox-title">Ders Programı Resmi</span>
         <div class="form-row">
           <label class="form-label">Programınızın resmini yükleyin:</label>
           <div class="upload-area" onclick="document.getElementById('scheduleImgInput').click()">
-            📁 Resim seçmek için tıklayın (JPG, PNG)
-            <br><span style="font-size:11px;color:#888">veya buraya sürükleyin</span>
+            📁 Resim seçmek için tıklayın (JPG, PNG)<br>
+            <span style="font-size:11px;color:#888">veya buraya sürükleyin</span>
           </div>
           <input type="file" id="scheduleImgInput" accept="image/*" style="display:none" onchange="previewImage(this)">
-          <img id="schedulePreview" class="upload-preview" alt="Program önizleme">
+          <img id="schedulePreview" class="upload-preview" alt="Önizleme">
         </div>
       </div>
-
-      <div class="groupbox">
-        <span class="groupbox-title">Yayın Günleri</span>
+      <div class="groupbox"><span class="groupbox-title">Yayın Günleri</span>
         <div class="form-row">
           <label class="form-label">Hangi günler yayındasınız? (Birden fazla seçebilirsiniz)</label>
           <div class="days-grid">
-            <div class="day-btn" onclick="toggleDay(this, 'Pzt')">Pzt</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Sal')">Sal</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Çar')">Çar</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Per')">Per</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Cum')">Cum</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Cmt')">Cmt</div>
-            <div class="day-btn" onclick="toggleDay(this, 'Paz')">Paz</div>
+            <div class="day-btn" onclick="toggleDay(this,'Pzt')">Pzt</div>
+            <div class="day-btn" onclick="toggleDay(this,'Sal')">Sal</div>
+            <div class="day-btn" onclick="toggleDay(this,'Çar')">Çar</div>
+            <div class="day-btn" onclick="toggleDay(this,'Per')">Per</div>
+            <div class="day-btn" onclick="toggleDay(this,'Cum')">Cum</div>
+            <div class="day-btn" onclick="toggleDay(this,'Cmt')">Cmt</div>
+            <div class="day-btn" onclick="toggleDay(this,'Paz')">Paz</div>
           </div>
         </div>
       </div>
-
-      <div class="groupbox">
-        <span class="groupbox-title">Yayın Saatleri</span>
+      <div class="groupbox"><span class="groupbox-title">Yayın Saatleri</span>
         <div class="time-row">
           <label class="form-label" style="margin:0;min-width:80px">Başlangıç:</label>
           <input class="retro-input" type="time" id="startTime" style="width:130px">
@@ -102,126 +82,97 @@
       </div>
     </div>
 
-    <!-- === HAKKIMDA TAB === -->
+    <!-- HAKKIMDA -->
     <div id="tab-about" class="tab-panel">
-      <div class="groupbox">
-        <span class="groupbox-title">Kişisel Bilgiler</span>
-        <div class="form-row">
-          <label class="form-label">Adınız / Takma adınız:</label>
-          <input class="retro-input" type="text" id="profileName" placeholder="Ali Hoca, Matematik ile Ali...">
-        </div>
-        <div class="form-row">
-          <label class="form-label">Kısa başlık / unvan:</label>
-          <input class="retro-input" type="text" id="profileTitle" placeholder="Matematik Öğretmeni, 10.Sınıf Rehberi...">
-        </div>
-        <div class="form-row">
-          <label class="form-label">Hakkımda yazısı:</label>
-          <textarea class="retro-textarea" id="profileAbout" rows="5" placeholder="Kendinizi tanıtın... Hangi dersleri veriyorsunuz? Kaç yıldır öğretmenlik yapıyorsunuz? Öğrencilere ne söylemek istersiniz?"></textarea>
-        </div>
+      <div class="groupbox"><span class="groupbox-title">Kişisel Bilgiler</span>
+        <div class="form-row"><label class="form-label">Adınız / Takma adınız:</label>
+          <input class="retro-input" type="text" id="profileName" placeholder="Ali Hoca..."></div>
+        <div class="form-row"><label class="form-label">Kısa başlık / unvan:</label>
+          <input class="retro-input" type="text" id="profileTitle" placeholder="Matematik Öğretmeni..."></div>
+        <div class="form-row"><label class="form-label">Hakkımda yazısı:</label>
+          <textarea class="retro-textarea" id="profileAbout" rows="5" placeholder="Kendinizi tanıtın..."></textarea></div>
       </div>
-      <div class="groupbox">
-        <span class="groupbox-title">Sosyal Medya Linkleri (opsiyonel)</span>
-        <div class="form-row">
-          <label class="form-label">YouTube:</label>
-          <input class="retro-input" type="url" id="socialYT" placeholder="https://youtube.com/...">
-        </div>
-        <div class="form-row">
-          <label class="form-label">Instagram:</label>
-          <input class="retro-input" type="url" id="socialIG" placeholder="https://instagram.com/...">
-        </div>
-        <div class="form-row">
-          <label class="form-label">Twitter/X:</label>
-          <input class="retro-input" type="url" id="socialTW" placeholder="https://twitter.com/...">
-        </div>
+      <div class="groupbox"><span class="groupbox-title">Sosyal Medya Linkleri (opsiyonel)</span>
+        <div class="form-row"><label class="form-label">YouTube:</label>
+          <input class="retro-input" type="url" id="socialYT" placeholder="https://youtube.com/..."></div>
+        <div class="form-row"><label class="form-label">Instagram:</label>
+          <input class="retro-input" type="url" id="socialIG" placeholder="https://instagram.com/..."></div>
+        <div class="form-row"><label class="form-label">Twitter/X:</label>
+          <input class="retro-input" type="url" id="socialTW" placeholder="https://twitter.com/..."></div>
       </div>
     </div>
 
-    <!-- === BAĞIŞ TAB === -->
+    <!-- BAĞIŞ -->
     <div id="tab-donate" class="tab-panel">
-      <div class="groupbox">
-        <span class="groupbox-title">Bağış Linki</span>
+      <div class="groupbox"><span class="groupbox-title">Bağış Linki</span>
         <div class="alert-box">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">
-            Profilinizde bir bağış butonu görünecek. Buraya Patreon, Buy Me a Coffee, Papara veya başka bir bağış/destek platformunun linkini girin.
-          </div>
+          <div class="alert-msg">Patreon, Buy Me a Coffee, Papara vb. bağış platformu linkinizi girin.</div>
         </div>
-        <div class="form-row">
-          <label class="form-label">Bağış/Destek linki:</label>
-          <input class="retro-input" type="url" id="donateUrl" placeholder="https://patreon.com/... veya https://bmc.link/...">
-        </div>
-        <div class="form-row">
-          <label class="form-label">Buton yazısı:</label>
-          <input class="retro-input" type="text" id="donateText" placeholder="💰 Destek Ol  /  ☕ Kahve Ismarla  /  🎁 Bağış Yap">
-        </div>
+        <div class="form-row"><label class="form-label">Bağış/Destek linki:</label>
+          <input class="retro-input" type="url" id="donateUrl" placeholder="https://patreon.com/..."></div>
+        <div class="form-row"><label class="form-label">Buton yazısı:</label>
+          <input class="retro-input" type="text" id="donateText" placeholder="💰 Destek Ol"></div>
       </div>
-      <div class="groupbox">
-        <span class="groupbox-title">Önizleme</span>
+      <div class="groupbox"><span class="groupbox-title">Önizleme</span>
         <a id="donateBtnPreview" href="#" class="donate-btn" style="pointer-events:none">💰 Destek Ol</a>
       </div>
     </div>
 
-    <!-- KAYDET & URL -->
     <hr class="retro">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="retro-btn primary" onclick="saveProfile()">💾 Kaydet</button>
       <button class="retro-btn" onclick="previewProfile()">🌐 Profili Görüntüle</button>
     </div>
-
-    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px">
-      ✔ Kaydedildi! Profilinize aşağıdaki linkten ulaşabilirsiniz:
-    </div>
+    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px">✔ Kaydedildi!</div>
     <div id="urlSection" style="display:none">
       <div class="url-box">
         <div class="url-display" id="profileUrl"></div>
         <button class="retro-btn" onclick="copyUrl()">📋 Kopyala</button>
       </div>
-      <div style="font-size:11px;color:#555;margin-top:4px">
-        Bu linki yayınlarınızın altına ekleyin!
-      </div>
+      <div style="font-size:11px;color:#555;margin-top:4px">Bu linki yayınlarınızın altına ekleyin!</div>
     </div>
   </div>
-
-  <!-- Statusbar -->
   <div class="statusbar">
-    <div class="status-panel" id="statusText">Hazır</div>
+    <div class="status-panel" id="statusText">Yükleniyor...</div>
     <div class="status-panel" style="flex:0 0 120px">Dashboard</div>
   </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 let selectedDays = [];
 let scheduleImgData = '';
-const DAYS_LIST = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
-function doLogout() {
+function setStatus(msg) { document.getElementById('statusText').textContent = msg; }
+
+window.doLogout = function() {
   localStorage.removeItem('dp_current');
   window.location.href = 'index.html';
 }
 
-function getCurrentUser() {
-  const u = localStorage.getItem('dp_current');
-  if (!u) { window.location.href = 'index.html'; return null; }
-  return u;
-}
-
-function getProfile(user) {
-  const users = JSON.parse(localStorage.getItem('dp_users') || '{}');
-  return users[user] ? users[user].profile || {} : {};
-}
-
-function setStatus(msg) {
-  document.getElementById('statusText').textContent = msg;
-}
-
-function switchTab(e, name) {
+window.switchTab = function(e, name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   e.target.classList.add('active');
 }
 
-function toggleDay(el, day) {
+window.toggleDay = function(el, day) {
   if (selectedDays.includes(day)) {
     selectedDays = selectedDays.filter(d => d !== day);
     el.classList.remove('selected');
@@ -231,7 +182,7 @@ function toggleDay(el, day) {
   }
 }
 
-function previewImage(input) {
+window.previewImage = function(input) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -244,62 +195,54 @@ function previewImage(input) {
   reader.readAsDataURL(input.files[0]);
 }
 
-// Live donate preview
-document.addEventListener('DOMContentLoaded', function() {
-  const user = getCurrentUser();
-  if (!user) return;
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'donateUrl' || e.target.id === 'donateText') {
+    const text = document.getElementById('donateText').value || '💰 Destek Ol';
+    const url = document.getElementById('donateUrl').value || '#';
+    document.getElementById('donateBtnPreview').textContent = text;
+    document.getElementById('donateBtnPreview').href = url;
+  }
+});
+
+// Sayfa yüklenince profili getir
+const user = localStorage.getItem('dp_current');
+if (!user) { window.location.href = 'index.html'; }
+else {
   document.getElementById('currentUserLabel').textContent = user;
-  document.getElementById('addrBar').value = 'http://dersprogram.im/dashboard';
-
-  // Load existing profile
-  const p = getProfile(user);
-  if (p.scheduleImg) {
-    scheduleImgData = p.scheduleImg;
-    const prev = document.getElementById('schedulePreview');
-    prev.src = p.scheduleImg;
-    prev.style.display = 'block';
-  }
-  if (p.days) {
-    selectedDays = [...p.days];
-    document.querySelectorAll('.day-btn').forEach(btn => {
-      if (p.days.includes(btn.textContent)) btn.classList.add('selected');
-    });
-  }
-  if (p.startTime) document.getElementById('startTime').value = p.startTime;
-  if (p.endTime) document.getElementById('endTime').value = p.endTime;
-  if (p.scheduleNote) document.getElementById('scheduleNote').value = p.scheduleNote;
-  if (p.name) document.getElementById('profileName').value = p.name;
-  if (p.title) document.getElementById('profileTitle').value = p.title;
-  if (p.about) document.getElementById('profileAbout').value = p.about;
-  if (p.socialYT) document.getElementById('socialYT').value = p.socialYT;
-  if (p.socialIG) document.getElementById('socialIG').value = p.socialIG;
-  if (p.socialTW) document.getElementById('socialTW').value = p.socialTW;
-  if (p.donateUrl) document.getElementById('donateUrl').value = p.donateUrl;
-  if (p.donateText) document.getElementById('donateText').value = p.donateText;
-
-  updateDonatePrev();
-  setStatus('Profil yüklendi');
-});
-
-document.getElementById && document.addEventListener('input', function(e) {
-  if (e.target.id === 'donateUrl' || e.target.id === 'donateText') updateDonatePrev();
-});
-
-function updateDonatePrev() {
-  const text = document.getElementById('donateText').value || '💰 Destek Ol';
-  const url = document.getElementById('donateUrl').value || '#';
-  const btn = document.getElementById('donateBtnPreview');
-  btn.textContent = text;
-  btn.href = url;
+  setStatus('Profil yükleniyor...');
+  getDoc(doc(db, 'users', user)).then(snap => {
+    if (!snap.exists()) { window.location.href = 'index.html'; return; }
+    const p = snap.data().profile || {};
+    if (p.scheduleImg) {
+      scheduleImgData = p.scheduleImg;
+      document.getElementById('schedulePreview').src = p.scheduleImg;
+      document.getElementById('schedulePreview').style.display = 'block';
+    }
+    if (p.days) {
+      selectedDays = [...p.days];
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        if (p.days.includes(btn.textContent)) btn.classList.add('selected');
+      });
+    }
+    if (p.startTime) document.getElementById('startTime').value = p.startTime;
+    if (p.endTime) document.getElementById('endTime').value = p.endTime;
+    if (p.scheduleNote) document.getElementById('scheduleNote').value = p.scheduleNote;
+    if (p.name) document.getElementById('profileName').value = p.name;
+    if (p.title) document.getElementById('profileTitle').value = p.title;
+    if (p.about) document.getElementById('profileAbout').value = p.about;
+    if (p.socialYT) document.getElementById('socialYT').value = p.socialYT;
+    if (p.socialIG) document.getElementById('socialIG').value = p.socialIG;
+    if (p.socialTW) document.getElementById('socialTW').value = p.socialTW;
+    if (p.donateUrl) document.getElementById('donateUrl').value = p.donateUrl;
+    if (p.donateText) document.getElementById('donateText').value = p.donateText;
+    setStatus('Profil yüklendi ✔');
+  }).catch(e => setStatus('Hata: ' + e.message));
 }
 
-function saveProfile() {
-  const user = getCurrentUser();
+window.saveProfile = async function() {
   if (!user) return;
-  const users = JSON.parse(localStorage.getItem('dp_users') || '{}');
-  if (!users[user]) return;
-
-  users[user].profile = {
+  setStatus('Kaydediliyor...');
+  const profile = {
     name: document.getElementById('profileName').value.trim(),
     title: document.getElementById('profileTitle').value.trim(),
     about: document.getElementById('profileAbout').value.trim(),
@@ -314,30 +257,28 @@ function saveProfile() {
     scheduleNote: document.getElementById('scheduleNote').value.trim(),
     scheduleImg: scheduleImgData
   };
-
-  localStorage.setItem('dp_users', JSON.stringify(users));
-  setStatus('Kaydedildi ✔');
-
-  const saveMsg = document.getElementById('saveMsg');
-  const urlSection = document.getElementById('urlSection');
-  saveMsg.style.display = 'block';
-  urlSection.style.display = 'block';
-  const url = window.location.origin + window.location.pathname.replace('dashboard.html','') + 'profile.html?user=' + user;
-  document.getElementById('profileUrl').textContent = url;
+  try {
+    await updateDoc(doc(db, 'users', user), { profile });
+    setStatus('Kaydedildi ✔');
+    document.getElementById('saveMsg').style.display = 'block';
+    document.getElementById('urlSection').style.display = 'block';
+    const url = window.location.origin + window.location.pathname.replace('dashboard.html','') + 'profile.html?user=' + user;
+    document.getElementById('profileUrl').textContent = url;
+  } catch(e) {
+    setStatus('Hata: ' + e.message);
+    alert('Kaydetme hatası: ' + e.message);
+  }
 }
 
-function previewProfile() {
-  saveProfile();
-  const user = getCurrentUser();
-  const url = 'profile.html?user=' + user;
-  window.open(url, '_blank');
+window.previewProfile = async function() {
+  await window.saveProfile();
+  window.open('profile.html?user=' + user, '_blank');
 }
 
-function copyUrl() {
+window.copyUrl = function() {
   const url = document.getElementById('profileUrl').textContent;
   navigator.clipboard.writeText(url).then(() => {
     setStatus('Link kopyalandı! ✔');
-    alert('Link kopyalandı:\n' + url);
   }).catch(() => {
     prompt('Bu linki kopyalayın:', url);
   });
