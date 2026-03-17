@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoklama</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.attend-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: var(--font-main);
+}
+.attend-box {
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-light);
+  border-left: 2px solid var(--win-light);
+  border-right: 2px solid var(--win-darker);
+  border-bottom: 2px solid var(--win-darker);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.streak-display {
+  font-family: var(--font-display);
+  font-size: 64px;
+  color: var(--accent);
+  line-height: 1;
+  margin: 8px 0;
+}
+.streak-label {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 12px;
+}
+.role-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 3px 12px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+.checkin-btn {
+  display: block;
+  width: 100%;
+  background: var(--win-bg);
+  border-top: 3px solid var(--win-light);
+  border-left: 3px solid var(--win-light);
+  border-right: 3px solid var(--win-darker);
+  border-bottom: 3px solid var(--win-darker);
+  padding: 14px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--text);
+  letter-spacing: 2px;
+  transition: none;
+}
+.checkin-btn:active {
+  border-top: 3px solid var(--win-darker);
+  border-left: 3px solid var(--win-darker);
+  border-right: 3px solid var(--win-light);
+  border-bottom: 3px solid var(--win-light);
+  padding: 15px 14px 13px 15px;
+}
+.checkin-btn:disabled {
+  color: #888;
+  cursor: not-allowed;
+  background: #ddd;
+}
+.checkin-btn.done {
+  background: #e0ffe0;
+  color: #006400;
+  border-top: 3px solid var(--win-darker);
+  border-left: 3px solid var(--win-darker);
+  border-right: 3px solid var(--win-light);
+  border-bottom: 3px solid var(--win-light);
+}
+.countdown {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+.login-prompt {
+  background: #ffffd0;
+  border: 1px solid #888;
+  padding: 12px;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.login-prompt a { color: #000080; font-weight: bold; }
+
+.leaderboard-mini {
+  margin-top: 16px;
+}
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 12px;
+}
+.lb-row:nth-child(even) { background: #f8f8f8; }
+.lb-rank { font-weight: bold; color: var(--accent); min-width: 24px; font-size: 14px; }
+.lb-name { flex: 1; }
+.lb-streak { font-family: var(--font-display); font-size: 18px; color: var(--accent); min-width: 36px; text-align: right; }
+.lb-role { font-size: 10px; background: var(--accent2); color: white; padding: 1px 5px; }
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--win-dark);
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+}
+.msg-box {
+  padding: 10px;
+  font-size: 12px;
+  border: 1px solid;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.msg-success { background: #e0ffe0; border-color: #006400; color: #006400; }
+.msg-error   { background: #ffe0e0; border-color: #aa0000; color: #aa0000; }
+.msg-info    { background: #e0e8ff; border-color: #000080; color: #000080; }
+</style>
+</head>
+<body style="background:#c0c0c0;padding:0;min-height:100vh">
+<div class="attend-wrap">
+
+  <!-- Üst bilgi -->
+  <div style="text-align:center;margin-bottom:12px">
+    <div class="site-logo" style="font-size:20px;margin-bottom:4px">📅 <span id="streamerName">...</span></div>
+    <div style="font-size:11px;color:#555">Yoklama & Streak Takibi</div>
+  </div>
+
+  <!-- Giriş yapılmamışsa -->
+  <div id="loginPrompt" class="login-prompt" style="display:none">
+    ⚠ Yoklamaya katılmak için <a href="index.html">giriş yapman</a> gerekiyor!
+    <br><span style="font-size:10px;color:#888">Hesabın yoksa kayıt ol, ücretsiz!</span>
+  </div>
+
+  <!-- Giriş yapılmışsa kendi streaki -->
+  <div id="myStreakBox" class="attend-box" style="display:none">
+    <div style="font-size:11px;color:#555;margin-bottom:4px">SENİN STREAKİN</div>
+    <div class="streak-display" id="myStreakNum">0</div>
+    <div class="streak-label">🔥 gün üst üste</div>
+    <div class="role-badge" id="myRoleBadge">Yeni Başlayan</div>
+    <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">
+      ✅ YOKLAMAYA KATIL
+    </button>
+    <div class="countdown" id="countdownText"></div>
+  </div>
+
+  <!-- Mesaj -->
+  <div id="msgBox" style="display:none"></div>
+
+  <!-- Leaderboard -->
+  <div class="section-title">🏆 Sıralama</div>
+  <div id="leaderboard" class="leaderboard-mini">
+    <div style="text-align:center;font-size:12px;color:#888;padding:12px">Yükleniyor...</div>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;font-size:10px;color:#888">
+    Her 24 saatte bir yoklamaya katılabilirsin.<br>
+    Streak'in kırılırsa sıfırdan başlar!
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const streamer = new URLSearchParams(window.location.search).get('user');
+let currentViewer = null;
+let roles = [];
+
+function showMsg(text, type='info') {
+  const box = document.getElementById('msgBox');
+  box.style.display = 'block';
+  box.className = 'msg-box msg-' + type;
+  box.textContent = text;
+  setTimeout(() => box.style.display = 'none', 4000);
+}
+
+function getRole(streak, rolesArr) {
+  if (!rolesArr || rolesArr.length === 0) return '👤 İzleyici';
+  const sorted = [...rolesArr].sort((a, b) => b.minStreak - a.minStreak);
+  for (const r of sorted) {
+    if (streak >= r.minStreak) return r.icon + ' ' + r.name;
+  }
+  return '👤 İzleyici';
+}
+
+function msToHMS(ms) {
+  const h = Math.floor(ms/3600000);
+  const m = Math.floor((ms%3600000)/60000);
+  return `${h} saat ${m} dakika`;
+}
+
+async function loadStreamerInfo() {
+  if (!streamer) return;
+  const snap = await getDoc(doc(db, 'users', streamer));
+  if (snap.exists()) {
+    const p = snap.data().profile || {};
+    document.getElementById('streamerName').textContent = p.name || streamer;
+    roles = snap.data().roles || [];
+  }
+}
+
+async function loadLeaderboard() {
+  const lb = document.getElementById('leaderboard');
+  try {
+    const snaps = await getDocs(collection(db, 'users', streamer, 'attendance'));
+    const list = [];
+    snaps.forEach(d => {
+      const data = d.data();
+      if (data.streak > 0) {
+        list.push({ username: d.id, streak: data.streak, lastCheckin: data.lastCheckin });
+      }
+    });
+    list.sort((a, b) => b.streak - a.streak);
+    const top = list.slice(0, 20);
+
+    if (top.length === 0) {
+      lb.innerHTML = '<div style="text-align:center;font-size:12px;color:#888;padding:12px">Henüz kimse yoklamaya katılmadı!</div>';
+      return;
+    }
+
+    const medals = ['🥇','🥈','🥉'];
+    lb.innerHTML = top.map((u, i) => {
+      const role = getRole(u.streak, roles);
+      return `<div class="lb-row">
+        <div class="lb-rank">${medals[i] || (i+1)}</div>
+        <div class="lb-name">${u.username}</div>
+        <div class="lb-role">${role}</div>
+        <div class="lb-streak">${u.streak}🔥</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lb.innerHTML = '<div style="color:red;font-size:11px;padding:8px">Hata: ' + e.message + '</div>';
+  }
+}
+
+async function loadMyStreak(viewer) {
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer, 'attendance', viewer));
+    if (snap.exists()) {
+      const data = snap.data();
+      const streak = data.streak || 0;
+      document.getElementById('myStreakNum').textContent = streak;
+      document.getElementById('myRoleBadge').textContent = getRole(streak, roles);
+
+      // 24 saat geçti mi kontrol et
+      const last = data.lastCheckin ? data.lastCheckin.toDate() : null;
+      const now = new Date();
+      if (last) {
+        const diff = now - last;
+        const wait = 24*60*60*1000 - diff;
+        if (wait > 0) {
+          // Henüz 24 saat geçmemiş
+          const btn = document.getElementById('checkinBtn');
+          btn.textContent = '✔ BUGÜN KATILDIN';
+          btn.className = 'checkin-btn done';
+          btn.disabled = true;
+          startCountdown(wait);
+          return;
+        }
+        // 24 saatten fazla geçmiş — streak kırıldı mı?
+        if (diff > 48*60*60*1000 && streak > 0) {
+          // 48 saatten fazla → streak sıfırla
+          await updateDoc(doc(db, 'users', streamer, 'attendance', viewer), { streak: 0 });
+          document.getElementById('myStreakNum').textContent = '0';
+          document.getElementById('myRoleBadge').textContent = getRole(0, roles);
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+function startCountdown(ms) {
+  const el = document.getElementById('countdownText');
+  function tick() {
+    const remaining = ms - (Date.now() - startTime);
+    if (remaining <= 0) {
+      el.textContent = '';
+      const btn = document.getElementById('checkinBtn');
+      btn.textContent = '✅ YOKLAMAYA KATIL';
+      btn.className = 'checkin-btn';
+      btn.disabled = false;
+      return;
+    }
+    el.textContent = '⏳ Sonraki yoklama: ' + msToHMS(remaining);
+    setTimeout(tick, 60000);
+  }
+  const startTime = Date.now();
+  tick();
+}
+
+window.doCheckin = async function() {
+  if (!currentViewer || !streamer) return;
+  const btn = document.getElementById('checkinBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Kaydediliyor...';
+
+  try {
+    const ref = doc(db, 'users', streamer, 'attendance', currentViewer);
+    const snap = await getDoc(ref);
+    const now = new Date();
+    let newStreak = 1;
+
+    if (snap.exists()) {
+      const data = snap.data();
+      const last = data.lastCheckin ? data.lastCheckin.toDate() : null;
+      if (last) {
+        const diff = now - last;
+        if (diff < 24*60*60*1000) {
+          showMsg('Bugün zaten katıldın! 24 saatte 1 kez katılabilirsin.', 'error');
+          btn.textContent = '✔ BUGÜN KATILDIN';
+          btn.className = 'checkin-btn done';
+          return;
+        }
+        if (diff < 48*60*60*1000) {
+          newStreak = (data.streak || 0) + 1;
+        } else {
+          newStreak = 1; // streak kırıldı
+        }
+      }
+    }
+
+    await setDoc(ref, {
+      streak: newStreak,
+      lastCheckin: serverTimestamp(),
+      username: currentViewer
+    }, { merge: true });
+
+    // Bildirim gönder
+    await setDoc(doc(db, 'users', streamer, 'notifications', Date.now().toString()), {
+      type: 'checkin',
+      viewer: currentViewer,
+      streak: newStreak,
+      role: getRole(newStreak, roles),
+      timestamp: serverTimestamp()
+    });
+
+    document.getElementById('myStreakNum').textContent = newStreak;
+    document.getElementById('myRoleBadge').textContent = getRole(newStreak, roles);
+    btn.textContent = '✔ BUGÜN KATILDIN';
+    btn.className = 'checkin-btn done';
+    btn.disabled = true;
+    startCountdown(24*60*60*1000);
+
+    const msgs = [
+      `🔥 ${newStreak} günlük streak! Harika!`,
+      `✅ Yoklamaya katıldın! Streak: ${newStreak} 🔥`,
+      newStreak >= 7 ? `🏆 ${newStreak} gün! ${getRole(newStreak, roles)} rolün var!` : `✅ Streak: ${newStreak} gün!`
+    ];
+    showMsg(msgs[Math.min(newStreak > 6 ? 2 : newStreak > 1 ? 1 : 0, 2)], 'success');
+
+    loadLeaderboard();
+  } catch(e) {
+    showMsg('Hata: ' + e.message, 'error');
+    btn.textContent = '✅ YOKLAMAYA KATIL';
+    btn.disabled = false;
+  }
+};
+
+// Auth kontrolü
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    document.getElementById('loginPrompt').style.display = 'block';
+    document.getElementById('myStreakBox').style.display = 'none';
+  } else {
+    currentViewer = localStorage.getItem('dp_current');
+    if (currentViewer) {
+      document.getElementById('loginPrompt').style.display = 'none';
+      document.getElementById('myStreakBox').style.display = 'block';
+      await loadMyStreak(currentViewer);
+    }
+  }
+});
+
+loadStreamerInfo();
+loadLeaderboard();
+</script>
+</body>
+</html>

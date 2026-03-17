@@ -1,0 +1,158 @@
+<!-- Bu kodu dashboard.html'de tab-donate div'inden hemen SONRA ekle -->
+
+<!-- ROLLER SEKMESİ — nav-tabs div'ine bu tab'ı ekle: -->
+<!--
+  <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller</div>
+-->
+
+<!-- Ve bu panel'i diğer tab-panel'lerin sonuna ekle: -->
+<div id="tab-roles" class="tab-panel">
+  <div class="groupbox">
+    <span class="groupbox-title">🏅 Streak Rolleri</span>
+    <div class="alert-box">
+      <div class="alert-icon">💡</div>
+      <div class="alert-msg">
+        Seyircilerin streak'leri büyüdükçe özel roller alır. Her rol için minimum streak ve isim belirle.
+      </div>
+    </div>
+
+    <div id="rolesContainer"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="retro-btn" onclick="addRole()">+ Rol Ekle</button>
+      <button class="retro-btn primary" onclick="saveRoles()">💾 Rolleri Kaydet</button>
+    </div>
+    <div id="rolesSaved" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Roller kaydedildi!</div>
+  </div>
+
+  <div class="groupbox">
+    <span class="groupbox-title">🔗 OBS Linkleri</span>
+    <div class="form-row">
+      <label class="form-label">📊 Leaderboard Overlay (OBS Browser Source):</label>
+      <div class="url-box">
+        <div class="url-display" id="overlayUrl" style="font-size:11px"></div>
+        <button class="retro-btn" onclick="copyOverlayUrl()">📋 Kopyala</button>
+      </div>
+      <div style="font-size:11px;color:#555;margin-top:4px">OBS → Sources → Browser Source → bu URL'yi yapıştır. Genişlik: 340, Yükseklik: 400</div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <label class="form-label">🔔 Bildirim Overlay (OBS Browser Source):</label>
+      <div class="url-box">
+        <div class="url-display" id="alertUrl" style="font-size:11px"></div>
+        <button class="retro-btn" onclick="copyAlertUrl()">📋 Kopyala</button>
+      </div>
+      <div style="font-size:11px;color:#555;margin-top:4px">OBS → Sources → Browser Source → bu URL'yi yapıştır. Genişlik: 600, Yükseklik: 180</div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <label class="form-label">✅ Yoklama Sayfası (Seyircilere ver):</label>
+      <div class="url-box">
+        <div class="url-display" id="attendUrl" style="font-size:11px"></div>
+        <button class="retro-btn" onclick="copyAttendUrl()">📋 Kopyala</button>
+      </div>
+      <div style="font-size:11px;color:#555;margin-top:4px">Bu linki yayın açıklamasına veya chat'e yaz.</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.role-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.role-row input { font-family: var(--font-main); font-size: 12px; }
+.role-min { width: 70px !important; }
+.role-icon { width: 50px !important; text-align: center; }
+.role-name { flex: 1 !important; min-width: 120px; }
+.remove-role {
+  background: #ffeeee;
+  border: 1px solid #cc4444;
+  color: #cc4444;
+  cursor: pointer;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-family: var(--font-main);
+}
+</style>
+
+<script>
+// Rol verilerini tut
+let rolesData = [];
+
+function renderRoles() {
+  const container = document.getElementById('rolesContainer');
+  if (rolesData.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">Henüz rol yok. "+ Rol Ekle" ile başla.</div>';
+    return;
+  }
+  container.innerHTML = `
+    <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:4px;font-weight:bold">
+      <div style="width:70px">Min. Streak</div>
+      <div style="width:50px">İkon</div>
+      <div style="flex:1">Rol İsmi</div>
+      <div style="width:60px"></div>
+    </div>` +
+    rolesData.map((r, i) => `
+      <div class="role-row">
+        <input class="retro-input role-min" type="number" min="1" value="${r.minStreak}"
+               onchange="rolesData[${i}].minStreak = parseInt(this.value)||1" placeholder="7">
+        <input class="retro-input role-icon" type="text" value="${r.icon}"
+               onchange="rolesData[${i}].icon = this.value" placeholder="🔥">
+        <input class="retro-input role-name" type="text" value="${r.name}"
+               onchange="rolesData[${i}].name = this.value" placeholder="Haftalık Kahraman">
+        <button class="remove-role" onclick="removeRole(${i})">✕ Sil</button>
+      </div>`
+    ).join('');
+}
+
+window.addRole = function() {
+  rolesData.push({ minStreak: rolesData.length === 0 ? 7 : (rolesData[rolesData.length-1].minStreak + 7), icon: '🔥', name: 'Yeni Rol' });
+  renderRoles();
+};
+
+window.removeRole = function(i) {
+  rolesData.splice(i, 1);
+  renderRoles();
+};
+
+window.saveRoles = async function() {
+  if (!currentUser) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser), { roles: rolesData });
+    document.getElementById('rolesSaved').style.display = 'block';
+    setTimeout(() => document.getElementById('rolesSaved').style.display = 'none', 2000);
+    setStatus('Roller kaydedildi ✔');
+  } catch(e) { alert('Hata: ' + e.message); }
+};
+
+window.copyOverlayUrl = function() {
+  const url = document.getElementById('overlayUrl').textContent;
+  navigator.clipboard.writeText(url).catch(() => prompt('Kopyala:', url));
+  setStatus('Kopyalandı ✔');
+};
+window.copyAlertUrl = function() {
+  const url = document.getElementById('alertUrl').textContent;
+  navigator.clipboard.writeText(url).catch(() => prompt('Kopyala:', url));
+  setStatus('Kopyalandı ✔');
+};
+window.copyAttendUrl = function() {
+  const url = document.getElementById('attendUrl').textContent;
+  navigator.clipboard.writeText(url).catch(() => prompt('Kopyala:', url));
+  setStatus('Kopyalandı ✔');
+};
+
+// Sayfa yüklenince rolleri de çek — dashboard.html'deki onAuthStateChanged içine ekle:
+// const savedRoles = snap.data().roles || [];
+// rolesData = savedRoles;
+// renderRoles();
+// setOBSUrls(username);
+
+function setOBSUrls(user) {
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
+  document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user;
+  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user;
+  document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
+}
+</script>
