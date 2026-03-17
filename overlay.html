@@ -1,226 +1,86 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Streak Leaderboard</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
-
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: transparent;
-  overflow: hidden;
-  font-family: 'Share Tech Mono', monospace;
-  width: 340px;
-  padding: 12px;
-}
-
-.lb-panel {
-  background: rgba(0, 0, 60, 0.88);
-  border: 2px solid #4488ff;
-  box-shadow: 0 0 20px rgba(0,100,255,0.3), inset 0 0 20px rgba(0,0,60,0.5);
-}
-
-.lb-header {
-  background: linear-gradient(90deg, #000080, #1084d0);
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid #4488ff;
-}
-.lb-title {
-  font-family: 'VT323', monospace;
-  font-size: 22px;
-  color: #ffffff;
-  letter-spacing: 2px;
-  flex: 1;
-}
-.lb-streamer {
-  font-size: 11px;
-  color: #aaccff;
-}
-
-.lb-body { padding: 6px 0; }
-
-.lb-row {
-  display: flex;
-  align-items: center;
-  padding: 5px 10px;
-  gap: 8px;
-  border-bottom: 1px solid rgba(68,136,255,0.15);
-  animation: fadeIn 0.4s ease-out;
-}
-.lb-row:last-child { border-bottom: none; }
-
-@keyframes fadeIn {
-  from { opacity:0; transform:translateX(-10px); }
-  to   { opacity:1; transform:translateX(0); }
-}
-
-.lb-row.top1 { background: rgba(255,215,0,0.12); }
-.lb-row.top2 { background: rgba(192,192,192,0.08); }
-.lb-row.top3 { background: rgba(205,127,50,0.08); }
-
-.rank {
-  font-family: 'VT323', monospace;
-  font-size: 20px;
-  min-width: 28px;
-  text-align: center;
-}
-.rank.r1 { color: #ffd700; }
-.rank.r2 { color: #c0c0c0; }
-.rank.r3 { color: #cd7f32; }
-.rank.rn { color: #6688aa; }
-
-.name {
-  flex: 1;
-  font-size: 13px;
-  color: #ddeeff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.role-tag {
-  font-size: 10px;
-  color: #88aaff;
-  background: rgba(68,136,255,0.15);
-  padding: 1px 5px;
-  border: 1px solid rgba(68,136,255,0.3);
-  white-space: nowrap;
-  max-width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.streak-num {
-  font-family: 'VT323', monospace;
-  font-size: 26px;
-  min-width: 44px;
-  text-align: right;
-  color: #ffdd00;
-}
-.streak-fire { font-size: 14px; }
-
-.lb-footer {
-  padding: 5px 10px;
-  font-size: 10px;
-  color: #445566;
-  text-align: right;
-  border-top: 1px solid rgba(68,136,255,0.2);
-}
-
-.empty-msg {
-  text-align: center;
-  color: #445566;
-  font-size: 12px;
-  padding: 20px;
-}
-
-/* Yeni streak animasyonu */
-.new-entry {
-  animation: highlight 2s ease-out;
-}
-@keyframes highlight {
-  0%,20% { background: rgba(255,200,0,0.3); }
-  100%    { background: transparent; }
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:transparent;overflow:hidden;font-family:'Share Tech Mono',monospace;width:340px;padding:12px}
+.panel{background:rgba(0,0,50,.88);border:2px solid #4488ff;box-shadow:0 0 20px rgba(0,100,255,.3)}
+.header{background:linear-gradient(90deg,#000080,#1084d0);padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #4488ff}
+.title{font-family:'VT323',monospace;font-size:22px;color:#fff;letter-spacing:2px;flex:1}
+.handle{font-size:11px;color:#aaccff}
+.body{padding:4px 0}
+.row{display:flex;align-items:center;padding:5px 10px;gap:8px;border-bottom:1px solid rgba(68,136,255,.15);animation:fadeIn .4s ease-out}
+.row:last-child{border-bottom:none}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.row.r1{background:rgba(255,215,0,.12)}.row.r2{background:rgba(192,192,192,.08)}.row.r3{background:rgba(205,127,50,.08)}
+.rank{font-family:'VT323',monospace;font-size:20px;min-width:28px;text-align:center}
+.r1 .rank{color:#ffd700}.r2 .rank{color:#c0c0c0}.r3 .rank{color:#cd7f32}.rank.rn{color:#6688aa}
+.uname{flex:1;font-size:13px;color:#ddeeff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.role{font-size:10px;color:#88aaff;background:rgba(68,136,255,.15);border:1px solid rgba(68,136,255,.3);padding:1px 5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.streak{font-family:'VT323',monospace;font-size:26px;min-width:44px;text-align:right;color:#ffdd00}
+.footer{padding:4px 10px;font-size:10px;color:#445566;text-align:right;border-top:1px solid rgba(68,136,255,.2)}
+.empty{text-align:center;color:#445566;font-size:12px;padding:20px}
 </style>
 </head>
 <body>
-<div class="lb-panel">
-  <div class="lb-header">
+<div class="panel">
+  <div class="header">
     <div>🔥</div>
-    <div class="lb-title">STREAK SIRASI</div>
-    <div class="lb-streamer" id="streamerLabel">@...</div>
+    <div class="title">STREAK BOARD</div>
+    <div class="handle" id="handle">@...</div>
   </div>
-  <div class="lb-body" id="lbBody">
-    <div class="empty-msg">Yükleniyor...</div>
-  </div>
-  <div class="lb-footer" id="lbFooter">Güncelleniyor...</div>
+  <div class="body" id="body"><div class="empty">Loading...</div></div>
+  <div class="footer" id="footer">Live</div>
 </div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",authDomain:"dersprogram-31d2d.firebaseapp.com",projectId:"dersprogram-31d2d",storageBucket:"dersprogram-31d2d.firebasestorage.app",messagingSenderId:"910271309823",appId:"1:910271309823:web:87684f55e386e0ef5e29ca"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const streamer=new URLSearchParams(window.location.search).get('user');
+let roles=[];
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
-  authDomain: "dersprogram-31d2d.firebaseapp.com",
-  projectId: "dersprogram-31d2d",
-  storageBucket: "dersprogram-31d2d.firebasestorage.app",
-  messagingSenderId: "910271309823",
-  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const streamer = new URLSearchParams(window.location.search).get('user');
-let roles = [];
-let prevTop = [];
-
-function getRole(streak, rolesArr) {
-  if (!rolesArr || rolesArr.length === 0) return '👤 İzleyici';
-  const sorted = [...rolesArr].sort((a,b) => b.minStreak - a.minStreak);
-  for (const r of sorted) {
-    if (streak >= r.minStreak) return r.icon + ' ' + r.name;
-  }
-  return '👤 İzleyici';
+function getRole(streak){
+  if(!roles.length) return '👤 Viewer';
+  const s=[...roles].sort((a,b)=>b.minStreak-a.minStreak);
+  for(const r of s) if(streak>=r.minStreak) return r.icon+' '+r.name;
+  return '👤 Viewer';
 }
 
-async function loadRoles() {
-  if (!streamer) return;
-  const snap = await getDoc(doc(db, 'users', streamer));
-  if (snap.exists()) {
-    roles = snap.data().roles || [];
-    const p = snap.data().profile || {};
-    document.getElementById('streamerLabel').textContent = '@' + streamer;
+async function loadRoles(){
+  if(!streamer) return;
+  const snap=await getDoc(doc(db,'users',streamer));
+  if(snap.exists()){
+    roles=snap.data().roles||[];
+    document.getElementById('handle').textContent='@'+streamer;
   }
 }
 
-function renderLeaderboard(list) {
-  const body = document.getElementById('lbBody');
-  const rankClass = ['r1','r2','r3'];
-  const rankIcon = ['🥇','🥈','🥉'];
+const medals=['🥇','🥈','🥉'];
+const rankCls=['r1','r2','r3'];
 
-  if (list.length === 0) {
-    body.innerHTML = '<div class="empty-msg">Henüz kimse yok!</div>';
-    return;
-  }
-
-  const top = list.slice(0, 10);
-  body.innerHTML = top.map((u, i) => {
-    const isNew = !prevTop.includes(u.username);
-    const role = getRole(u.streak, roles);
-    return `<div class="lb-row ${i<3?'top'+(i+1):''} ${isNew?'new-entry':''}">
-      <div class="rank ${rankClass[i]||'rn'}">${rankIcon[i]||'#'+(i+1)}</div>
-      <div class="name">${u.username}</div>
-      <div class="role-tag">${role}</div>
-      <div class="streak-num">${u.streak}<span class="streak-fire">🔥</span></div>
-    </div>`;
-  }).join('');
-
-  prevTop = top.map(u => u.username);
-  document.getElementById('lbFooter').textContent =
-    'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
-}
-
-if (!streamer) {
-  document.getElementById('lbBody').innerHTML =
-    '<div class="empty-msg" style="color:#aa4444">URL\'ye ?user=KULLANICI_ADI ekle!</div>';
+if(!streamer){
+  document.getElementById('body').innerHTML='<div class="empty" style="color:#aa4444">Add ?user=USERNAME to URL</div>';
 } else {
-  loadRoles().then(() => {
-    // Gerçek zamanlı dinle
-    onSnapshot(collection(db, 'users', streamer, 'attendance'), snap => {
-      const list = [];
-      snap.forEach(d => {
-        const data = d.data();
-        if (data.streak > 0) list.push({ username: d.id, streak: data.streak });
-      });
-      list.sort((a,b) => b.streak - a.streak);
-      renderLeaderboard(list);
+  loadRoles().then(()=>{
+    onSnapshot(collection(db,'users',streamer,'attendance'),snap=>{
+      const list=[];
+      snap.forEach(d=>{const data=d.data();if((data.streak||0)>0) list.push({name:data.displayName||d.id,streak:data.streak});});
+      list.sort((a,b)=>b.streak-a.streak);
+      const top=list.slice(0,10);
+      if(!top.length){document.getElementById('body').innerHTML='<div class="empty">No entries yet!</div>';return;}
+      document.getElementById('body').innerHTML=top.map((u,i)=>`
+        <div class="row ${rankCls[i]||''}">
+          <div class="rank ${i>=3?'rn':''}">${medals[i]||'#'+(i+1)}</div>
+          <div class="uname">${u.name}</div>
+          <div class="role">${getRole(u.streak)}</div>
+          <div class="streak">${u.streak}🔥</div>
+        </div>`).join('');
+      document.getElementById('footer').textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
     });
   });
 }

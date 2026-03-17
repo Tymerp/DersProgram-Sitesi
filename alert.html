@@ -1,246 +1,101 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Streak Alert</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: transparent;
-  overflow: hidden;
-  font-family: 'Share Tech Mono', monospace;
-  width: 600px;
-  height: 180px;
-}
-
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
-
-.alert-container {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  pointer-events: none;
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:transparent;overflow:hidden;width:600px;height:180px}
+.container{position:fixed;top:20px;left:20px;right:20px;pointer-events:none}
+.card{
+  background:linear-gradient(135deg,#000080,#1084d0);
+  border:3px solid #fff;
+  padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  opacity:0;transform:translateY(-60px) scale(0.8);
+  box-shadow:4px 4px 0 rgba(0,0,0,0.5),0 0 30px rgba(0,100,255,0.35);
 }
-
-.alert-card {
-  background: linear-gradient(135deg, #000080, #1084d0);
-  border: 3px solid #ffffff;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  opacity: 0;
-  transform: translateY(-60px) scale(0.8);
-  transition: none;
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5), 0 0 30px rgba(0,128,255,0.4);
-}
-
-.alert-card.show {
-  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-             slideOut 0.4s ease-in 4.6s forwards;
-}
-
-@keyframes slideIn {
-  0%   { opacity:0; transform: translateY(-60px) scale(0.8); }
-  100% { opacity:1; transform: translateY(0) scale(1); }
-}
-@keyframes slideOut {
-  0%   { opacity:1; transform: translateY(0) scale(1); }
-  100% { opacity:0; transform: translateY(-40px) scale(0.9); }
-}
-
-.alert-icon {
-  font-size: 52px;
-  line-height: 1;
-  animation: bounce 0.6s ease-in-out 0.4s 3;
-  flex-shrink: 0;
-}
-@keyframes bounce {
-  0%,100% { transform: scale(1); }
-  50%      { transform: scale(1.3); }
-}
-
-.alert-info { flex: 1; }
-
-.alert-name {
-  font-family: 'VT323', monospace;
-  font-size: 32px;
-  color: #ffffff;
-  line-height: 1.1;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-}
-
-.alert-msg {
-  font-size: 14px;
-  color: #aaddff;
-  margin-top: 2px;
-}
-
-.alert-streak {
-  font-family: 'VT323', monospace;
-  font-size: 56px;
-  color: #ffdd00;
-  line-height: 1;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-  animation: pulse 0.5s ease-in-out 0.4s infinite alternate;
-  flex-shrink: 0;
-  text-align: center;
-  min-width: 80px;
-}
-@keyframes pulse {
-  from { transform: scale(1); color: #ffdd00; }
-  to   { transform: scale(1.1); color: #ff8800; }
-}
-
-.alert-role {
-  display: inline-block;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.4);
-  color: white;
-  padding: 2px 10px;
-  font-size: 13px;
-  margin-top: 4px;
-  letter-spacing: 1px;
-}
-
-/* Confetti efekti */
-.confetti {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.confetti-piece {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  opacity: 0;
-}
+.card.show{animation:slideIn .4s cubic-bezier(.34,1.56,.64,1) forwards, slideOut .4s ease-in 4.6s forwards}
+@keyframes slideIn{0%{opacity:0;transform:translateY(-60px) scale(.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slideOut{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(.9)}}
+.icon{font-size:50px;line-height:1;flex-shrink:0;animation:bounce .5s ease-in-out .4s 3}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.info{flex:1}
+.name{font-family:'VT323',monospace;font-size:34px;color:#fff;line-height:1.1;text-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.sub{font-size:13px;color:#aaddff;margin-top:2px}
+.role{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:2px 10px;font-size:12px;margin-top:4px;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.streak{font-family:'VT323',monospace;font-size:60px;color:#ffdd00;line-height:1;text-shadow:2px 2px 0 rgba(0,0,0,.5);flex-shrink:0;text-align:center;min-width:80px;animation:pulse .5s ease-in-out .4s infinite alternate}
+@keyframes pulse{from{transform:scale(1);color:#ffdd00}to{transform:scale(1.1);color:#ff8800}}
+.fire{font-size:18px;color:#ffaa00;text-align:center}
+.confetti{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
 </style>
 </head>
 <body>
 <div class="confetti" id="confetti"></div>
-<div class="alert-container">
-  <div class="alert-card" id="alertCard">
-    <div class="alert-icon" id="alertIcon">✅</div>
-    <div class="alert-info">
-      <div class="alert-name" id="alertName">Kullanıcı</div>
-      <div class="alert-msg" id="alertMsg">yoklamaya katıldı!</div>
-      <div class="alert-role" id="alertRole">👤 İzleyici</div>
+<div class="container">
+  <div class="card" id="card">
+    <div class="icon" id="icon">✅</div>
+    <div class="info">
+      <div class="name" id="name">Viewer</div>
+      <div class="sub" id="sub">checked in!</div>
+      <div class="role" id="role">👤 Viewer</div>
     </div>
-    <div class="alert-streak">
-      <div id="alertStreakNum">1</div>
-      <div style="font-size:20px;color:#ffaa00">🔥</div>
+    <div class="streak">
+      <div id="streakNum">1</div>
+      <div class="fire">🔥</div>
     </div>
   </div>
 </div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy, limit, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",authDomain:"dersprogram-31d2d.firebaseapp.com",projectId:"dersprogram-31d2d",storageBucket:"dersprogram-31d2d.firebasestorage.app",messagingSenderId:"910271309823",appId:"1:910271309823:web:87684f55e386e0ef5e29ca"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const streamer=new URLSearchParams(window.location.search).get('user');
+let queue=[],showing=false;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
-  authDomain: "dersprogram-31d2d.firebaseapp.com",
-  projectId: "dersprogram-31d2d",
-  storageBucket: "dersprogram-31d2d.firebasestorage.app",
-  messagingSenderId: "910271309823",
-  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const streamer = new URLSearchParams(window.location.search).get('user');
-if (!streamer) {
-  document.body.innerHTML = '<div style="color:white;padding:20px;font-family:monospace">URL\'ye ?user=KULLANICI_ADI ekle!</div>';
-}
-
-let alertQueue = [];
-let isShowing = false;
-
-function launchConfetti() {
-  const container = document.getElementById('confetti');
-  container.innerHTML = '';
-  const colors = ['#ff0000','#ffdd00','#00ff00','#0088ff','#ff00ff','#ff8800'];
-  for (let i = 0; i < 40; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.cssText = `
-      left: ${Math.random()*100}%;
-      background: ${colors[Math.floor(Math.random()*colors.length)]};
-      border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
-      animation: fall ${0.8+Math.random()*1.5}s ease-in ${Math.random()*0.5}s forwards;
-    `;
-    container.appendChild(piece);
-  }
-  const style = document.createElement('style');
-  style.textContent = `@keyframes fall {
-    0%   { opacity:1; transform: translateY(-20px) rotate(0deg); }
-    100% { opacity:0; transform: translateY(${150+Math.random()*100}px) rotate(${360+Math.random()*360}deg); }
-  }`;
-  container.appendChild(style);
-}
-
-function showAlert(data) {
-  const card = document.getElementById('alertCard');
-  document.getElementById('alertName').textContent = data.viewer;
-  document.getElementById('alertStreakNum').textContent = data.streak;
-  document.getElementById('alertRole').textContent = data.role || '👤 İzleyici';
-
-  const msgs = {
-    1: 'ilk kez yoklamaya katıldı! 🎉',
-    7: '7 günlük streak yaptı! 🏆',
-    30: '30 günlük devam! 🔥🔥🔥',
-  };
-  document.getElementById('alertMsg').textContent =
-    msgs[data.streak] || `${data.streak} günlük streak ile yoklamaya katıldı!`;
-
-  // İkon streak büyüklüğüne göre
-  const icon = data.streak >= 30 ? '🏆' : data.streak >= 7 ? '🔥' : '✅';
-  document.getElementById('alertIcon').textContent = icon;
-
-  card.className = 'alert-card show';
-  if (data.streak >= 3) launchConfetti();
-
-  isShowing = true;
-  setTimeout(() => {
-    card.className = 'alert-card';
-    isShowing = false;
-    setTimeout(processQueue, 600);
-  }, 5000);
-}
-
-function processQueue() {
-  if (alertQueue.length > 0 && !isShowing) {
-    showAlert(alertQueue.shift());
+function confetti(){
+  const c=document.getElementById('confetti'); c.innerHTML='';
+  const colors=['#ff0000','#ffdd00','#00ff00','#0088ff','#ff00ff','#ff8800'];
+  const style=document.createElement('style');
+  style.textContent='@keyframes fall{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(160px) rotate(720deg)}}';
+  c.appendChild(style);
+  for(let i=0;i<36;i++){
+    const p=document.createElement('div');
+    p.style.cssText=`position:absolute;width:8px;height:8px;left:${Math.random()*100}%;background:${colors[i%colors.length]};border-radius:${Math.random()>.5?'50%':'0'};animation:fall ${.8+Math.random()*1.4}s ease-in ${Math.random()*.5}s forwards`;
+    c.appendChild(p);
   }
 }
 
-// Firestore'dan gerçek zamanlı bildirim dinle
-if (streamer) {
-  const notifRef = collection(db, 'users', streamer, 'notifications');
-  onSnapshot(notifRef, async (snap) => {
-    const newDocs = [];
-    snap.docChanges().forEach(change => {
-      if (change.type === 'added') {
-        newDocs.push({ id: change.doc.id, ...change.doc.data() });
-      }
-    });
+function show(data){
+  document.getElementById('name').textContent=data.viewer;
+  document.getElementById('streakNum').textContent=data.streak;
+  document.getElementById('role').textContent=data.role||'👤 Viewer';
+  document.getElementById('icon').textContent=data.streak>=30?'🏆':data.streak>=7?'🔥':'✅';
+  const subs={1:'checked in for the first time! 🎉',7:'hit a 7-day streak! 🔥',30:'reached 30 days! LEGENDARY 🏆'};
+  document.getElementById('sub').textContent=subs[data.streak]||`checked in! ${data.streak}-day streak! 🔥`;
+  const card=document.getElementById('card');
+  card.className='card show';
+  if(data.streak>=3) confetti();
+  showing=true;
+  setTimeout(()=>{card.className='card';showing=false;setTimeout(next,600)},5000);
+}
+function next(){if(queue.length&&!showing) show(queue.shift());}
 
-    // Bildirimleri sıraya ekle ve Firestore'dan sil
-    for (const notif of newDocs) {
-      if (notif.type === 'checkin') {
-        alertQueue.push(notif);
-        // Okundu → sil
-        try {
-          await deleteDoc(doc(db, 'users', streamer, 'notifications', notif.id));
-        } catch(e) {}
+if(streamer){
+  onSnapshot(collection(db,'users',streamer,'notifications'),async snap=>{
+    for(const ch of snap.docChanges()){
+      if(ch.type==='added'&&ch.doc.data().type==='checkin'){
+        queue.push({...ch.doc.data(),id:ch.doc.id});
+        try{await deleteDoc(doc(db,'users',streamer,'notifications',ch.doc.id))}catch(e){}
       }
     }
-    processQueue();
+    next();
   });
+} else {
+  document.body.innerHTML='<div style="color:white;padding:20px;font-family:monospace">Add ?user=USERNAME to the URL</div>';
 }
 </script>
 </body>

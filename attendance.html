@@ -1,182 +1,152 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yoklama</title>
+<title>Attendance</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.attend-wrap {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: var(--font-main);
-}
-.attend-box {
-  background: var(--win-bg);
-  border-top: 2px solid var(--win-light);
-  border-left: 2px solid var(--win-light);
-  border-right: 2px solid var(--win-darker);
-  border-bottom: 2px solid var(--win-darker);
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 16px;
-}
-.streak-display {
-  font-family: var(--font-display);
-  font-size: 64px;
-  color: var(--accent);
-  line-height: 1;
-  margin: 8px 0;
-}
-.streak-label {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 12px;
-}
-.role-badge {
-  display: inline-block;
-  background: var(--accent);
-  color: white;
-  padding: 3px 12px;
-  font-size: 13px;
-  margin-bottom: 16px;
-  letter-spacing: 1px;
-}
-.checkin-btn {
-  display: block;
-  width: 100%;
-  background: var(--win-bg);
-  border-top: 3px solid var(--win-light);
-  border-left: 3px solid var(--win-light);
-  border-right: 3px solid var(--win-darker);
-  border-bottom: 3px solid var(--win-darker);
-  padding: 14px;
-  font-family: var(--font-display);
-  font-size: 28px;
-  cursor: pointer;
-  color: var(--text);
-  letter-spacing: 2px;
-  transition: none;
-}
-.checkin-btn:active {
-  border-top: 3px solid var(--win-darker);
-  border-left: 3px solid var(--win-darker);
-  border-right: 3px solid var(--win-light);
-  border-bottom: 3px solid var(--win-light);
-  padding: 15px 14px 13px 15px;
-}
-.checkin-btn:disabled {
-  color: #888;
-  cursor: not-allowed;
-  background: #ddd;
-}
-.checkin-btn.done {
-  background: #e0ffe0;
-  color: #006400;
-  border-top: 3px solid var(--win-darker);
-  border-left: 3px solid var(--win-darker);
-  border-right: 3px solid var(--win-light);
-  border-bottom: 3px solid var(--win-light);
-}
-.countdown {
-  font-size: 12px;
-  color: #666;
-  margin-top: 8px;
-}
-.login-prompt {
-  background: #ffffd0;
-  border: 1px solid #888;
-  padding: 12px;
-  font-size: 12px;
-  text-align: center;
-  margin-bottom: 12px;
-}
-.login-prompt a { color: #000080; font-weight: bold; }
-
-.leaderboard-mini {
-  margin-top: 16px;
-}
-.lb-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border-bottom: 1px solid #ddd;
-  font-size: 12px;
-}
-.lb-row:nth-child(even) { background: #f8f8f8; }
-.lb-rank { font-weight: bold; color: var(--accent); min-width: 24px; font-size: 14px; }
-.lb-name { flex: 1; }
-.lb-streak { font-family: var(--font-display); font-size: 18px; color: var(--accent); min-width: 36px; text-align: right; }
-.lb-role { font-size: 10px; background: var(--accent2); color: white; padding: 1px 5px; }
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  color: var(--accent);
-  border-bottom: 1px solid var(--win-dark);
-  padding-bottom: 4px;
-  margin-bottom: 12px;
-}
-.msg-box {
-  padding: 10px;
-  font-size: 12px;
-  border: 1px solid;
-  margin-bottom: 10px;
-  text-align: center;
-}
-.msg-success { background: #e0ffe0; border-color: #006400; color: #006400; }
-.msg-error   { background: #ffe0e0; border-color: #aa0000; color: #aa0000; }
-.msg-info    { background: #e0e8ff; border-color: #000080; color: #000080; }
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+*{box-sizing:border-box}
+body{background:#c0c0c0;padding:12px;min-height:100vh;font-family:'Share Tech Mono',monospace}
+.wrap{max-width:480px;margin:0 auto}
+.card{background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #404040;border-bottom:2px solid #404040;margin-bottom:12px}
+.card-title{background:linear-gradient(90deg,#000080,#1084d0);padding:5px 10px;color:#fff;font-size:13px;font-weight:bold;display:flex;align-items:center;gap:6px}
+.card-body{background:#fff;border-top:1px solid #808080;padding:16px}
+.streak-num{font-family:'VT323',monospace;font-size:88px;color:#000080;line-height:1;text-align:center;margin:4px 0}
+.streak-sub{text-align:center;font-size:12px;color:#555;margin-bottom:10px}
+.role-pill{display:block;width:fit-content;margin:0 auto 16px;background:#000080;color:#fff;padding:4px 18px;font-size:14px;letter-spacing:1px;text-align:center}
+.checkin-btn{display:block;width:100%;background:#c0c0c0;border-top:3px solid #fff;border-left:3px solid #fff;border-right:3px solid #404040;border-bottom:3px solid #404040;padding:14px;font-family:'VT323',monospace;font-size:30px;cursor:pointer;letter-spacing:2px;color:#000;text-align:center}
+.checkin-btn:active{border-top:3px solid #404040;border-left:3px solid #404040;border-right:3px solid #fff;border-bottom:3px solid #fff;padding:15px 14px 13px 15px}
+.checkin-btn.done{background:#d0ffd0;color:#006400;border-top:3px solid #404040;border-left:3px solid #404040;border-right:3px solid #fff;border-bottom:3px solid #fff}
+.checkin-btn:disabled{cursor:not-allowed;opacity:.75}
+.countdown{font-size:11px;color:#666;text-align:center;margin-top:6px;min-height:16px}
+.fi{margin-bottom:10px}
+.fi label{display:block;font-size:12px;margin-bottom:3px;color:#111}
+.fi input{width:100%;border-top:1px solid #404040;border-left:1px solid #404040;border-right:1px solid #fff;border-bottom:1px solid #fff;background:#fff;padding:5px 8px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none}
+.fi input:focus{outline:1px dotted #000080}
+.rbtn{background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #404040;border-bottom:2px solid #404040;padding:4px 18px;font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer}
+.rbtn:active{border-top:2px solid #404040;border-left:2px solid #404040;border-right:2px solid #fff;border-bottom:2px solid #fff;padding:5px 17px 3px 19px}
+.rbtn.primary{outline:1px dotted #000;outline-offset:-4px}
+.msg{padding:8px 10px;font-size:12px;border:1px solid;margin-bottom:8px;text-align:center;display:none}
+.msg.ok{background:#e0ffe0;border-color:#006400;color:#006400}
+.msg.err{background:#ffe0e0;border-color:#aa0000;color:#aa0000}
+.msg.info{background:#e0e8ff;border-color:#000080;color:#000080}
+.tabs{display:flex;border-bottom:2px solid #808080;margin-bottom:0}
+.tab{padding:5px 14px;font-size:12px;cursor:pointer;background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #404040;border-bottom:none;margin-right:2px;position:relative;bottom:-2px}
+.tab.active{background:#fff;z-index:1;border-bottom:2px solid #fff}
+.pane{display:none;padding:14px 0}
+.pane.active{display:block}
+.lb-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-bottom:1px solid #e0e0e0;font-size:12px}
+.lb-row:nth-child(even){background:#f4f4f8}
+.lb-rank{font-weight:bold;color:#000080;min-width:26px;font-size:14px}
+.lb-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-role{font-size:10px;background:#008080;color:#fff;padding:1px 5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.lb-streak{font-family:'VT323',monospace;font-size:22px;color:#000080;min-width:48px;text-align:right}
+.guest-note{font-size:10px;color:#888;text-align:center;margin-top:4px}
+.divider{text-align:center;font-size:11px;color:#888;margin:12px 0;display:flex;align-items:center;gap:8px}
+.divider::before,.divider::after{content:'';flex:1;border-top:1px solid #ccc}
+.user-bar{display:flex;align-items:center;gap:8px;background:#e8e8f0;padding:6px 10px;font-size:12px;margin-bottom:10px;border:1px solid #ccc}
+.user-bar .uname{font-weight:bold;color:#000080;flex:1}
 </style>
 </head>
-<body style="background:#c0c0c0;padding:0;min-height:100vh">
-<div class="attend-wrap">
-
-  <!-- Üst bilgi -->
-  <div style="text-align:center;margin-bottom:12px">
-    <div class="site-logo" style="font-size:20px;margin-bottom:4px">📅 <span id="streamerName">...</span></div>
-    <div style="font-size:11px;color:#555">Yoklama & Streak Takibi</div>
+<body>
+<div class="wrap">
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-family:'VT323',monospace;font-size:24px;color:#000080">📅 <span id="streamerName">...</span></div>
+    <div style="font-size:11px;color:#555">Attendance & Streak Tracker</div>
   </div>
 
-  <!-- Giriş yapılmamışsa -->
-  <div id="loginPrompt" class="login-prompt" style="display:none">
-    ⚠ Yoklamaya katılmak için <a href="index.html">giriş yapman</a> gerekiyor!
-    <br><span style="font-size:10px;color:#888">Hesabın yoksa kayıt ol, ücretsiz!</span>
+  <!-- Logged in bar -->
+  <div id="userBar" class="user-bar" style="display:none">
+    <div>👤</div>
+    <div class="uname" id="userBarName"></div>
+    <button class="rbtn" onclick="doSignOut()" style="font-size:11px;padding:2px 10px">Sign Out</button>
   </div>
 
-  <!-- Giriş yapılmışsa kendi streaki -->
-  <div id="myStreakBox" class="attend-box" style="display:none">
-    <div style="font-size:11px;color:#555;margin-bottom:4px">SENİN STREAKİN</div>
-    <div class="streak-display" id="myStreakNum">0</div>
-    <div class="streak-label">🔥 gün üst üste</div>
-    <div class="role-badge" id="myRoleBadge">Yeni Başlayan</div>
-    <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">
-      ✅ YOKLAMAYA KATIL
-    </button>
-    <div class="countdown" id="countdownText"></div>
+  <!-- MSG -->
+  <div class="msg" id="msgBox"></div>
+
+  <!-- NOT LOGGED IN: Login/Register -->
+  <div id="authSection">
+    <div class="card">
+      <div class="card-title">🔐 Join the Streak!</div>
+      <div class="card-body">
+        <div class="tabs">
+          <div class="tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Sign In</div>
+          <div class="tab" id="tab-reg-btn" onclick="switchAuthTab('register')">Register</div>
+          <div class="tab" id="tab-guest-btn" onclick="switchAuthTab('guest')">Quick Join</div>
+        </div>
+
+        <!-- SIGN IN -->
+        <div class="pane active" id="pane-login">
+          <div class="fi"><label>Username</label><input type="text" id="li-user" placeholder="your_name" autocomplete="username"></div>
+          <div class="fi"><label>Password</label><input type="password" id="li-pass" placeholder="••••••" autocomplete="current-password"></div>
+          <div id="li-err" class="msg err"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <button class="rbtn primary" onclick="doSignIn()">Sign In</button>
+          </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="pane" id="pane-register">
+          <p style="font-size:11px;color:#555;margin-bottom:10px">Create an account so your streak is saved across all devices.</p>
+          <div class="fi"><label>Choose a Username</label><input type="text" id="ri-user" placeholder="your_name" autocomplete="username" oninput="updateRegPreview()"></div>
+          <div class="fi"><label>Password</label><input type="password" id="ri-pass" placeholder="Min. 4 characters" autocomplete="new-password"></div>
+          <div class="fi"><label>Confirm Password</label><input type="password" id="ri-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+          <div id="ri-err" class="msg err"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <button class="rbtn primary" onclick="doRegister()">Create Account</button>
+          </div>
+        </div>
+
+        <!-- QUICK GUEST JOIN -->
+        <div class="pane" id="pane-guest">
+          <p style="font-size:11px;color:#555;margin-bottom:10px">Enter a name and start your streak on this device. Your streak is saved as long as you use the same browser.</p>
+          <div class="fi"><label>Your Display Name</label><input type="text" id="gi-name" placeholder="YourName" maxlength="20"></div>
+          <div id="gi-err" class="msg err"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <button class="rbtn primary" onclick="doGuestJoin()">Join as Guest</button>
+          </div>
+          <p class="guest-note">⚠ Guest streaks are tied to this browser. Clear cookies = streak lost. <br>Register for a permanent account.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Mesaj -->
-  <div id="msgBox" style="display:none"></div>
-
-  <!-- Leaderboard -->
-  <div class="section-title">🏆 Sıralama</div>
-  <div id="leaderboard" class="leaderboard-mini">
-    <div style="text-align:center;font-size:12px;color:#888;padding:12px">Yükleniyor...</div>
+  <!-- LOGGED IN: Streak + Check-in -->
+  <div id="streakSection" style="display:none">
+    <div class="card">
+      <div class="card-title">🔥 Your Streak</div>
+      <div class="card-body" style="text-align:center">
+        <div class="streak-num" id="myStreakNum">0</div>
+        <div class="streak-sub">days in a row 🔥</div>
+        <div class="role-pill" id="myRolePill">Newcomer</div>
+        <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">✅ CHECK IN TODAY</button>
+        <div class="countdown" id="countdownTxt"></div>
+      </div>
+    </div>
   </div>
 
-  <div style="text-align:center;margin-top:16px;font-size:10px;color:#888">
-    Her 24 saatte bir yoklamaya katılabilirsin.<br>
-    Streak'in kırılırsa sıfırdan başlar!
+  <!-- LEADERBOARD -->
+  <div class="card">
+    <div class="card-title">🏆 Leaderboard</div>
+    <div class="card-body" style="padding:0">
+      <div id="leaderboard" style="padding:8px 0">
+        <div style="text-align:center;font-size:12px;color:#888;padding:16px">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:10px;color:#888;margin-top:8px">
+    Check in once every 24 hours to keep your streak alive!<br>
+    Miss a day and it resets to zero.
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
@@ -187,220 +157,260 @@ const firebaseConfig = {
   appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
 };
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 const streamer = new URLSearchParams(window.location.search).get('user');
-let currentViewer = null;
+let currentViewer = null; // display name used in attendance
 let roles = [];
+let isGuest = false;
 
+// ── Helpers ──────────────────────────────────────────
 function showMsg(text, type='info') {
-  const box = document.getElementById('msgBox');
-  box.style.display = 'block';
-  box.className = 'msg-box msg-' + type;
-  box.textContent = text;
-  setTimeout(() => box.style.display = 'none', 4000);
+  const b = document.getElementById('msgBox');
+  b.textContent = text; b.className = 'msg ' + type; b.style.display = 'block';
+  setTimeout(() => b.style.display = 'none', 4000);
 }
-
-function getRole(streak, rolesArr) {
-  if (!rolesArr || rolesArr.length === 0) return '👤 İzleyici';
-  const sorted = [...rolesArr].sort((a, b) => b.minStreak - a.minStreak);
-  for (const r of sorted) {
-    if (streak >= r.minStreak) return r.icon + ' ' + r.name;
-  }
-  return '👤 İzleyici';
+function showErr(id, text) {
+  const e = document.getElementById(id); e.textContent = text; e.style.display = 'block';
+  setTimeout(() => e.style.display = 'none', 4000);
 }
-
+function getRole(streak) {
+  if (!roles.length) return '👤 Viewer';
+  const sorted = [...roles].sort((a,b) => b.minStreak - a.minStreak);
+  for (const r of sorted) if (streak >= r.minStreak) return r.icon + ' ' + r.name;
+  return '👤 Viewer';
+}
 function msToHMS(ms) {
-  const h = Math.floor(ms/3600000);
-  const m = Math.floor((ms%3600000)/60000);
-  return `${h} saat ${m} dakika`;
+  const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000);
+  return `${h}h ${m}m`;
+}
+function hashPass(pass) {
+  // Simple hash — good enough for attendance system (not banking)
+  let h = 0;
+  for (let i = 0; i < pass.length; i++) h = (Math.imul(31, h) + pass.charCodeAt(i)) | 0;
+  return 'h' + Math.abs(h).toString(36);
 }
 
+// ── Tab switching ─────────────────────────────────────
+window.switchAuthTab = name => {
+  ['login','register','guest'].forEach(n => {
+    document.getElementById('tab-'+n+'-btn').classList.toggle('active', n===name);
+    document.getElementById('pane-'+n).classList.toggle('active', n===name);
+  });
+};
+
+// ── Load streamer info & roles ────────────────────────
 async function loadStreamerInfo() {
   if (!streamer) return;
-  const snap = await getDoc(doc(db, 'users', streamer));
-  if (snap.exists()) {
-    const p = snap.data().profile || {};
-    document.getElementById('streamerName').textContent = p.name || streamer;
-    roles = snap.data().roles || [];
-  }
-}
-
-async function loadLeaderboard() {
-  const lb = document.getElementById('leaderboard');
   try {
-    const snaps = await getDocs(collection(db, 'users', streamer, 'attendance'));
-    const list = [];
-    snaps.forEach(d => {
-      const data = d.data();
-      if (data.streak > 0) {
-        list.push({ username: d.id, streak: data.streak, lastCheckin: data.lastCheckin });
-      }
-    });
-    list.sort((a, b) => b.streak - a.streak);
-    const top = list.slice(0, 20);
-
-    if (top.length === 0) {
-      lb.innerHTML = '<div style="text-align:center;font-size:12px;color:#888;padding:12px">Henüz kimse yoklamaya katılmadı!</div>';
-      return;
+    const snap = await getDoc(doc(db, 'users', streamer));
+    if (snap.exists()) {
+      const p = snap.data().profile || {};
+      document.getElementById('streamerName').textContent = p.name || streamer;
+      roles = snap.data().roles || [];
     }
-
-    const medals = ['🥇','🥈','🥉'];
-    lb.innerHTML = top.map((u, i) => {
-      const role = getRole(u.streak, roles);
-      return `<div class="lb-row">
-        <div class="lb-rank">${medals[i] || (i+1)}</div>
-        <div class="lb-name">${u.username}</div>
-        <div class="lb-role">${role}</div>
-        <div class="lb-streak">${u.streak}🔥</div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    lb.innerHTML = '<div style="color:red;font-size:11px;padding:8px">Hata: ' + e.message + '</div>';
-  }
+  } catch(e) {}
 }
 
-async function loadMyStreak(viewer) {
+// ── Load leaderboard (realtime) ───────────────────────
+function loadLeaderboard() {
+  if (!streamer) return;
+  onSnapshot(collection(db, 'users', streamer, 'attendance'), snap => {
+    const list = [];
+    snap.forEach(d => { const data = d.data(); if ((data.streak||0) > 0) list.push({ name: data.displayName||d.id, streak: data.streak }); });
+    list.sort((a,b) => b.streak - a.streak);
+    const medals = ['🥇','🥈','🥉'];
+    const lb = document.getElementById('leaderboard');
+    if (!list.length) { lb.innerHTML = '<div style="text-align:center;font-size:12px;color:#888;padding:16px">No one checked in yet!</div>'; return; }
+    lb.innerHTML = list.slice(0,20).map((u,i) => `
+      <div class="lb-row">
+        <div class="lb-rank">${medals[i]||'#'+(i+1)}</div>
+        <div class="lb-name">${u.name}</div>
+        <div class="lb-role">${getRole(u.streak)}</div>
+        <div class="lb-streak">${u.streak}🔥</div>
+      </div>`).join('');
+  });
+}
+
+// ── Show streak section ───────────────────────────────
+async function showStreakSection(viewerKey, displayName, guest=false) {
+  currentViewer = viewerKey;
+  isGuest = guest;
+  document.getElementById('authSection').style.display = 'none';
+  document.getElementById('streakSection').style.display = 'block';
+  document.getElementById('userBar').style.display = 'flex';
+  document.getElementById('userBarName').textContent = (guest ? '👤 ' : '🔒 ') + displayName;
+
+  // Load existing streak
   try {
-    const snap = await getDoc(doc(db, 'users', streamer, 'attendance', viewer));
+    const ref = doc(db, 'users', streamer, 'attendance', viewerKey);
+    const snap = await getDoc(ref);
     if (snap.exists()) {
       const data = snap.data();
       const streak = data.streak || 0;
       document.getElementById('myStreakNum').textContent = streak;
-      document.getElementById('myRoleBadge').textContent = getRole(streak, roles);
+      document.getElementById('myRolePill').textContent = getRole(streak);
 
-      // 24 saat geçti mi kontrol et
       const last = data.lastCheckin ? data.lastCheckin.toDate() : null;
-      const now = new Date();
       if (last) {
-        const diff = now - last;
-        const wait = 24*60*60*1000 - diff;
-        if (wait > 0) {
-          // Henüz 24 saat geçmemiş
+        const diff = Date.now() - last.getTime();
+        if (diff < 24*3600000) {
+          // Already checked in today
           const btn = document.getElementById('checkinBtn');
-          btn.textContent = '✔ BUGÜN KATILDIN';
-          btn.className = 'checkin-btn done';
-          btn.disabled = true;
-          startCountdown(wait);
+          btn.textContent = '✔ CHECKED IN TODAY';
+          btn.className = 'checkin-btn done'; btn.disabled = true;
+          startCountdown(24*3600000 - diff);
           return;
         }
-        // 24 saatten fazla geçmiş — streak kırıldı mı?
-        if (diff > 48*60*60*1000 && streak > 0) {
-          // 48 saatten fazla → streak sıfırla
-          await updateDoc(doc(db, 'users', streamer, 'attendance', viewer), { streak: 0 });
+        // Streak broken?
+        if (diff > 48*3600000 && streak > 0) {
+          await updateDoc(ref, { streak: 0 });
           document.getElementById('myStreakNum').textContent = '0';
-          document.getElementById('myRoleBadge').textContent = getRole(0, roles);
+          document.getElementById('myRolePill').textContent = getRole(0);
+          showMsg('Your streak was reset — you missed a day!', 'err');
         }
       }
     }
   } catch(e) {}
 }
 
+// ── Countdown timer ───────────────────────────────────
 function startCountdown(ms) {
-  const el = document.getElementById('countdownText');
+  const el = document.getElementById('countdownTxt');
+  const end = Date.now() + ms;
   function tick() {
-    const remaining = ms - (Date.now() - startTime);
-    if (remaining <= 0) {
-      el.textContent = '';
-      const btn = document.getElementById('checkinBtn');
-      btn.textContent = '✅ YOKLAMAYA KATIL';
-      btn.className = 'checkin-btn';
-      btn.disabled = false;
-      return;
-    }
-    el.textContent = '⏳ Sonraki yoklama: ' + msToHMS(remaining);
-    setTimeout(tick, 60000);
+    const left = end - Date.now();
+    if (left <= 0) { el.textContent = ''; document.getElementById('checkinBtn').textContent = '✅ CHECK IN TODAY'; document.getElementById('checkinBtn').className = 'checkin-btn'; document.getElementById('checkinBtn').disabled = false; return; }
+    el.textContent = '⏳ Next check-in in: ' + msToHMS(left);
+    setTimeout(tick, 30000);
   }
-  const startTime = Date.now();
   tick();
 }
 
-window.doCheckin = async function() {
+// ── Check in ─────────────────────────────────────────
+window.doCheckin = async () => {
   if (!currentViewer || !streamer) return;
   const btn = document.getElementById('checkinBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Kaydediliyor...';
-
+  btn.disabled = true; btn.textContent = '⏳ Saving...';
   try {
     const ref = doc(db, 'users', streamer, 'attendance', currentViewer);
     const snap = await getDoc(ref);
-    const now = new Date();
+    const now = Date.now();
     let newStreak = 1;
+    let displayName = currentViewer;
 
     if (snap.exists()) {
       const data = snap.data();
-      const last = data.lastCheckin ? data.lastCheckin.toDate() : null;
-      if (last) {
-        const diff = now - last;
-        if (diff < 24*60*60*1000) {
-          showMsg('Bugün zaten katıldın! 24 saatte 1 kez katılabilirsin.', 'error');
-          btn.textContent = '✔ BUGÜN KATILDIN';
-          btn.className = 'checkin-btn done';
-          return;
-        }
-        if (diff < 48*60*60*1000) {
-          newStreak = (data.streak || 0) + 1;
-        } else {
-          newStreak = 1; // streak kırıldı
-        }
+      displayName = data.displayName || currentViewer;
+      const last = data.lastCheckin ? data.lastCheckin.toDate().getTime() : 0;
+      const diff = now - last;
+      if (diff < 24*3600000) {
+        showMsg("You already checked in today! Come back in " + msToHMS(24*3600000 - diff), 'err');
+        btn.textContent = '✔ CHECKED IN TODAY'; btn.className = 'checkin-btn done';
+        return;
       }
+      newStreak = diff < 48*3600000 ? (data.streak||0) + 1 : 1;
     }
 
-    await setDoc(ref, {
-      streak: newStreak,
-      lastCheckin: serverTimestamp(),
-      username: currentViewer
-    }, { merge: true });
+    await setDoc(ref, { streak: newStreak, lastCheckin: serverTimestamp(), displayName }, { merge: true });
 
-    // Bildirim gönder
-    await setDoc(doc(db, 'users', streamer, 'notifications', Date.now().toString()), {
-      type: 'checkin',
-      viewer: currentViewer,
-      streak: newStreak,
-      role: getRole(newStreak, roles),
-      timestamp: serverTimestamp()
+    // Send notification to streamer
+    await setDoc(doc(db, 'users', streamer, 'notifications', now.toString()), {
+      type: 'checkin', viewer: displayName, streak: newStreak,
+      role: getRole(newStreak), timestamp: serverTimestamp()
     });
 
     document.getElementById('myStreakNum').textContent = newStreak;
-    document.getElementById('myRoleBadge').textContent = getRole(newStreak, roles);
-    btn.textContent = '✔ BUGÜN KATILDIN';
-    btn.className = 'checkin-btn done';
-    btn.disabled = true;
-    startCountdown(24*60*60*1000);
+    document.getElementById('myRolePill').textContent = getRole(newStreak);
+    btn.textContent = '✔ CHECKED IN TODAY'; btn.className = 'checkin-btn done'; btn.disabled = true;
+    startCountdown(24*3600000);
 
-    const msgs = [
-      `🔥 ${newStreak} günlük streak! Harika!`,
-      `✅ Yoklamaya katıldın! Streak: ${newStreak} 🔥`,
-      newStreak >= 7 ? `🏆 ${newStreak} gün! ${getRole(newStreak, roles)} rolün var!` : `✅ Streak: ${newStreak} gün!`
-    ];
-    showMsg(msgs[Math.min(newStreak > 6 ? 2 : newStreak > 1 ? 1 : 0, 2)], 'success');
-
-    loadLeaderboard();
-  } catch(e) {
-    showMsg('Hata: ' + e.message, 'error');
-    btn.textContent = '✅ YOKLAMAYA KATIL';
-    btn.disabled = false;
-  }
+    const msg = newStreak === 1 ? '🎉 First check-in! Your streak has started!'
+              : newStreak >= 30 ? `🏆 ${newStreak} days! Legendary streak!`
+              : newStreak >= 7  ? `🔥 ${newStreak} days! Amazing streak!`
+              : `✅ Checked in! Streak: ${newStreak} 🔥`;
+    showMsg(msg, 'ok');
+  } catch(e) { showMsg('Error: ' + e.message, 'err'); btn.textContent = '✅ CHECK IN TODAY'; btn.disabled = false; }
 };
 
-// Auth kontrolü
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    document.getElementById('loginPrompt').style.display = 'block';
-    document.getElementById('myStreakBox').style.display = 'none';
-  } else {
-    currentViewer = localStorage.getItem('dp_current');
-    if (currentViewer) {
-      document.getElementById('loginPrompt').style.display = 'none';
-      document.getElementById('myStreakBox').style.display = 'block';
-      await loadMyStreak(currentViewer);
-    }
-  }
-});
+// ── Sign In ───────────────────────────────────────────
+window.doSignIn = async () => {
+  const user = document.getElementById('li-user').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const pass = document.getElementById('li-pass').value;
+  if (!user || !pass) { showErr('li-err','Enter username and password.'); return; }
 
-loadStreamerInfo();
-loadLeaderboard();
+  try {
+    const ref = doc(db, 'users', streamer, 'viewers', user);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) { showErr('li-err','Username not found. Register first!'); return; }
+    if (snap.data().passHash !== hashPass(pass)) { showErr('li-err','Wrong password.'); return; }
+    localStorage.setItem('att_viewer_'+streamer, JSON.stringify({ key: user, name: snap.data().displayName||user, guest: false }));
+    await showStreakSection(user, snap.data().displayName||user, false);
+    showMsg('Welcome back, ' + (snap.data().displayName||user) + '!', 'ok');
+  } catch(e) { showErr('li-err','Error: '+e.message); }
+};
+
+// ── Register ──────────────────────────────────────────
+window.updateRegPreview = () => {};
+window.doRegister = async () => {
+  const user = document.getElementById('ri-user').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const pass = document.getElementById('ri-pass').value;
+  const pass2 = document.getElementById('ri-pass2').value;
+  if (!user) { showErr('ri-err','Username is required.'); return; }
+  if (!/^[a-z0-9_]+$/.test(user)) { showErr('ri-err','Only letters, numbers and _ allowed.'); return; }
+  if (pass.length < 4) { showErr('ri-err','Password must be at least 4 characters.'); return; }
+  if (pass !== pass2) { showErr('ri-err','Passwords do not match.'); return; }
+
+  try {
+    const ref = doc(db, 'users', streamer, 'viewers', user);
+    const snap = await getDoc(ref);
+    if (snap.exists()) { showErr('ri-err','Username already taken. Choose another.'); return; }
+    await setDoc(ref, { displayName: user, passHash: hashPass(pass), createdAt: serverTimestamp() });
+    localStorage.setItem('att_viewer_'+streamer, JSON.stringify({ key: user, name: user, guest: false }));
+    await showStreakSection(user, user, false);
+    showMsg('Account created! Welcome, ' + user + ' 🎉', 'ok');
+  } catch(e) { showErr('ri-err','Error: '+e.message); }
+};
+
+// ── Guest Join ────────────────────────────────────────
+window.doGuestJoin = async () => {
+  const name = document.getElementById('gi-name').value.trim();
+  if (!name) { showErr('gi-err','Enter a display name.'); return; }
+  if (name.length < 2) { showErr('gi-err','Name too short.'); return; }
+  const key = 'guest_' + name.toLowerCase().replace(/\s+/g,'_') + '_' + Math.random().toString(36).slice(2,6);
+  const saved = JSON.parse(localStorage.getItem('att_viewer_'+streamer)||'null');
+  // If same name guest exists, reuse
+  if (saved && saved.guest && saved.name.toLowerCase() === name.toLowerCase()) {
+    await showStreakSection(saved.key, saved.name, true);
+    return;
+  }
+  localStorage.setItem('att_viewer_'+streamer, JSON.stringify({ key, name, guest: true }));
+  await showStreakSection(key, name, true);
+  showMsg('Welcome, ' + name + '! 🎉', 'ok');
+};
+
+// ── Sign Out ──────────────────────────────────────────
+window.doSignOut = () => {
+  localStorage.removeItem('att_viewer_'+streamer);
+  currentViewer = null;
+  document.getElementById('authSection').style.display = 'block';
+  document.getElementById('streakSection').style.display = 'none';
+  document.getElementById('userBar').style.display = 'none';
+  showMsg('Signed out.', 'info');
+};
+
+// ── Auto-login from localStorage ──────────────────────
+async function tryAutoLogin() {
+  const saved = JSON.parse(localStorage.getItem('att_viewer_'+streamer)||'null');
+  if (saved && saved.key) await showStreakSection(saved.key, saved.name, saved.guest||false);
+}
+
+// ── Init ──────────────────────────────────────────────
+if (!streamer) {
+  document.body.innerHTML = '<div style="padding:20px;font-family:monospace;color:red">Missing ?user=USERNAME in URL!</div>';
+} else {
+  loadStreamerInfo().then(() => { tryAutoLogin(); loadLeaderboard(); });
+}
 </script>
 </body>
 </html>
