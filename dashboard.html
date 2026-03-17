@@ -151,6 +151,51 @@
       </div>
 
       <div class="groupbox">
+        <span class="groupbox-title">🏆 Leaderboard Manager</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">⚙️</div>
+          <div class="alert-msg">View and manage the leaderboard. You can delete any entry, reset someone's streak to zero, or set how many people show in the OBS overlay.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <label style="font-size:12px;font-family:var(--font-main)">Overlay shows top:</label>
+          <input class="retro-input" type="number" id="overlayCount" min="1" max="20" value="5" style="width:60px">
+          <label style="font-size:12px;font-family:var(--font-main)">entries</label>
+          <button class="retro-btn" onclick="saveOverlayCount()" style="font-size:12px">Apply</button>
+          <div id="overlayCountSaved" style="font-size:11px;color:green;display:none">✔ Saved</div>
+        </div>
+        <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center">
+          <button class="retro-btn" onclick="loadLBManager()" style="font-size:12px">🔄 Refresh</button>
+          <span style="font-size:11px;color:#555;font-family:var(--font-main)" id="lbManagerCount"></span>
+        </div>
+        <div id="lbManager" style="border:1px solid var(--win-dark);max-height:300px;overflow-y:auto">
+          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Click Refresh to load entries</div>
+        </div>
+      </div>
+
+      <div class="groupbox">
+        <span class="groupbox-title">🎯 Attendance Session</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">📢</div>
+          <div class="alert-msg">Open attendance when your stream starts. Viewers check in from the attendance link. You can open it multiple times per day — each open is a new session!</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="font-family:var(--font-main);font-size:13px">Status:</div>
+          <div id="attendanceStatusLabel" style="font-weight:bold;font-size:13px;font-family:var(--font-main);color:#aa0000">🔴 Closed</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="retro-btn primary" id="openAttendanceBtn" onclick="openAttendance()"
+            style="font-family:var(--font-display);font-size:20px;padding:8px 28px;letter-spacing:1px">
+            🟢 OPEN ATTENDANCE
+          </button>
+          <button class="retro-btn" id="closeAttendanceBtn" onclick="closeAttendance()"
+            style="font-family:var(--font-display);font-size:20px;padding:8px 28px;letter-spacing:1px;display:none;background:#ffe0e0">
+            🔴 CLOSE ATTENDANCE
+          </button>
+        </div>
+        <div id="sessionInfo" style="font-size:11px;color:#555;margin-top:8px;font-family:var(--font-main);display:none"></div>
+      </div>
+
+      <div class="groupbox">
         <span class="groupbox-title">📺 OBS Links</span>
         <div class="alert-box">
           <div class="alert-icon">🖥️</div>
@@ -208,7 +253,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
@@ -399,7 +444,9 @@ window.saveRoles = async () => {
 // ===== OBS URL'LERİ =====
 function setOBSUrls(user) {
   const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
-  document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user;
+  const count = localStorage.getItem('dp_overlay_count_'+user) || '5';
+  document.getElementById('overlayCount').value = count;
+  document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user + '&count=' + count;
   document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
 }
@@ -443,10 +490,142 @@ onAuthStateChanged(auth, async user => {
     if (p.donateUrl) document.getElementById('donateUrl').value = p.donateUrl;
     if (p.donateText) document.getElementById('donateText').value = p.donateText;
     setStatus(t().loaded);
+    loadSessionStatus();
   } catch(e) { setStatus('Error: ' + e.message); }
 });
 
 window.doLogout = async () => { await signOut(auth); localStorage.removeItem('dp_current'); window.location.href = 'index.html'; };
+
+// ── Leaderboard Manager ───────────────────────────────
+window.loadLBManager = async () => {
+  if (!currentUser) return;
+  const container = document.getElementById('lbManager');
+  const countEl = document.getElementById('lbManagerCount');
+  container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Loading...</div>';
+  try {
+    const { getDocs, collection: col, deleteDoc, doc: d2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snaps = await getDocs(col(db, 'users', currentUser, 'attendance'));
+    const list = [];
+    snaps.forEach(d => { const data = d.data(); list.push({ id: d.id, streak: data.streak||0 }); });
+    list.sort((a,b) => b.streak - a.streak);
+    countEl.textContent = list.length + ' total entries';
+
+    if (!list.length) {
+      container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No entries yet.</div>';
+      return;
+    }
+
+    const medals = ['🥇','🥈','🥉'];
+    container.innerHTML = list.map((u, i) => `
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #ddd;font-size:12px;font-family:var(--font-main);background:${i%2===0?'#fff':'#f4f4f8'}">
+        <div style="min-width:24px;font-weight:bold;color:#000080">${medals[i]||'#'+(i+1)}</div>
+        <div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.id}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:#000080;min-width:44px;text-align:right">${u.streak}🔥</div>
+        <button onclick="resetStreak('${u.id}')" style="background:#fff8e0;border:1px solid #aa7700;color:#aa7700;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">Reset</button>
+        <button onclick="deleteEntry('${u.id}')" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">Delete</button>
+      </div>`).join('');
+  } catch(e) { container.innerHTML = '<div style="padding:10px;color:red;font-size:12px">Error: '+e.message+'</div>'; }
+};
+
+window.resetStreak = async (viewerId) => {
+  if (!currentUser) return;
+  if (!confirm('Reset streak for "' + viewerId + '" to 0?')) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser, 'attendance', viewerId), { streak: 0 });
+    setStatus('Streak reset ✔');
+    loadLBManager();
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.deleteEntry = async (viewerId) => {
+  if (!currentUser) return;
+  if (!confirm('Delete "' + viewerId + '" from leaderboard? This cannot be undone.')) return;
+  try {
+    const { deleteDoc: delDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await delDoc(doc(db, 'users', currentUser, 'attendance', viewerId));
+    setStatus('Entry deleted ✔');
+    loadLBManager();
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.saveOverlayCount = () => {
+  const count = parseInt(document.getElementById('overlayCount').value) || 5;
+  localStorage.setItem('dp_overlay_count_'+currentUser, count);
+  // Update overlay URL with new count
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+  document.getElementById('overlayUrl').textContent = base + 'overlay.html?user=' + currentUser + '&count=' + count;
+  const saved = document.getElementById('overlayCountSaved');
+  saved.style.display = 'inline';
+  setTimeout(() => saved.style.display='none', 2000);
+  setStatus('Overlay count updated ✔');
+};
+
+// ── Attendance Session ────────────────────────────────
+async function loadSessionStatus() {
+  if (!currentUser) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser, 'session', 'current'));
+    if (snap.exists() && snap.data().open) {
+      setAttendanceUI(true, snap.data().sessionId, snap.data().openedAt);
+    } else {
+      setAttendanceUI(false);
+    }
+  } catch(e) {}
+}
+
+function setAttendanceUI(isOpen, sessionId='', openedAt=null) {
+  const label = document.getElementById('attendanceStatusLabel');
+  const openBtn = document.getElementById('openAttendanceBtn');
+  const closeBtn = document.getElementById('closeAttendanceBtn');
+  const info = document.getElementById('sessionInfo');
+  if (isOpen) {
+    label.textContent = '🟢 OPEN';
+    label.style.color = '#006400';
+    openBtn.style.display = 'none';
+    closeBtn.style.display = 'inline-block';
+    info.style.display = 'block';
+    info.textContent = 'Session ID: ' + sessionId + (openedAt ? ' · Opened at ' + new Date(openedAt).toLocaleTimeString() : '');
+  } else {
+    label.textContent = '🔴 Closed';
+    label.style.color = '#aa0000';
+    openBtn.style.display = 'inline-block';
+    closeBtn.style.display = 'none';
+    info.style.display = 'none';
+  }
+}
+
+window.openAttendance = async () => {
+  if (!currentUser) return;
+  const sessionId = 'session_' + Date.now();
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'session', 'current'), {
+      open: true,
+      sessionId,
+      openedAt: Date.now()
+    });
+    setAttendanceUI(true, sessionId, Date.now());
+    setStatus('Attendance opened ✔');
+    showMsg2('✔ Attendance is now open! Viewers can check in.', 'ok');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.closeAttendance = async () => {
+  if (!currentUser) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'session', 'current'), { open: false, sessionId: null });
+    setAttendanceUI(false);
+    setStatus('Attendance closed');
+    showMsg2('🔴 Attendance closed.', 'info');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+function showMsg2(text, type) {
+  const saved = document.getElementById('saveMsg');
+  saved.textContent = text;
+  saved.style.color = type==='ok'?'green':type==='err'?'red':'#000080';
+  saved.style.display = 'block';
+  setTimeout(()=>saved.style.display='none', 3000);
+}
 
 window.saveProfile = async () => {
   if (!currentUser) return;

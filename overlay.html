@@ -6,22 +6,22 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:transparent;overflow:hidden;font-family:'Share Tech Mono',monospace;width:340px;padding:12px}
-.panel{background:rgba(0,0,50,.88);border:2px solid #4488ff;box-shadow:0 0 20px rgba(0,100,255,.3)}
+body{background:transparent;overflow:hidden;font-family:'Share Tech Mono',monospace;width:360px;padding:10px}
+.panel{background:rgba(0,0,50,.90);border:2px solid #4488ff;box-shadow:0 0 24px rgba(0,100,255,.3)}
 .header{background:linear-gradient(90deg,#000080,#1084d0);padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #4488ff}
 .title{font-family:'VT323',monospace;font-size:22px;color:#fff;letter-spacing:2px;flex:1}
 .handle{font-size:11px;color:#aaccff}
-.body{padding:4px 0}
-.row{display:flex;align-items:center;padding:5px 10px;gap:8px;border-bottom:1px solid rgba(68,136,255,.15);animation:fadeIn .4s ease-out}
+.body{padding:4px 0;min-height:40px}
+.row{display:flex;align-items:center;padding:7px 12px;gap:8px;border-bottom:1px solid rgba(68,136,255,.15);animation:fadeIn .5s ease-out}
 .row:last-child{border-bottom:none}
-@keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
-.row.r1{background:rgba(255,215,0,.12)}.row.r2{background:rgba(192,192,192,.08)}.row.r3{background:rgba(205,127,50,.08)}
-.rank{font-family:'VT323',monospace;font-size:20px;min-width:28px;text-align:center}
-.r1 .rank{color:#ffd700}.r2 .rank{color:#c0c0c0}.r3 .rank{color:#cd7f32}.rank.rn{color:#6688aa}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.row.r1{background:rgba(255,215,0,.13)}.row.r2{background:rgba(192,192,192,.08)}.row.r3{background:rgba(205,127,50,.08)}
+.rank{font-family:'VT323',monospace;font-size:22px;min-width:30px;text-align:center}
+.r1 .rank{color:#ffd700}.r2 .rank{color:#c0c0c0}.r3 .rank{color:#cd7f32}.rn .rank{color:#6688aa}
 .uname{flex:1;font-size:13px;color:#ddeeff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.role{font-size:10px;color:#88aaff;background:rgba(68,136,255,.15);border:1px solid rgba(68,136,255,.3);padding:1px 5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
-.streak{font-family:'VT323',monospace;font-size:26px;min-width:44px;text-align:right;color:#ffdd00}
-.footer{padding:4px 10px;font-size:10px;color:#445566;text-align:right;border-top:1px solid rgba(68,136,255,.2)}
+.role{font-size:10px;color:#88aaff;background:rgba(68,136,255,.15);border:1px solid rgba(68,136,255,.3);padding:1px 6px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.streak{font-family:'VT323',monospace;font-size:28px;min-width:50px;text-align:right;color:#ffdd00}
+.footer{padding:5px 12px;font-size:10px;color:#445566;text-align:right;border-top:1px solid rgba(68,136,255,.2)}
 .empty{text-align:center;color:#445566;font-size:12px;padding:20px}
 </style>
 </head>
@@ -29,7 +29,7 @@ body{background:transparent;overflow:hidden;font-family:'Share Tech Mono',monosp
 <div class="panel">
   <div class="header">
     <div>🔥</div>
-    <div class="title">STREAK BOARD</div>
+    <div class="title">TOP STREAKS</div>
     <div class="handle" id="handle">@...</div>
   </div>
   <div class="body" id="body"><div class="empty">Loading...</div></div>
@@ -41,7 +41,10 @@ import { getFirestore, collection, onSnapshot, doc, getDoc } from "https://www.g
 const firebaseConfig={apiKey:"AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",authDomain:"dersprogram-31d2d.firebaseapp.com",projectId:"dersprogram-31d2d",storageBucket:"dersprogram-31d2d.firebasestorage.app",messagingSenderId:"910271309823",appId:"1:910271309823:web:87684f55e386e0ef5e29ca"};
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
-const streamer=new URLSearchParams(window.location.search).get('user');
+const params=new URLSearchParams(window.location.search);
+const streamer=params.get('user');
+// count param: overlay.html?user=tymerp&count=5 (default 5)
+const maxCount=parseInt(params.get('count')||'5');
 let roles=[];
 
 function getRole(streak){
@@ -51,17 +54,19 @@ function getRole(streak){
   return '👤 Viewer';
 }
 
-async function loadRoles(){
-  if(!streamer) return;
-  const snap=await getDoc(doc(db,'users',streamer));
-  if(snap.exists()){
-    roles=snap.data().roles||[];
-    document.getElementById('handle').textContent='@'+streamer;
-  }
-}
-
 const medals=['🥇','🥈','🥉'];
 const rankCls=['r1','r2','r3'];
+
+async function loadRoles(){
+  if(!streamer) return;
+  try {
+    const snap=await getDoc(doc(db,'users',streamer));
+    if(snap.exists()){
+      roles=snap.data().roles||[];
+      document.getElementById('handle').textContent='@'+streamer;
+    }
+  } catch(e){}
+}
 
 if(!streamer){
   document.getElementById('body').innerHTML='<div class="empty" style="color:#aa4444">Add ?user=USERNAME to URL</div>';
@@ -69,18 +74,18 @@ if(!streamer){
   loadRoles().then(()=>{
     onSnapshot(collection(db,'users',streamer,'attendance'),snap=>{
       const list=[];
-      snap.forEach(d=>{const data=d.data();if((data.streak||0)>0) list.push({name:data.displayName||d.id,streak:data.streak});});
+      snap.forEach(d=>{const data=d.data();if((data.streak||0)>0) list.push({name:d.id,streak:data.streak});});
       list.sort((a,b)=>b.streak-a.streak);
-      const top=list.slice(0,10);
+      const top=list.slice(0,maxCount);
       if(!top.length){document.getElementById('body').innerHTML='<div class="empty">No entries yet!</div>';return;}
       document.getElementById('body').innerHTML=top.map((u,i)=>`
-        <div class="row ${rankCls[i]||''}">
-          <div class="rank ${i>=3?'rn':''}">${medals[i]||'#'+(i+1)}</div>
+        <div class="row ${rankCls[i]||'rn'}">
+          <div class="rank">${medals[i]||'#'+(i+1)}</div>
           <div class="uname">${u.name}</div>
           <div class="role">${getRole(u.streak)}</div>
           <div class="streak">${u.streak}🔥</div>
         </div>`).join('');
-      document.getElementById('footer').textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('footer').textContent='Top '+maxCount+' · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
     });
   });
 }
