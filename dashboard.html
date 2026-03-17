@@ -5,11 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LessonSchedule - Dashboard</title>
 <link rel="stylesheet" href="style.css">
+<style>
+.lang-btn{font-size:11px;padding:2px 6px}
+.active-lang{background:#000080;color:#fff}
+.role-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.role-row input{font-family:var(--font-main);font-size:12px}
+.role-min{width:70px!important}
+.role-icon{width:50px!important;text-align:center}
+.role-name{flex:1!important;min-width:120px}
+.remove-role{background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:3px 8px;font-size:12px;font-family:var(--font-main)}
+</style>
 </head>
 <body>
 <div class="window">
   <div class="window-titlebar">
-    <div class="window-title"><div class="window-title-icon"></div><span id="t-title">Dashboard</span></div>
+    <div class="window-title"><div class="window-title-icon"></div><span id="t-title">LessonSchedule - Dashboard</span></div>
     <div class="window-controls">
       <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn" onclick="doLogout()">✕</div>
     </div>
@@ -43,9 +53,10 @@
       <div class="nav-tab active" id="t-tab1" onclick="switchTab(event,'schedule')">📋 Program</div>
       <div class="nav-tab" id="t-tab2" onclick="switchTab(event,'about')">👤 Hakkımda</div>
       <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
+      <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
     </div>
 
-    <!-- PROGRAM -->
+    <!-- ===== PROGRAM ===== -->
     <div id="tab-schedule" class="tab-panel active">
       <div class="groupbox"><span class="groupbox-title" id="t-img-title">Program Resmi</span>
         <div class="form-row">
@@ -80,7 +91,7 @@
       </div>
     </div>
 
-    <!-- HAKKIMDA -->
+    <!-- ===== HAKKIMDA ===== -->
     <div id="tab-about" class="tab-panel">
       <div class="groupbox"><span class="groupbox-title" id="t-personal-title">Kişisel Bilgiler</span>
         <div class="form-row"><label class="form-label" id="t-name-lbl">Adınız:</label>
@@ -100,7 +111,7 @@
       </div>
     </div>
 
-    <!-- BAĞIŞ -->
+    <!-- ===== BAĞIŞ ===== -->
     <div id="tab-donate" class="tab-panel">
       <div class="groupbox"><span class="groupbox-title" id="t-donate-title">Bağış Linki</span>
         <div class="alert-box">
@@ -117,6 +128,62 @@
       </div>
     </div>
 
+    <!-- ===== ROLLER & OBS ===== -->
+    <div id="tab-roles" class="tab-panel">
+      <div class="groupbox">
+        <span class="groupbox-title">🏅 Streak Rolleri</span>
+        <div class="alert-box">
+          <div class="alert-icon">💡</div>
+          <div class="alert-msg">Seyircilerin streak'leri büyüdükçe özel roller alır. Her rol için minimum streak sayısı ve isim belirle.</div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
+          <div style="width:72px">Min. Streak</div>
+          <div style="width:52px">İkon</div>
+          <div style="flex:1">Rol İsmi</div>
+          <div style="width:60px"></div>
+        </div>
+        <div id="rolesContainer"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="retro-btn" onclick="addRole()">+ Rol Ekle</button>
+          <button class="retro-btn primary" onclick="saveRoles()">💾 Rolleri Kaydet</button>
+        </div>
+        <div id="rolesSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Roller kaydedildi!</div>
+      </div>
+
+      <div class="groupbox">
+        <span class="groupbox-title">📺 OBS Linkleri</span>
+        <div class="alert-box">
+          <div class="alert-icon">🖥️</div>
+          <div class="alert-msg">Bu linkleri OBS'de Sources → + → Browser Source olarak ekle.</div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">🏆 Leaderboard Overlay — Genişlik: 340px, Yükseklik: 400px</label>
+          <div class="url-box">
+            <div class="url-display" id="overlayUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('overlayUrl')">📋 Kopyala</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:10px">
+          <label class="form-label">🔔 Bildirim Overlay — Genişlik: 600px, Yükseklik: 180px</label>
+          <div class="url-box">
+            <div class="url-display" id="alertUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('alertUrl')">📋 Kopyala</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:10px">
+          <label class="form-label">✅ Yoklama Sayfası — Seyircilere bu linki ver</label>
+          <div class="url-box">
+            <div class="url-display" id="attendUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('attendUrl')">📋 Kopyala</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alt butonlar -->
     <hr class="retro">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="retro-btn primary" id="t-save-btn" onclick="saveProfile()">💾 Kaydet</button>
@@ -126,21 +193,17 @@
     <div id="urlSection" style="display:none">
       <div class="url-box">
         <div class="url-display" id="profileUrl"></div>
-        <button class="retro-btn" id="t-copy-btn" onclick="copyUrl()">📋 Kopyala</button>
+        <button class="retro-btn" id="t-copy-btn" onclick="copyId('profileUrl')">📋 Kopyala</button>
       </div>
       <div style="font-size:11px;color:#555;margin-top:4px" id="t-url-msg">Bu linki yayınlarının altına ekle!</div>
     </div>
   </div>
+
   <div class="statusbar">
     <div class="status-panel" id="statusText">Yükleniyor...</div>
     <div class="status-panel" style="flex:0 0 140px">Dashboard 🔒</div>
   </div>
 </div>
-
-<style>
-.lang-btn{font-size:11px;padding:2px 6px}
-.active-lang{background:#000080;color:#fff}
-</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -160,7 +223,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const DAYS = { tr:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'], en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] };
-let selectedDays = [], scheduleImgData = '';
+let selectedDays = [], scheduleImgData = '', rolesData = [];
 let lang = localStorage.getItem('dp_lang') || 'tr';
 let currentUser = null;
 
@@ -168,7 +231,7 @@ const T = {
   tr: {
     title:'LessonSchedule - Dashboard', m1:'Dosya', m2:'Düzenle', m3:'Çıkış', m4:'Yardım',
     addr:'Adres:', pageTitle:'Profil Düzenle', loggedAs:'Giriş:', logout:'Çıkış',
-    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış',
+    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış', tab4:'🏅 Roller & OBS',
     imgTitle:'Program Resmi', uploadLbl:'Programınızın resmini yükleyin:',
     uploadHint:'📁 Resim seçmek için tıklayın (JPG, PNG)', uploadDrag:'veya buraya sürükleyin',
     daysTitle:'Yayın Günleri', daysLbl:'Hangi günler yayındasınız?',
@@ -180,13 +243,13 @@ const T = {
     saveBtn:'💾 Kaydet', viewBtn:'🌐 Profili Görüntüle', savedMsg:'✔ Kaydedildi!',
     copyBtn:'📋 Kopyala', urlMsg:'Bu linki yayınlarının altına ekle!',
     loading:'Yükleniyor...', loaded:'Profil yüklendi ✔', saving:'Kaydediliyor...', saved:'Kaydedildi ✔',
-    imgLoaded:'Resim yüklendi', notAuth:'Oturum açılmamış, yönlendiriliyorsunuz...',
+    imgLoaded:'Resim yüklendi', notAuth:'Oturum yok, yönlendiriliyorsunuz...',
     errSave:'Kaydetme hatası: '
   },
   en: {
     title:'LessonSchedule - Dashboard', m1:'File', m2:'Edit', m3:'Logout', m4:'Help',
     addr:'Address:', pageTitle:'Edit Profile', loggedAs:'Logged in:', logout:'Logout',
-    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate',
+    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate', tab4:'🏅 Roles & OBS',
     imgTitle:'Schedule Image', uploadLbl:'Upload your schedule image:',
     uploadHint:'📁 Click to select image (JPG, PNG)', uploadDrag:'or drag and drop here',
     daysTitle:'Broadcast Days', daysLbl:'Which days are you live?',
@@ -220,6 +283,7 @@ function applyLang() {
   document.getElementById('t-tab1').textContent = tr.tab1;
   document.getElementById('t-tab2').textContent = tr.tab2;
   document.getElementById('t-tab3').textContent = tr.tab3;
+  document.getElementById('t-tab4').textContent = tr.tab4;
   document.getElementById('t-img-title').textContent = tr.imgTitle;
   document.getElementById('t-upload-lbl').textContent = tr.uploadLbl;
   document.getElementById('t-upload-hint').textContent = tr.uploadHint;
@@ -295,23 +359,76 @@ document.addEventListener('input', e => {
   }
 });
 
+// ===== ROLLER =====
+function renderRoles() {
+  const container = document.getElementById('rolesContainer');
+  if (rolesData.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;padding:8px;border:1px dashed #ccc;text-align:center">Henüz rol yok. "+ Rol Ekle" ile başla.</div>';
+    return;
+  }
+  container.innerHTML = rolesData.map((r, i) => `
+    <div class="role-row">
+      <input class="retro-input role-min" type="number" min="1" value="${r.minStreak}"
+             onchange="updateRole(${i},'minStreak',parseInt(this.value)||1)" placeholder="7">
+      <input class="retro-input role-icon" type="text" value="${r.icon}"
+             onchange="updateRole(${i},'icon',this.value)" placeholder="🔥">
+      <input class="retro-input role-name" type="text" value="${r.name}"
+             onchange="updateRole(${i},'name',this.value)" placeholder="Haftalık Kahraman">
+      <button class="remove-role" onclick="removeRole(${i})">✕ Sil</button>
+    </div>`).join('');
+}
+
+window.updateRole = (i, key, val) => { rolesData[i][key] = val; };
+window.addRole = () => {
+  const lastStreak = rolesData.length > 0 ? rolesData[rolesData.length-1].minStreak + 7 : 7;
+  rolesData.push({ minStreak: lastStreak, icon: '🔥', name: 'Yeni Rol' });
+  renderRoles();
+};
+window.removeRole = i => { rolesData.splice(i, 1); renderRoles(); };
+window.saveRoles = async () => {
+  if (!currentUser) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser), { roles: rolesData });
+    const msg = document.getElementById('rolesSavedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    setStatus('Roller kaydedildi ✔');
+  } catch(e) { alert('Hata: ' + e.message); }
+};
+
+// ===== OBS URL'LERİ =====
+function setOBSUrls(user) {
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
+  document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user;
+  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user;
+  document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
+}
+
+window.copyId = id => {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => setStatus('Kopyalandı ✔')).catch(() => prompt('Kopyala:', text));
+};
+
+// ===== AUTH =====
 applyLang();
 setStatus(t().loading);
 
-// Auth kontrolü — giriş yapılmamışsa login'e gönder
 onAuthStateChanged(auth, async user => {
   if (!user) { setStatus(t().notAuth); setTimeout(() => window.location.href = 'index.html', 1500); return; }
-
   const username = localStorage.getItem('dp_current');
   if (!username) { window.location.href = 'index.html'; return; }
   currentUser = username;
   document.getElementById('currentUserLabel').textContent = username;
+  setOBSUrls(username);
 
-  // Profil yükle
   try {
     const snap = await getDoc(doc(db, 'users', username));
     if (!snap.exists()) { window.location.href = 'index.html'; return; }
     const p = snap.data().profile || {};
+    const savedRoles = snap.data().roles || [];
+    rolesData = savedRoles;
+    renderRoles();
+
     if (p.scheduleImg) { scheduleImgData = p.scheduleImg; document.getElementById('schedulePreview').src = p.scheduleImg; document.getElementById('schedulePreview').style.display='block'; }
     if (p.days) { selectedDays = [...p.days]; buildDaysGrid(); }
     if (p.startTime) document.getElementById('startTime').value = p.startTime;
@@ -329,11 +446,7 @@ onAuthStateChanged(auth, async user => {
   } catch(e) { setStatus('Error: ' + e.message); }
 });
 
-window.doLogout = async () => {
-  await signOut(auth);
-  localStorage.removeItem('dp_current');
-  window.location.href = 'index.html';
-};
+window.doLogout = async () => { await signOut(auth); localStorage.removeItem('dp_current'); window.location.href = 'index.html'; };
 
 window.saveProfile = async () => {
   if (!currentUser) return;
@@ -365,10 +478,6 @@ window.saveProfile = async () => {
 };
 
 window.previewProfile = async () => { await window.saveProfile(); window.open('profile.html?user=' + currentUser, '_blank'); };
-window.copyUrl = () => {
-  const url = document.getElementById('profileUrl').textContent;
-  navigator.clipboard.writeText(url).then(() => setStatus(t().saved)).catch(() => prompt('Copy:', url));
-};
 </script>
 </body>
 </html>
