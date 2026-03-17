@@ -131,53 +131,53 @@
     <!-- ===== ROLLER & OBS ===== -->
     <div id="tab-roles" class="tab-panel">
       <div class="groupbox">
-        <span class="groupbox-title">🏅 Streak Rolleri</span>
+        <span class="groupbox-title">🏅 Streak Roles</span>
         <div class="alert-box">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">Seyircilerin streak'leri büyüdükçe özel roller alır. Her rol için minimum streak sayısı ve isim belirle.</div>
+          <div class="alert-msg">As viewers build their streaks, they earn special roles. Set a minimum streak and name for each role.</div>
         </div>
         <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
           <div style="width:72px">Min. Streak</div>
-          <div style="width:52px">İkon</div>
-          <div style="flex:1">Rol İsmi</div>
+          <div style="width:52px">Icon</div>
+          <div style="flex:1">Role Name</div>
           <div style="width:60px"></div>
         </div>
         <div id="rolesContainer"></div>
         <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="retro-btn" onclick="addRole()">+ Rol Ekle</button>
-          <button class="retro-btn primary" onclick="saveRoles()">💾 Rolleri Kaydet</button>
+          <button class="retro-btn" onclick="addRole()">+ Add Role</button>
+          <button class="retro-btn primary" onclick="saveRoles()">💾 Save Roles</button>
         </div>
-        <div id="rolesSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Roller kaydedildi!</div>
+        <div id="rolesSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Roles saved!</div>
       </div>
 
       <div class="groupbox">
-        <span class="groupbox-title">📺 OBS Linkleri</span>
+        <span class="groupbox-title">📺 OBS Links</span>
         <div class="alert-box">
           <div class="alert-icon">🖥️</div>
-          <div class="alert-msg">Bu linkleri OBS'de Sources → + → Browser Source olarak ekle.</div>
+          <div class="alert-msg">Add these links in OBS: Sources → + → Browser Source.</div>
         </div>
 
         <div class="form-row">
-          <label class="form-label">🏆 Leaderboard Overlay — Genişlik: 340px, Yükseklik: 400px</label>
+          <label class="form-label">🏆 Leaderboard Overlay — Width: 340px, Height: 400px</label>
           <div class="url-box">
             <div class="url-display" id="overlayUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('overlayUrl')">📋 Kopyala</button>
+            <button class="retro-btn" onclick="copyId('overlayUrl')">📋 Copy</button>
           </div>
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label">🔔 Bildirim Overlay — Genişlik: 600px, Yükseklik: 180px</label>
+          <label class="form-label">🔔 Alert Overlay — Width: 600px, Height: 180px</label>
           <div class="url-box">
             <div class="url-display" id="alertUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('alertUrl')">📋 Kopyala</button>
+            <button class="retro-btn" onclick="copyId('alertUrl')">📋 Copy</button>
           </div>
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label">✅ Yoklama Sayfası — Seyircilere bu linki ver</label>
+          <label class="form-label">✅ Attendance Page — Share this link with your viewers</label>
           <div class="url-box">
             <div class="url-display" id="attendUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('attendUrl')">📋 Kopyala</button>
+            <button class="retro-btn" onclick="copyId('attendUrl')">📋 Copy</button>
           </div>
         </div>
       </div>
@@ -189,7 +189,7 @@
       <button class="retro-btn primary" id="t-save-btn" onclick="saveProfile()">💾 Kaydet</button>
       <button class="retro-btn" id="t-view-btn" onclick="previewProfile()">🌐 Profili Görüntüle</button>
     </div>
-    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px">✔ Kaydedildi!</div>
+    <div id="saveMsg" style="display:none;color:green;font-size:12px;margin-top:8px">✔ Saved!</div>
     <div id="urlSection" style="display:none">
       <div class="url-box">
         <div class="url-display" id="profileUrl"></div>
@@ -200,7 +200,7 @@
   </div>
 
   <div class="statusbar">
-    <div class="status-panel" id="statusText">Yükleniyor...</div>
+    <div class="status-panel" id="statusText">Loading...</div>
     <div class="status-panel" style="flex:0 0 140px">Dashboard 🔒</div>
   </div>
 </div>
@@ -229,22 +229,22 @@ let currentUser = null;
 
 const T = {
   tr: {
-    title:'LessonSchedule - Dashboard', m1:'Dosya', m2:'Düzenle', m3:'Çıkış', m4:'Yardım',
-    addr:'Adres:', pageTitle:'Profil Düzenle', loggedAs:'Giriş:', logout:'Çıkış',
-    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış', tab4:'🏅 Roller & OBS',
-    imgTitle:'Program Resmi', uploadLbl:'Programınızın resmini yükleyin:',
-    uploadHint:'📁 Resim seçmek için tıklayın (JPG, PNG)', uploadDrag:'veya buraya sürükleyin',
-    daysTitle:'Yayın Günleri', daysLbl:'Hangi günler yayındasınız?',
-    hoursTitle:'Yayın Saatleri', startLbl:'Başlangıç:', endLbl:'Bitiş:', noteLbl:'Ek not:',
-    personalTitle:'Kişisel Bilgiler', nameLbl:'Adınız:', roleLbl:'Unvan:', aboutLbl:'Hakkımda:',
-    socialTitle:'Sosyal Medya', donateTitle:'Bağış Linki',
-    donateHint:'Patreon, Buy Me a Coffee vb. link girin.',
-    donateUrlLbl:'Link:', donateBtnLbl:'Buton yazısı:', prevTitle:'Önizleme',
-    saveBtn:'💾 Kaydet', viewBtn:'🌐 Profili Görüntüle', savedMsg:'✔ Kaydedildi!',
-    copyBtn:'📋 Kopyala', urlMsg:'Bu linki yayınlarının altına ekle!',
-    loading:'Yükleniyor...', loaded:'Profil yüklendi ✔', saving:'Kaydediliyor...', saved:'Kaydedildi ✔',
-    imgLoaded:'Resim yüklendi', notAuth:'Oturum yok, yönlendiriliyorsunuz...',
-    errSave:'Kaydetme hatası: '
+    title:'LessonSchedule - Dashboard', m1:'File', m2:'Edit', m3:'Logout', m4:'Help',
+    addr:'Address:', pageTitle:'Edit Profile', loggedAs:'Logged in:', logout:'Logout',
+    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate', tab4:'🏅 Roles & OBS',
+    imgTitle:'Schedule Image', uploadLbl:'Upload your schedule image:',
+    uploadHint:'📁 Click to select image (JPG, PNG)', uploadDrag:'or drag and drop here',
+    daysTitle:'Broadcast Days', daysLbl:'Which days are you live?',
+    hoursTitle:'Broadcast Hours', startLbl:'Start:', endLbl:'End:', noteLbl:'Extra note:',
+    personalTitle:'Personal Info', nameLbl:'Your name:', roleLbl:'Title/Role:', aboutLbl:'About me:',
+    socialTitle:'Social Media', donateTitle:'Donation Link',
+    donateHint:'Enter your Patreon, Buy Me a Coffee or other support link.',
+    donateUrlLbl:'Link:', donateBtnLbl:'Button text:', prevTitle:'Preview',
+    saveBtn:'💾 Save', viewBtn:'🌐 View Profile', savedMsg:'✔ Saved!',
+    copyBtn:'📋 Copy', urlMsg:'Add this link below your streams!',
+    loading:'Loading...', loaded:'Profile loaded ✔', saving:'Saving...', saved:'Saved ✔',
+    imgLoaded:'Image loaded', notAuth:'Not authenticated, redirecting...',
+    errSave:'Save error: '
   },
   en: {
     title:'LessonSchedule - Dashboard', m1:'File', m2:'Edit', m3:'Logout', m4:'Help',
@@ -363,7 +363,7 @@ document.addEventListener('input', e => {
 function renderRoles() {
   const container = document.getElementById('rolesContainer');
   if (rolesData.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;padding:8px;border:1px dashed #ccc;text-align:center">Henüz rol yok. "+ Rol Ekle" ile başla.</div>';
+    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;padding:8px;border:1px dashed #ccc;text-align:center">No roles yet. Click "+ Add Role" to get started.</div>';
     return;
   }
   container.innerHTML = rolesData.map((r, i) => `
@@ -406,7 +406,7 @@ function setOBSUrls(user) {
 
 window.copyId = id => {
   const text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text).then(() => setStatus('Kopyalandı ✔')).catch(() => prompt('Kopyala:', text));
+  navigator.clipboard.writeText(text).then(() => setStatus('Copied ✔')).catch(() => prompt('Copy this:', text));
 };
 
 // ===== AUTH =====
