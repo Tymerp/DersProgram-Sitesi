@@ -340,13 +340,12 @@ window.doCheckin = async () => {
     }
 
     // Calculate new streak
+    // Streak bozulması closeAttendance tarafından yapılır
+    // Burada sadece +1 yapıyoruz
     let newStreak = 1;
     if (snap.exists()) {
       const data = snap.data();
-      const last = data.lastCheckin ? data.lastCheckin.toDate().getTime() : 0;
-      const diff = now - last;
-      // Within 48 hours = continue streak, otherwise reset
-      newStreak = diff < 48*3600000 ? (data.streak||0)+1 : 1;
+      newStreak = (data.streak || 0) + 1;
     }
 
     await setDoc(ref, {
