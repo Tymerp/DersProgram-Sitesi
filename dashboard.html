@@ -130,56 +130,60 @@
 
     <!-- ===== ROLLER & OBS ===== -->
     <div id="tab-roles" class="tab-panel">
+
+      <!-- Streak Roles -->
       <div class="groupbox">
-        <span class="groupbox-title">🏅 Streak Roles</span>
+        <span class="groupbox-title" id="r-rolesTitle">🏅 Streak Roles</span>
         <div class="alert-box">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">As viewers build their streaks, they earn special roles. Set a minimum streak and name for each role.</div>
+          <div class="alert-msg" id="r-rolesHint">As viewers build their streaks, they earn special roles.</div>
         </div>
         <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
           <div style="width:72px">Min. Streak</div>
           <div style="width:52px">Icon</div>
-          <div style="flex:1">Role Name</div>
+          <div style="flex:1" id="r-roleName">Role Name</div>
           <div style="width:60px"></div>
         </div>
         <div id="rolesContainer"></div>
         <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="retro-btn" onclick="addRole()">+ Add Role</button>
-          <button class="retro-btn primary" onclick="saveRoles()">💾 Save Roles</button>
+          <button class="retro-btn" id="r-addRole" onclick="addRole()">+ Add Role</button>
+          <button class="retro-btn primary" id="r-saveRoles" onclick="saveRoles()">💾 Save Roles</button>
         </div>
         <div id="rolesSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Roles saved!</div>
       </div>
 
+      <!-- Leaderboard Manager -->
       <div class="groupbox">
-        <span class="groupbox-title">🏆 Leaderboard Manager</span>
+        <span class="groupbox-title" id="r-lbTitle">🏆 Leaderboard Manager</span>
         <div class="alert-box" style="margin-bottom:12px">
           <div class="alert-icon">⚙️</div>
-          <div class="alert-msg">View and manage the leaderboard. You can delete any entry, reset someone's streak to zero, or set how many people show in the OBS overlay.</div>
+          <div class="alert-msg" id="r-lbHint">View and manage the leaderboard.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-          <label style="font-size:12px;font-family:var(--font-main)">Overlay shows top:</label>
+          <label style="font-size:12px;font-family:var(--font-main)" id="r-overlayTop">Overlay shows top:</label>
           <input class="retro-input" type="number" id="overlayCount" min="1" max="20" value="5" style="width:60px">
-          <label style="font-size:12px;font-family:var(--font-main)">entries</label>
-          <button class="retro-btn" onclick="saveOverlayCount()" style="font-size:12px">Apply</button>
+          <label style="font-size:12px;font-family:var(--font-main)" id="r-overlayEntries">entries</label>
+          <button class="retro-btn" onclick="saveOverlayCount()" style="font-size:12px" id="r-overlayApply">Apply</button>
           <div id="overlayCountSaved" style="font-size:11px;color:green;display:none">✔ Saved</div>
         </div>
         <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center">
-          <button class="retro-btn" onclick="loadLBManager()" style="font-size:12px">🔄 Refresh</button>
+          <button class="retro-btn" onclick="loadLBManager()" style="font-size:12px" id="r-lbRefresh">🔄 Refresh</button>
           <span style="font-size:11px;color:#555;font-family:var(--font-main)" id="lbManagerCount"></span>
         </div>
         <div id="lbManager" style="border:1px solid var(--win-dark);max-height:300px;overflow-y:auto">
-          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Click Refresh to load entries</div>
+          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)" id="r-lbClickRefresh">Click Refresh to load entries</div>
         </div>
       </div>
 
+      <!-- Attendance Session -->
       <div class="groupbox">
-        <span class="groupbox-title">🎯 Attendance Session</span>
+        <span class="groupbox-title" id="r-sessionTitle">🎯 Attendance Session</span>
         <div class="alert-box" style="margin-bottom:12px">
           <div class="alert-icon">📢</div>
-          <div class="alert-msg">Open attendance when your stream starts. Viewers check in from the attendance link. You can open it multiple times per day — each open is a new session!</div>
+          <div class="alert-msg" id="r-sessionHint">Open attendance when your stream starts.</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="font-family:var(--font-main);font-size:13px">Status:</div>
+          <div style="font-family:var(--font-main);font-size:13px" id="r-sessionStatus">Status:</div>
           <div id="attendanceStatusLabel" style="font-weight:bold;font-size:13px;font-family:var(--font-main);color:#aa0000">🔴 Closed</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -195,34 +199,44 @@
         <div id="sessionInfo" style="font-size:11px;color:#555;margin-top:8px;font-family:var(--font-main);display:none"></div>
       </div>
 
+      <!-- OBS Links -->
       <div class="groupbox">
-        <span class="groupbox-title">📺 OBS Links</span>
+        <span class="groupbox-title" id="r-obsTitle">📺 OBS Links</span>
         <div class="alert-box">
           <div class="alert-icon">🖥️</div>
-          <div class="alert-msg">Add these links in OBS: Sources → + → Browser Source.</div>
+          <div class="alert-msg" id="r-obsHint">Add these links in OBS: Sources → + → Browser Source.</div>
         </div>
 
         <div class="form-row">
-          <label class="form-label">🏆 Leaderboard Overlay — Width: 340px, Height: 400px</label>
+          <label class="form-label" id="r-overlayLabel">🏆 Leaderboard Overlay — Width: 340px, Height: 400px</label>
           <div class="url-box">
             <div class="url-display" id="overlayUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('overlayUrl')">📋 Copy</button>
+            <button class="retro-btn" onclick="copyId('overlayUrl')" id="r-copy1">📋 Copy</button>
           </div>
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label">🔔 Alert Overlay — Width: 600px, Height: 180px</label>
+          <label class="form-label" id="r-alertLabel">🔔 Alert Overlay — Width: 600px, Height: 180px</label>
           <div class="url-box">
             <div class="url-display" id="alertUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('alertUrl')">📋 Copy</button>
+            <button class="retro-btn" onclick="copyId('alertUrl')" id="r-copy2">📋 Copy</button>
+          </div>
+          <!-- Alert duration slider -->
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <label style="font-size:12px;font-family:var(--font-main)" id="r-alertDuration">Alert duration:</label>
+            <input type="range" id="alertDurationSlider" min="3" max="15" value="5" step="1"
+              style="width:120px" oninput="updateAlertDuration(this.value)">
+            <span style="font-family:var(--font-main);font-size:12px;min-width:40px" id="alertDurationVal">5s</span>
+            <button class="retro-btn" onclick="testAlert()" style="font-size:12px" id="r-testAlert">🧪 Test Alert</button>
+            <div id="alertDurationSaved" style="font-size:11px;color:green;display:none">✔ Saved</div>
           </div>
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label">✅ Attendance Page — Share this link with your viewers</label>
+          <label class="form-label" id="r-attendLabel">✅ Attendance Page — Share this link with your viewers</label>
           <div class="url-box">
             <div class="url-display" id="attendUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('attendUrl')">📋 Copy</button>
+            <button class="retro-btn" onclick="copyId('attendUrl')" id="r-copy3">📋 Copy</button>
           </div>
         </div>
       </div>
@@ -274,22 +288,43 @@ let currentUser = null;
 
 const T = {
   tr: {
-    title:'LessonSchedule - Dashboard', m1:'File', m2:'Edit', m3:'Logout', m4:'Help',
-    addr:'Address:', pageTitle:'Edit Profile', loggedAs:'Logged in:', logout:'Logout',
-    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate', tab4:'🏅 Roles & OBS',
-    imgTitle:'Schedule Image', uploadLbl:'Upload your schedule image:',
-    uploadHint:'📁 Click to select image (JPG, PNG)', uploadDrag:'or drag and drop here',
-    daysTitle:'Broadcast Days', daysLbl:'Which days are you live?',
-    hoursTitle:'Broadcast Hours', startLbl:'Start:', endLbl:'End:', noteLbl:'Extra note:',
-    personalTitle:'Personal Info', nameLbl:'Your name:', roleLbl:'Title/Role:', aboutLbl:'About me:',
-    socialTitle:'Social Media', donateTitle:'Donation Link',
-    donateHint:'Enter your Patreon, Buy Me a Coffee or other support link.',
-    donateUrlLbl:'Link:', donateBtnLbl:'Button text:', prevTitle:'Preview',
-    saveBtn:'💾 Save', viewBtn:'🌐 View Profile', savedMsg:'✔ Saved!',
-    copyBtn:'📋 Copy', urlMsg:'Add this link below your streams!',
-    loading:'Loading...', loaded:'Profile loaded ✔', saving:'Saving...', saved:'Saved ✔',
-    imgLoaded:'Image loaded', notAuth:'Not authenticated, redirecting...',
-    errSave:'Save error: '
+    title:'LessonSchedule - Dashboard', m1:'Dosya', m2:'Düzenle', m3:'Çıkış', m4:'Yardım',
+    addr:'Adres:', pageTitle:'Profil Düzenle', loggedAs:'Giriş:', logout:'Çıkış',
+    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış', tab4:'🏅 Roller & OBS',
+    imgTitle:'Program Resmi', uploadLbl:'Programınızın resmini yükleyin:',
+    uploadHint:'📁 Resim seçmek için tıklayın (JPG, PNG)', uploadDrag:'veya buraya sürükleyin',
+    daysTitle:'Yayın Günleri', daysLbl:'Hangi günler yayındasınız?',
+    hoursTitle:'Yayın Saatleri', startLbl:'Başlangıç:', endLbl:'Bitiş:', noteLbl:'Ek not:',
+    personalTitle:'Kişisel Bilgiler', nameLbl:'Adınız:', roleLbl:'Unvan:', aboutLbl:'Hakkımda:',
+    socialTitle:'Sosyal Medya', donateTitle:'Bağış Linki',
+    donateHint:'Patreon, Buy Me a Coffee vb. link girin.',
+    donateUrlLbl:'Link:', donateBtnLbl:'Buton yazısı:', prevTitle:'Önizleme',
+    saveBtn:'💾 Kaydet', viewBtn:'🌐 Profili Görüntüle', savedMsg:'✔ Kaydedildi!',
+    copyBtn:'📋 Kopyala', urlMsg:'Bu linki yayınlarının altına ekle!',
+    loading:'Yükleniyor...', loaded:'Profil yüklendi ✔', saving:'Kaydediliyor...', saved:'Kaydedildi ✔',
+    imgLoaded:'Resim yüklendi', notAuth:'Oturum yok, yönlendiriliyorsunuz...', errSave:'Kaydetme hatası: ',
+    rolesTitle:'🏅 Streak Rolleri', rolesHint:'Seyircilerin streak\'leri büyüdükçe özel roller alır. Her rol için minimum streak ve isim belirle.',
+    roleName:'Rol Adı', addRole:'+ Rol Ekle', saveRoles:'💾 Rolleri Kaydet', rolesSaved:'✔ Roller kaydedildi!',
+    lbTitle:'🏆 Liderlik Tablosu', lbHint:'Girişleri silebilir, streak\'i sıfırlayabilir veya overlay\'de kaç kişi gösterileceğini ayarlayabilirsin.',
+    overlayTop:'Overlay ilk:', overlayEntries:'kişiyi göstersin', overlayApply:'Uygula', overlaySaved:'✔ Kaydedildi',
+    lbRefresh:'🔄 Yenile', lbClickRefresh:'Yüklemek için Yenile\'ye tıkla',
+    lbReset:'Sıfırla', lbDelete:'Sil',
+    lbResetConfirm:'Streak sıfırlansın mı?\n', lbDeleteConfirm:'Liderlik tablosundan silinsin mi? Bu geri alınamaz.\n',
+    lbResetDone:'Streak sıfırlandı ✔', lbDeleteDone:'Silindi ✔', lbOverlaySaved:'Overlay güncellendi ✔',
+    lbTotalEntries:' kayıt', lbNoEntries:'Henüz kimse yok.', lbLoading:'Yükleniyor...',
+    lbNoRoles:'Henüz rol yok. "+ Rol Ekle" ile başla.',
+    sessionTitle:'🎯 Yoklama Oturumu', sessionHint:'Yayın başladığında yoklamayı aç. Seyirciler yoklama linkinden katılır. Aynı gün birden fazla kez açabilirsin!',
+    sessionStatus:'Durum:', sessionClosed:'🔴 Kapalı',
+    openBtn:'🟢 YOKLAMAYI AÇ', closeBtn:'🔴 YOKLAMAYI KAPAT',
+    sessionOpened:'✔ Yoklama açıldı! Seyirciler katılabilir.', sessionClosedMsg:'🔴 Yoklama kapatıldı.',
+    sessionOpenedStatus:'Yoklama açıldı ✔', sessionClosedStatus:'Yoklama kapatıldı',
+    sessionIdTxt:'Oturum: ', openedAtTxt:' · Açıldı: ',
+    obsTitle:'📺 OBS Linkleri', obsHint:'Bu linkleri OBS\'de Sources → + → Browser Source olarak ekle.',
+    overlayLabel:'🏆 Leaderboard Overlay — Genişlik: 340px, Yükseklik: 400px',
+    alertLabel:'🔔 Bildirim Overlay — Genişlik: 600px, Yükseklik: 180px',
+    attendLabel:'✅ Yoklama Sayfası — Seyircilere bu linki ver',
+    alertDuration:'Bildirim süresi:', testAlert:'🧪 Test Bildirimi', alertDurationSaved:'✔ Kaydedildi',
+    copyTxt:'📋 Kopyala', copied:'Kopyalandı ✔', copyPrompt:'Kopyala:'
   },
   en: {
     title:'LessonSchedule - Dashboard', m1:'File', m2:'Edit', m3:'Logout', m4:'Help',
@@ -306,8 +341,29 @@ const T = {
     saveBtn:'💾 Save', viewBtn:'🌐 View Profile', savedMsg:'✔ Saved!',
     copyBtn:'📋 Copy', urlMsg:'Add this link below your streams!',
     loading:'Loading...', loaded:'Profile loaded ✔', saving:'Saving...', saved:'Saved ✔',
-    imgLoaded:'Image loaded', notAuth:'Not authenticated, redirecting...',
-    errSave:'Save error: '
+    imgLoaded:'Image loaded', notAuth:'Not authenticated, redirecting...', errSave:'Save error: ',
+    rolesTitle:'🏅 Streak Roles', rolesHint:'As viewers build their streaks, they earn special roles. Set a minimum streak and name for each role.',
+    roleName:'Role Name', addRole:'+ Add Role', saveRoles:'💾 Save Roles', rolesSaved:'✔ Roles saved!',
+    lbTitle:'🏆 Leaderboard Manager', lbHint:'View and manage the leaderboard. Delete entries, reset streaks, or set how many show in OBS overlay.',
+    overlayTop:'Overlay shows top:', overlayEntries:'entries', overlayApply:'Apply', overlaySaved:'✔ Saved',
+    lbRefresh:'🔄 Refresh', lbClickRefresh:'Click Refresh to load entries',
+    lbReset:'Reset', lbDelete:'Delete',
+    lbResetConfirm:'Reset streak for:\n', lbDeleteConfirm:'Delete from leaderboard? This cannot be undone.\n',
+    lbResetDone:'Streak reset ✔', lbDeleteDone:'Entry deleted ✔', lbOverlaySaved:'Overlay count updated ✔',
+    lbTotalEntries:' total entries', lbNoEntries:'No entries yet.', lbLoading:'Loading...',
+    lbNoRoles:'No roles yet. Click "+ Add Role" to get started.',
+    sessionTitle:'🎯 Attendance Session', sessionHint:'Open attendance when your stream starts. Viewers check in from the attendance link. You can open it multiple times per day!',
+    sessionStatus:'Status:', sessionClosed:'🔴 Closed',
+    openBtn:'🟢 OPEN ATTENDANCE', closeBtn:'🔴 CLOSE ATTENDANCE',
+    sessionOpened:'✔ Attendance is now open! Viewers can check in.', sessionClosedMsg:'🔴 Attendance closed.',
+    sessionOpenedStatus:'Attendance opened ✔', sessionClosedStatus:'Attendance closed',
+    sessionIdTxt:'Session: ', openedAtTxt:' · Opened at: ',
+    obsTitle:'📺 OBS Links', obsHint:'Add these links in OBS: Sources → + → Browser Source.',
+    overlayLabel:'🏆 Leaderboard Overlay — Width: 340px, Height: 400px',
+    alertLabel:'🔔 Alert Overlay — Width: 600px, Height: 180px',
+    attendLabel:'✅ Attendance Page — Share this link with your viewers',
+    alertDuration:'Alert duration:', testAlert:'🧪 Test Alert', alertDurationSaved:'✔ Saved',
+    copyTxt:'📋 Copy', copied:'Copied ✔', copyPrompt:'Copy this:'
   }
 };
 
@@ -357,6 +413,36 @@ function applyLang() {
   document.getElementById('btn-tr').classList.toggle('active-lang', lang==='tr');
   document.getElementById('btn-en').classList.toggle('active-lang', lang==='en');
   document.title = tr.title;
+  // Roles tab
+  document.getElementById('r-rolesTitle').textContent = tr.rolesTitle;
+  document.getElementById('r-rolesHint').textContent = tr.rolesHint;
+  document.getElementById('r-roleName').textContent = tr.roleName;
+  document.getElementById('r-addRole').textContent = tr.addRole;
+  document.getElementById('r-saveRoles').textContent = tr.saveRoles;
+  document.getElementById('rolesSavedMsg').textContent = tr.rolesSaved;
+  document.getElementById('r-lbTitle').textContent = tr.lbTitle;
+  document.getElementById('r-lbHint').textContent = tr.lbHint;
+  document.getElementById('r-overlayTop').textContent = tr.overlayTop;
+  document.getElementById('r-overlayEntries').textContent = tr.overlayEntries;
+  document.getElementById('r-overlayApply').textContent = tr.overlayApply;
+  document.getElementById('overlayCountSaved').textContent = tr.overlaySaved;
+  document.getElementById('r-lbRefresh').textContent = tr.lbRefresh;
+  document.getElementById('r-lbClickRefresh').textContent = tr.lbClickRefresh;
+  document.getElementById('r-sessionTitle').textContent = tr.sessionTitle;
+  document.getElementById('r-sessionHint').textContent = tr.sessionHint;
+  document.getElementById('r-sessionStatus').textContent = tr.sessionStatus;
+  document.getElementById('openAttendanceBtn').textContent = tr.openBtn;
+  document.getElementById('closeAttendanceBtn').textContent = tr.closeBtn;
+  document.getElementById('r-obsTitle').textContent = tr.obsTitle;
+  document.getElementById('r-obsHint').textContent = tr.obsHint;
+  document.getElementById('r-overlayLabel').textContent = tr.overlayLabel;
+  document.getElementById('r-alertLabel').textContent = tr.alertLabel;
+  document.getElementById('r-attendLabel').textContent = tr.attendLabel;
+  document.getElementById('r-alertDuration').textContent = tr.alertDuration;
+  document.getElementById('r-testAlert').textContent = tr.testAlert;
+  document.getElementById('r-copy1').textContent = tr.copyTxt;
+  document.getElementById('r-copy2').textContent = tr.copyTxt;
+  document.getElementById('r-copy3').textContent = tr.copyTxt;
   buildDaysGrid();
 }
 
@@ -408,7 +494,7 @@ document.addEventListener('input', e => {
 function renderRoles() {
   const container = document.getElementById('rolesContainer');
   if (rolesData.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;padding:8px;border:1px dashed #ccc;text-align:center">No roles yet. Click "+ Add Role" to get started.</div>';
+    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;padding:8px;border:1px dashed #ccc;text-align:center">' + t().lbNoRoles + '</div>';
     return;
   }
   container.innerHTML = rolesData.map((r, i) => `
@@ -445,15 +531,46 @@ window.saveRoles = async () => {
 function setOBSUrls(user) {
   const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
   const count = localStorage.getItem('dp_overlay_count_'+user) || '5';
+  const duration = localStorage.getItem('dp_alert_duration_'+user) || '5';
   document.getElementById('overlayCount').value = count;
+  document.getElementById('alertDurationSlider').value = duration;
+  document.getElementById('alertDurationVal').textContent = duration + 's';
   document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user + '&count=' + count;
-  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user;
+  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user + '&duration=' + duration;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
 }
 
 window.copyId = id => {
   const text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text).then(() => setStatus('Copied ✔')).catch(() => prompt('Copy this:', text));
+  navigator.clipboard.writeText(text).then(() => setStatus(t().copied)).catch(() => prompt(t().copyPrompt, text));
+};
+
+// ── Alert Duration ────────────────────────────────────
+window.updateAlertDuration = val => {
+  document.getElementById('alertDurationVal').textContent = val + 's';
+  localStorage.setItem('dp_alert_duration_' + (currentUser||''), val);
+  const saved = document.getElementById('alertDurationSaved');
+  saved.style.display = 'inline'; saved.textContent = t().alertDurationSaved;
+  setTimeout(() => saved.style.display='none', 2000);
+  // Update alert URL with duration
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+  const count = localStorage.getItem('dp_overlay_count_'+(currentUser||'')) || '5';
+  document.getElementById('alertUrl').textContent = base + 'alert.html?user=' + currentUser + '&duration=' + val;
+};
+
+window.testAlert = async () => {
+  if (!currentUser) return;
+  const duration = document.getElementById('alertDurationSlider').value;
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'notifications', Date.now().toString()), {
+      type: 'checkin',
+      viewer: currentUser + ' (test)',
+      streak: Math.floor(Math.random()*30)+1,
+      role: rolesData.length ? rolesData[rolesData.length-1].icon+' '+rolesData[rolesData.length-1].name : '👤 Viewer',
+      timestamp: serverTimestamp()
+    });
+    setStatus('Test alert sent ✔');
+  } catch(e) { alert('Error: ' + e.message); }
 };
 
 // ===== AUTH =====
@@ -501,49 +618,47 @@ window.loadLBManager = async () => {
   if (!currentUser) return;
   const container = document.getElementById('lbManager');
   const countEl = document.getElementById('lbManagerCount');
-  container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Loading...</div>';
+  container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">' + t().lbLoading + '</div>';
   try {
-    const { getDocs, collection: col, deleteDoc, doc: d2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getDocs, collection: col } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const snaps = await getDocs(col(db, 'users', currentUser, 'attendance'));
     const list = [];
     snaps.forEach(d => { const data = d.data(); list.push({ id: d.id, streak: data.streak||0 }); });
     list.sort((a,b) => b.streak - a.streak);
-    countEl.textContent = list.length + ' total entries';
-
+    countEl.textContent = list.length + t().lbTotalEntries;
     if (!list.length) {
-      container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No entries yet.</div>';
+      container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">' + t().lbNoEntries + '</div>';
       return;
     }
-
     const medals = ['🥇','🥈','🥉'];
     container.innerHTML = list.map((u, i) => `
       <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #ddd;font-size:12px;font-family:var(--font-main);background:${i%2===0?'#fff':'#f4f4f8'}">
         <div style="min-width:24px;font-weight:bold;color:#000080">${medals[i]||'#'+(i+1)}</div>
         <div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.id}</div>
         <div style="font-family:var(--font-display);font-size:20px;color:#000080;min-width:44px;text-align:right">${u.streak}🔥</div>
-        <button onclick="resetStreak('${u.id}')" style="background:#fff8e0;border:1px solid #aa7700;color:#aa7700;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">Reset</button>
-        <button onclick="deleteEntry('${u.id}')" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">Delete</button>
+        <button onclick="resetStreak('${u.id}')" style="background:#fff8e0;border:1px solid #aa7700;color:#aa7700;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">${t().lbReset}</button>
+        <button onclick="deleteEntry('${u.id}')" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:2px 6px;font-size:11px;font-family:var(--font-main)">${t().lbDelete}</button>
       </div>`).join('');
   } catch(e) { container.innerHTML = '<div style="padding:10px;color:red;font-size:12px">Error: '+e.message+'</div>'; }
 };
 
 window.resetStreak = async (viewerId) => {
   if (!currentUser) return;
-  if (!confirm('Reset streak for "' + viewerId + '" to 0?')) return;
+  if (!confirm(t().lbResetConfirm + '"' + viewerId + '"')) return;
   try {
     await updateDoc(doc(db, 'users', currentUser, 'attendance', viewerId), { streak: 0 });
-    setStatus('Streak reset ✔');
+    setStatus(t().lbResetDone);
     loadLBManager();
   } catch(e) { alert('Error: ' + e.message); }
 };
 
 window.deleteEntry = async (viewerId) => {
   if (!currentUser) return;
-  if (!confirm('Delete "' + viewerId + '" from leaderboard? This cannot be undone.')) return;
+  if (!confirm(t().lbDeleteConfirm + '"' + viewerId + '"')) return;
   try {
     const { deleteDoc: delDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     await delDoc(doc(db, 'users', currentUser, 'attendance', viewerId));
-    setStatus('Entry deleted ✔');
+    setStatus(t().lbDeleteDone);
     loadLBManager();
   } catch(e) { alert('Error: ' + e.message); }
 };
@@ -584,14 +699,16 @@ function setAttendanceUI(isOpen, sessionId='', openedAt=null) {
     openBtn.style.display = 'none';
     closeBtn.style.display = 'inline-block';
     info.style.display = 'block';
-    info.textContent = 'Session ID: ' + sessionId + (openedAt ? ' · Opened at ' + new Date(openedAt).toLocaleTimeString() : '');
+    info.textContent = t().sessionIdTxt + sessionId + (openedAt ? t().openedAtTxt + new Date(openedAt).toLocaleTimeString() : '');
   } else {
-    label.textContent = '🔴 Closed';
+    label.textContent = t().sessionClosed;
     label.style.color = '#aa0000';
     openBtn.style.display = 'inline-block';
     closeBtn.style.display = 'none';
     info.style.display = 'none';
   }
+  openBtn.textContent = t().openBtn;
+  closeBtn.textContent = t().closeBtn;
 }
 
 window.openAttendance = async () => {
@@ -599,13 +716,11 @@ window.openAttendance = async () => {
   const sessionId = 'session_' + Date.now();
   try {
     await setDoc(doc(db, 'users', currentUser, 'session', 'current'), {
-      open: true,
-      sessionId,
-      openedAt: Date.now()
+      open: true, sessionId, openedAt: Date.now()
     });
     setAttendanceUI(true, sessionId, Date.now());
-    setStatus('Attendance opened ✔');
-    showMsg2('✔ Attendance is now open! Viewers can check in.', 'ok');
+    setStatus(t().sessionOpenedStatus);
+    showMsg2(t().sessionOpened, 'ok');
   } catch(e) { alert('Error: ' + e.message); }
 };
 
@@ -614,8 +729,8 @@ window.closeAttendance = async () => {
   try {
     await setDoc(doc(db, 'users', currentUser, 'session', 'current'), { open: false, sessionId: null });
     setAttendanceUI(false);
-    setStatus('Attendance closed');
-    showMsg2('🔴 Attendance closed.', 'info');
+    setStatus(t().sessionClosedStatus);
+    showMsg2(t().sessionClosedMsg, 'info');
   } catch(e) { alert('Error: ' + e.message); }
 };
 

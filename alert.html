@@ -16,7 +16,7 @@ body{background:transparent;overflow:hidden;width:600px;height:180px}
   opacity:0;transform:translateY(-60px) scale(0.8);
   box-shadow:4px 4px 0 rgba(0,0,0,0.5),0 0 30px rgba(0,100,255,0.35);
 }
-.card.show{animation:slideIn .4s cubic-bezier(.34,1.56,.64,1) forwards, slideOut .4s ease-in 4.6s forwards}
+.card.show{animation:slideIn .4s cubic-bezier(.34,1.56,.64,1) forwards, slideOut .4s ease-in calc(var(--dur, 5s) - 0.4s) forwards}
 @keyframes slideIn{0%{opacity:0;transform:translateY(-60px) scale(.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes slideOut{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(.9)}}
 .icon{font-size:50px;line-height:1;flex-shrink:0;animation:bounce .5s ease-in-out .4s 3}
@@ -54,6 +54,7 @@ const firebaseConfig={apiKey:"AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",authDomai
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 const streamer=new URLSearchParams(window.location.search).get('user');
+const duration = parseInt(new URLSearchParams(window.location.search).get('duration')||'5') * 1000;
 let queue=[],showing=false;
 
 function confetti(){
@@ -77,10 +78,11 @@ function show(data){
   const subs={1:'checked in for the first time! 🎉',7:'hit a 7-day streak! 🔥',30:'reached 30 days! LEGENDARY 🏆'};
   document.getElementById('sub').textContent=subs[data.streak]||`checked in! ${data.streak}-day streak! 🔥`;
   const card=document.getElementById('card');
+  card.style.setProperty('--dur', (duration/1000) + 's');
   card.className='card show';
   if(data.streak>=3) confetti();
   showing=true;
-  setTimeout(()=>{card.className='card';showing=false;setTimeout(next,600)},5000);
+  setTimeout(()=>{card.className='card';showing=false;setTimeout(next,600)}, duration);
 }
 function next(){if(queue.length&&!showing) show(queue.shift());}
 
