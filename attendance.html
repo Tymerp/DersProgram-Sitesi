@@ -126,7 +126,6 @@
           style="font-family:var(--font-display);font-size:28px;padding:12px 40px;letter-spacing:2px;width:100%;display:none">
           ✅ CHECK IN NOW
         </button>
-        <button class="retro-btn" onclick="window.open('forum.html?user=' + streamer, '_blank')" style="margin-top:10px;width:100%;font-size:16px;padding:8px">💬 Join Forum & Chat</button>
         <!-- WAITING message — shown when attendance is closed -->
         <div id="waitingMsg" style="font-family:var(--font-main);font-size:13px;color:#888;padding:16px;border:1px dashed #ccc;display:none">
           ⏳ Attendance is not open yet. Wait for the streamer to open it!
@@ -344,16 +343,13 @@ window.doCheckin = async () => {
     // Streak bozulması closeAttendance tarafından yapılır
     // Burada sadece +1 yapıyoruz
     let newStreak = 1;
-    let recoveries = 1; // Default
     if (snap.exists()) {
       const data = snap.data();
       newStreak = (data.streak || 0) + 1;
-      recoveries = data.streakRecoveries !== undefined ? data.streakRecoveries : 1;
     }
 
     await setDoc(ref, {
       streak: newStreak,
-      streakRecoveries: recoveries,
       lastCheckin: serverTimestamp(),
       lastSessionId: currentSessionId
     }, { merge: true });

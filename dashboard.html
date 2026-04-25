@@ -54,7 +54,6 @@
       <div class="nav-tab" id="t-tab2" onclick="switchTab(event,'about')">👤 Hakkımda</div>
       <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
       <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
-      <div class="nav-tab" id="t-tab5" onclick="switchTab(event,'forum')">💬 Forum & Market</div>
     </div>
 
     <!-- ===== PROGRAM ===== -->
@@ -234,58 +233,12 @@
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label" id="r-attendLabel">✅ Yoklama Sayfası — Seyircilere bu linki ver</label>
+          <label class="form-label" id="r-attendLabel">✅ Attendance Page — Share this link with your viewers</label>
           <div class="url-box">
             <div class="url-display" id="attendUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('attendUrl')" id="r-copy3">📋 Kopyala</button>
+            <button class="retro-btn" onclick="copyId('attendUrl')" id="r-copy3">📋 Copy</button>
           </div>
         </div>
-
-        <div class="form-row" style="margin-top:10px">
-          <label class="form-label" id="r-forumLabel">💬 Forum & Chat Sayfası — Direkt link</label>
-          <div class="url-box">
-            <div class="url-display" id="forumUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('forumUrl')" id="r-copy4">📋 Kopyala</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== FORUM & MARKET ===== -->
-    <div id="tab-forum" class="tab-panel">
-      <!-- Chat Roles -->
-      <div class="groupbox">
-        <span class="groupbox-title">💬 Forum Rolleri</span>
-        <div class="alert-box"><div class="alert-icon">💡</div><div class="alert-msg">Seyircilerin forumda attığı mesaj sayısına göre alacakları otomatik roller.</div></div>
-        <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
-          <div style="width:72px">Min. Mesaj</div><div style="width:52px">İkon</div><div style="flex:1">Rol Adı</div><div style="width:60px">Renk</div><div style="width:60px"></div>
-        </div>
-        <div id="chatRolesContainer"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="retro-btn" onclick="addChatRole()">+ Rol Ekle</button>
-        </div>
-      </div>
-
-      <!-- Shop Items -->
-      <div class="groupbox">
-        <span class="groupbox-title">🛒 Market Yönetimi</span>
-        <div class="alert-box"><div class="alert-icon">💡</div><div class="alert-msg">İzleyicilerin puanlarıyla alabileceği ödülleri belirle. (Streak Kurtarma varsayılan olarak eklidir)</div></div>
-        <div id="shopItemsContainer"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="retro-btn" onclick="addShopItem()">+ Ödül Ekle</button>
-        </div>
-      </div>
-
-      <!-- Moderators -->
-      <div class="groupbox">
-        <span class="groupbox-title">🛡️ Moderatörler</span>
-        <div class="alert-box"><div class="alert-icon">💡</div><div class="alert-msg">Forumda mesaj silebilecek moderatörleri (kullanıcı adlarıyla) ekle. Virgülle ayır.</div></div>
-        <input class="retro-input" type="text" id="modsInput" placeholder="mod1, mod2, ali_hoca">
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="retro-btn primary" onclick="saveForumSettings()">💾 Forum & Market Ayarlarını Kaydet</button>
-        <span id="forumSavedMsg" style="color:green;font-size:12px;display:none;align-self:center">✔ Kaydedildi!</span>
       </div>
     </div>
 
@@ -330,7 +283,6 @@ const db = getFirestore(app);
 
 const DAYS = { tr:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'], en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] };
 let selectedDays = [], scheduleImgData = '', rolesData = [];
-let chatRolesData = [], shopItemsData = [];
 let lang = localStorage.getItem('dp_lang') || 'tr';
 let currentUser = null;
 
@@ -433,7 +385,6 @@ function applyLang() {
   document.getElementById('t-tab2').textContent = tr.tab2;
   document.getElementById('t-tab3').textContent = tr.tab3;
   document.getElementById('t-tab4').textContent = tr.tab4;
-  if(document.getElementById('t-tab5')) document.getElementById('t-tab5').textContent = lang==='tr'?'💬 Forum & Market':'💬 Forum & Shop';
   document.getElementById('t-img-title').textContent = tr.imgTitle;
   document.getElementById('t-upload-lbl').textContent = tr.uploadLbl;
   document.getElementById('t-upload-hint').textContent = tr.uploadHint;
@@ -576,60 +527,6 @@ window.saveRoles = async () => {
   } catch(e) { alert('Hata: ' + e.message); }
 };
 
-// ===== FORUM & MARKET =====
-function renderChatRoles() {
-  const container = document.getElementById('chatRolesContainer');
-  if (chatRolesData.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;text-align:center">Henüz forum rolü yok.</div>';
-    return;
-  }
-  container.innerHTML = chatRolesData.map((r, i) => `
-    <div class="role-row">
-      <input class="retro-input role-min" type="number" min="1" value="${r.minMsgs}" onchange="chatRolesData[${i}].minMsgs=parseInt(this.value)||1">
-      <input class="retro-input role-icon" type="text" value="${r.icon}" onchange="chatRolesData[${i}].icon=this.value">
-      <input class="retro-input role-name" type="text" value="${r.name}" onchange="chatRolesData[${i}].name=this.value">
-      <input class="retro-input" type="color" value="${r.color||'#ffffff'}" style="width:60px;height:24px;padding:0" onchange="chatRolesData[${i}].color=this.value">
-      <button class="remove-role" onclick="removeChatRole(${i})">✕ Sil</button>
-    </div>`).join('');
-}
-window.addChatRole = () => { chatRolesData.push({ minMsgs: 10, icon: '💬', name: 'Yeni Rol', color: '#dddddd' }); renderChatRoles(); };
-window.removeChatRole = i => { chatRolesData.splice(i, 1); renderChatRoles(); };
-
-function renderShopItems() {
-  const container = document.getElementById('shopItemsContainer');
-  if (shopItemsData.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;text-align:center">Henüz ödül yok.</div>';
-    return;
-  }
-  container.innerHTML = shopItemsData.map((s, i) => `
-    <div style="border:1px dashed #888; padding:8px; margin-bottom:8px; background:#f9f9f9">
-      <div class="role-row">
-        <input class="retro-input" type="text" placeholder="Ödül Adı (Örn: Su İç)" style="flex:1" value="${s.name}" onchange="shopItemsData[${i}].name=this.value">
-        <input class="retro-input" type="number" placeholder="Puan" style="width:80px" value="${s.cost}" onchange="shopItemsData[${i}].cost=parseInt(this.value)||10">
-        <button class="remove-role" onclick="removeShopItem(${i})">✕ Sil</button>
-      </div>
-      <input class="retro-input" type="text" placeholder="Açıklama" style="width:100%" value="${s.desc||''}" onchange="shopItemsData[${i}].desc=this.value">
-    </div>`).join('');
-}
-window.addShopItem = () => { shopItemsData.push({ id: 'item_'+Date.now(), name: 'Yeni Ödül', cost: 50, desc: '' }); renderShopItems(); };
-window.removeShopItem = i => { shopItemsData.splice(i, 1); renderShopItems(); };
-
-window.saveForumSettings = async () => {
-  if (!currentUser) return;
-  try {
-    const modsStr = document.getElementById('modsInput').value;
-    const mods = modsStr.split(',').map(m=>m.trim()).filter(m=>m.length>0);
-    await updateDoc(doc(db, 'users', currentUser), { 
-      chatRoles: chatRolesData,
-      shopItems: shopItemsData,
-      mods: mods
-    });
-    document.getElementById('forumSavedMsg').style.display = 'inline';
-    setTimeout(() => document.getElementById('forumSavedMsg').style.display = 'none', 2500);
-    setStatus('Forum ayarları kaydedildi ✔');
-  } catch(e) { alert('Hata: ' + e.message); }
-};
-
 // ===== OBS URL'LERİ =====
 function setOBSUrls(user) {
   const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
@@ -639,9 +536,8 @@ function setOBSUrls(user) {
   document.getElementById('alertDurationSlider').value = duration;
   document.getElementById('alertDurationVal').textContent = duration + 's';
   document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user + '&count=' + count;
-  document.getElementById('alertUrl').textContent    = base + 'shop-alert.html?user=' + user + '&duration=' + duration;
+  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user + '&duration=' + duration;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
-  document.getElementById('forumUrl').textContent    = base + 'forum.html?user=' + user;
 }
 
 window.copyId = id => {
@@ -696,13 +592,6 @@ onAuthStateChanged(auth, async user => {
     const savedRoles = snap.data().roles || [];
     rolesData = savedRoles;
     renderRoles();
-    
-    chatRolesData = snap.data().chatRoles || [];
-    shopItemsData = snap.data().shopItems || [];
-    const savedMods = snap.data().mods || [];
-    document.getElementById('modsInput').value = savedMods.join(', ');
-    renderChatRoles();
-    renderShopItems();
 
     if (p.scheduleImg) { scheduleImgData = p.scheduleImg; document.getElementById('schedulePreview').src = p.scheduleImg; document.getElementById('schedulePreview').style.display='block'; }
     if (p.days) { selectedDays = [...p.days]; buildDaysGrid(); }
@@ -855,13 +744,8 @@ window.closeAttendance = async () => {
         const data = d.data();
         // If viewer has a streak > 0 but did NOT check in this session → reset
         if ((data.streak || 0) > 0 && data.lastSessionId !== sessionId) {
-          if (data.streakRecoveries && data.streakRecoveries > 0) {
-            batch.update(d.ref, { streakRecoveries: data.streakRecoveries - 1 });
-            // Streak is preserved!
-          } else {
-            batch.update(d.ref, { streak: 0 });
-            resetCount++;
-          }
+          batch.update(d.ref, { streak: 0 });
+          resetCount++;
         }
       });
       if (resetCount > 0) await batch.commit();
