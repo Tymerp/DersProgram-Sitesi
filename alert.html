@@ -71,21 +71,16 @@ function confetti(){
 }
 
 function show(data){
-  const isShop = data.type === 'shop_purchase';
-  document.getElementById('name').textContent=isShop ? (data.buyer || 'Viewer') : data.viewer;
-  document.getElementById('streakNum').textContent=isShop ? '🛒' : data.streak;
-  document.getElementById('role').textContent=isShop ? 'SHOP ACTION' : (data.role||'👤 Viewer');
-  document.getElementById('icon').textContent=isShop ? '🎁' : (data.streak>=30?'🏆':data.streak>=7?'🔥':'✅');
-  if (isShop) {
-    document.getElementById('sub').textContent = data.instruction || `${data.itemTitle || 'Shop item'} purchased`;
-  } else {
-    const subs={1:'checked in for the first time! 🎉',7:'hit a 7-day streak! 🔥',30:'reached 30 days! LEGENDARY 🏆'};
-    document.getElementById('sub').textContent=subs[data.streak]||`checked in! ${data.streak}-day streak! 🔥`;
-  }
+  document.getElementById('name').textContent=data.viewer;
+  document.getElementById('streakNum').textContent=data.streak;
+  document.getElementById('role').textContent=data.role||'👤 Viewer';
+  document.getElementById('icon').textContent=data.streak>=30?'🏆':data.streak>=7?'🔥':'✅';
+  const subs={1:'checked in for the first time! 🎉',7:'hit a 7-day streak! 🔥',30:'reached 30 days! LEGENDARY 🏆'};
+  document.getElementById('sub').textContent=subs[data.streak]||`checked in! ${data.streak}-day streak! 🔥`;
   const card=document.getElementById('card');
   card.style.setProperty('--dur', (duration/1000) + 's');
   card.className='card show';
-  if((!isShop && data.streak>=3) || isShop) confetti();
+  if(data.streak>=3) confetti();
   showing=true;
   setTimeout(()=>{card.className='card';showing=false;setTimeout(next,600)}, duration);
 }
@@ -94,7 +89,7 @@ function next(){if(queue.length&&!showing) show(queue.shift());}
 if(streamer){
   onSnapshot(collection(db,'users',streamer,'notifications'),async snap=>{
     for(const ch of snap.docChanges()){
-      if(ch.type==='added'&&['checkin','shop_purchase'].includes(ch.doc.data().type)){
+      if(ch.type==='added'&&ch.doc.data().type==='checkin'){
         queue.push({...ch.doc.data(),id:ch.doc.id});
         try{await deleteDoc(doc(db,'users',streamer,'notifications',ch.doc.id))}catch(e){}
       }

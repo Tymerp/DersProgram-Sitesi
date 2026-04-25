@@ -54,7 +54,6 @@
       <div class="nav-tab" id="t-tab2" onclick="switchTab(event,'about')">👤 Hakkımda</div>
       <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
       <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
-      <div class="nav-tab" id="t-tab5" onclick="switchTab(event,'community')">💬 Community</div>
     </div>
 
     <!-- ===== PROGRAM ===== -->
@@ -243,55 +242,6 @@
       </div>
     </div>
 
-    <!-- ===== COMMUNITY ===== -->
-    <div id="tab-community" class="tab-panel">
-      <div class="groupbox">
-        <span class="groupbox-title">Chat Forum</span>
-        <div class="alert-box">
-          <div class="alert-icon">💬</div>
-          <div class="alert-msg">Her yayinciya ozel chat forumu. Linki yayininda paylasabilirsin.</div>
-        </div>
-        <div class="url-box">
-          <div class="url-display" id="chatUrl">-</div>
-          <button class="retro-btn" onclick="copyId('chatUrl')">📋 Copy</button>
-        </div>
-      </div>
-
-      <div class="groupbox">
-        <span class="groupbox-title">Moderator Requests</span>
-        <div style="margin-bottom:8px">
-          <button class="retro-btn" onclick="loadModRequests()">🔄 Refresh Requests</button>
-        </div>
-        <div id="modReqList" style="border:1px solid var(--win-dark);max-height:220px;overflow:auto">
-          <div style="padding:10px;font-size:12px;color:#666">No request loaded.</div>
-        </div>
-      </div>
-
-      <div class="groupbox">
-        <span class="groupbox-title">Chat Roles (by points)</span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button class="retro-btn" onclick="addChatRole()">+ Add Chat Role</button>
-          <button class="retro-btn primary" onclick="saveChatRoles()">💾 Save Chat Roles</button>
-        </div>
-        <div id="chatRolesList"></div>
-      </div>
-
-      <div class="groupbox">
-        <span class="groupbox-title">Shop Items</span>
-        <div class="alert-box">
-          <div class="alert-icon">🛒</div>
-          <div class="alert-msg">Varsayilan Streak Restore itemi otomatik gelir. Buradan yayin ici aksiyonlar ekleyebilirsin.</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;margin-bottom:8px">
-          <input class="retro-input" id="shopTitle" placeholder="Item title">
-          <input class="retro-input" id="shopCost" type="number" min="1" value="20">
-          <input class="retro-input" id="shopAction" placeholder="Overlay instruction (ornek: Yayinci su icsin)">
-          <button class="retro-btn" onclick="createShopItem()">Add</button>
-        </div>
-        <div id="shopItemList" style="border:1px solid var(--win-dark);max-height:220px;overflow:auto"></div>
-      </div>
-    </div>
-
     <!-- Alt butonlar -->
     <hr class="retro">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -333,7 +283,6 @@ const db = getFirestore(app);
 
 const DAYS = { tr:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'], en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] };
 let selectedDays = [], scheduleImgData = '', rolesData = [];
-let chatRolesData = [];
 let lang = localStorage.getItem('dp_lang') || 'tr';
 let currentUser = null;
 
@@ -436,7 +385,6 @@ function applyLang() {
   document.getElementById('t-tab2').textContent = tr.tab2;
   document.getElementById('t-tab3').textContent = tr.tab3;
   document.getElementById('t-tab4').textContent = tr.tab4;
-  if (document.getElementById('t-tab5')) document.getElementById('t-tab5').textContent = '💬 Community';
   document.getElementById('t-img-title').textContent = tr.imgTitle;
   document.getElementById('t-upload-lbl').textContent = tr.uploadLbl;
   document.getElementById('t-upload-hint').textContent = tr.uploadHint;
@@ -590,8 +538,6 @@ function setOBSUrls(user) {
   document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user + '&count=' + count;
   document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user + '&duration=' + duration;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
-  const chatEl = document.getElementById('chatUrl');
-  if (chatEl) chatEl.textContent = base + 'chat.html?user=' + user;
 }
 
 window.copyId = id => {
@@ -661,9 +607,6 @@ onAuthStateChanged(auth, async user => {
     if (p.donateUrl) document.getElementById('donateUrl').value = p.donateUrl;
     if (p.donateText) document.getElementById('donateText').value = p.donateText;
     setStatus(t().loaded);
-    await ensureCommunityDefaults();
-    await loadChatRoles();
-    await loadShopItems();
     loadSessionStatus();
   } catch(e) { setStatus('Error: ' + e.message); }
 });
@@ -801,12 +744,7 @@ window.closeAttendance = async () => {
         const data = d.data();
         // If viewer has a streak > 0 but did NOT check in this session → reset
         if ((data.streak || 0) > 0 && data.lastSessionId !== sessionId) {
-          batch.update(d.ref, {
-            streak: 0,
-            reviveAvailable: true,
-            pendingReviveStreak: data.streak || 0,
-            reviveSessionId: sessionId
-          });
+          batch.update(d.ref, { streak: 0 });
           resetCount++;
         }
       });
@@ -859,154 +797,6 @@ window.saveProfile = async () => {
 };
 
 window.previewProfile = async () => { await window.saveProfile(); window.open('profile.html?user=' + currentUser, '_blank'); };
-
-// ===== COMMUNITY / CHAT =====
-async function ensureCommunityDefaults() {
-  if (!currentUser) return;
-  const { getDocs, query: q, collection: col, orderBy: ob } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const roomsRef = col(db, 'users', currentUser, 'chatRooms');
-  const rooms = await getDocs(roomsRef);
-  if (rooms.empty) {
-    const defaults = [
-      { id:'general', name:'Genel Chat', slug:'general', order:1, enabled:true },
-      { id:'study-hours', name:'Kac Saat Calistim', slug:'study-hours', order:2, enabled:true },
-      { id:'study-space', name:'Calisma Alanim', slug:'study-space', order:3, enabled:true }
-    ];
-    for (const r of defaults) await setDoc(doc(db, 'users', currentUser, 'chatRooms', r.id), r);
-  }
-  const chatRolesSnap = await getDocs(col(db, 'users', currentUser, 'chatRoles'));
-  if (chatRolesSnap.empty) {
-    const defaults = [
-      { id:'viewer', name:'Viewer', color:'#444444', emoji:'👤', minPoints:0, order:1 },
-      { id:'active', name:'Active', color:'#000080', emoji:'⚡', minPoints:20, order:2 },
-      { id:'legend', name:'Legend', color:'#8b0000', emoji:'👑', minPoints:80, order:3 }
-    ];
-    for (const r of defaults) await setDoc(doc(db, 'users', currentUser, 'chatRoles', r.id), r);
-  }
-  const shopSnap = await getDocs(col(db, 'users', currentUser, 'shopItems'));
-  if (shopSnap.empty) {
-    await setDoc(doc(db, 'users', currentUser, 'shopItems', 'streak_restore'), {
-      title:'Streak Restore (Tek Sefer)',
-      cost:25,
-      type:'streak_restore',
-      payload:{ actionText:'Streakini geri yukle!' },
-      enabled:true,
-      createdBy:'system'
-    });
-  }
-}
-
-async function loadChatRoles() {
-  if (!currentUser) return;
-  const { getDocs, collection: col, query: q, orderBy: ob } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await getDocs(q(col(db, 'users', currentUser, 'chatRoles'), ob('order', 'asc')));
-  chatRolesData = [];
-  snap.forEach(d => chatRolesData.push({ id:d.id, ...d.data() }));
-  renderChatRoles();
-}
-
-function renderChatRoles() {
-  const box = document.getElementById('chatRolesList');
-  if (!box) return;
-  if (!chatRolesData.length) {
-    box.innerHTML = '<div style="font-size:12px;color:#777">No chat role.</div>';
-    return;
-  }
-  box.innerHTML = chatRolesData.map((r, i) => `
-    <div style="display:grid;grid-template-columns:90px 70px 1fr 120px auto;gap:6px;align-items:center;margin-bottom:6px">
-      <input class="retro-input" type="number" min="0" value="${r.minPoints||0}" onchange="updateChatRole(${i},'minPoints',parseInt(this.value)||0)">
-      <input class="retro-input" value="${r.emoji||'👤'}" onchange="updateChatRole(${i},'emoji',this.value)">
-      <input class="retro-input" value="${r.name||'Role'}" onchange="updateChatRole(${i},'name',this.value)">
-      <input class="retro-input" type="color" value="${r.color||'#000080'}" onchange="updateChatRole(${i},'color',this.value)">
-      <button class="retro-btn" style="font-size:11px;padding:1px 8px" onclick="removeChatRole(${i})">Remove</button>
-    </div>
-  `).join('');
-}
-window.updateChatRole = (i, key, val) => { chatRolesData[i][key] = val; };
-window.addChatRole = () => {
-  chatRolesData.push({ id:'role_'+Date.now(), name:'New Role', color:'#000080', emoji:'✨', minPoints:10, order:chatRolesData.length+1 });
-  renderChatRoles();
-};
-window.removeChatRole = i => { chatRolesData.splice(i, 1); renderChatRoles(); };
-window.saveChatRoles = async () => {
-  if (!currentUser) return;
-  for (let i=0;i<chatRolesData.length;i++){
-    const r = chatRolesData[i];
-    await setDoc(doc(db, 'users', currentUser, 'chatRoles', r.id || ('role_'+i)), {
-      name:r.name||'Role', color:r.color||'#000080', emoji:r.emoji||'👤', minPoints:r.minPoints||0, order:i+1
-    }, { merge:true });
-  }
-  setStatus('Chat roles saved ✔');
-};
-
-async function loadShopItems() {
-  if (!currentUser) return;
-  const { getDocs, collection: col } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await getDocs(col(db, 'users', currentUser, 'shopItems'));
-  const list = [];
-  snap.forEach(d => list.push({ id:d.id, ...d.data() }));
-  const box = document.getElementById('shopItemList');
-  if (!box) return;
-  if (!list.length) {
-    box.innerHTML = '<div style="padding:8px;font-size:12px;color:#666">No item.</div>';
-    return;
-  }
-  box.innerHTML = list.map(i => `<div style="padding:8px;border-bottom:1px solid #ddd;font-size:12px">
-    <strong>${i.title}</strong> · ${i.cost} puan
-    <div style="font-size:11px;color:#555">${i.type}</div>
-    <div style="margin-top:4px"><button class="retro-btn" style="font-size:11px;padding:1px 8px" onclick="toggleShopItem('${i.id}', ${i.enabled===false})">${i.enabled===false?'Enable':'Disable'}</button></div>
-  </div>`).join('');
-}
-window.toggleShopItem = async (id, enable) => {
-  await updateDoc(doc(db, 'users', currentUser, 'shopItems', id), { enabled: enable });
-  await loadShopItems();
-};
-window.createShopItem = async () => {
-  const title = document.getElementById('shopTitle').value.trim();
-  const cost = parseInt(document.getElementById('shopCost').value||'0', 10);
-  const actionText = document.getElementById('shopAction').value.trim();
-  if (!title || cost < 1) return;
-  await setDoc(doc(db, 'users', currentUser, 'shopItems', 'custom_'+Date.now()), {
-    title, cost, type:'custom_action', payload:{ actionText: actionText || title }, enabled:true, createdBy:currentUser
-  });
-  document.getElementById('shopTitle').value = '';
-  document.getElementById('shopAction').value = '';
-  await loadShopItems();
-  setStatus('Shop item eklendi ✔');
-};
-
-window.loadModRequests = async () => {
-  if (!currentUser) return;
-  const { getDocs, collection: col } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await getDocs(col(db, 'users', currentUser, 'modRequests'));
-  const rows = [];
-  snap.forEach(d => rows.push({ id:d.id, ...d.data() }));
-  const box = document.getElementById('modReqList');
-  if (!box) return;
-  if (!rows.length){
-    box.innerHTML = '<div style="padding:10px;font-size:12px;color:#666">No pending request.</div>';
-    return;
-  }
-  box.innerHTML = rows.map(r => `<div style="padding:8px;border-bottom:1px solid #ddd;font-size:12px">
-    <strong>${r.requester || r.id}</strong> · ${r.status || 'pending'}
-    <div style="margin-top:4px;display:flex;gap:6px">
-      <button class="retro-btn" style="font-size:11px;padding:1px 8px" onclick="approveMod('${r.id}')">Approve</button>
-      <button class="retro-btn" style="font-size:11px;padding:1px 8px" onclick="rejectMod('${r.id}')">Reject</button>
-    </div>
-  </div>`).join('');
-};
-window.approveMod = async username => {
-  await setDoc(doc(db, 'users', currentUser, 'moderators', username), {
-    approvedByStreamer:true, permissions:{ delete:true, mute:true, ban:true }, createdAt:serverTimestamp()
-  }, { merge:true });
-  await setDoc(doc(db, 'users', currentUser, 'modRequests', username), { status:'approved', updatedAt:serverTimestamp() }, { merge:true });
-  setStatus('Moderator onaylandi ✔');
-  loadModRequests();
-};
-window.rejectMod = async username => {
-  await setDoc(doc(db, 'users', currentUser, 'modRequests', username), { status:'rejected', updatedAt:serverTimestamp() }, { merge:true });
-  loadModRequests();
-};
 </script>
 </body>
 </html>
