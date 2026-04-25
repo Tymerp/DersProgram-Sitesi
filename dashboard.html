@@ -54,6 +54,7 @@
       <div class="nav-tab" id="t-tab2" onclick="switchTab(event,'about')">👤 Hakkımda</div>
       <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
       <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
+      <div class="nav-tab" id="t-tab5" onclick="switchTab(event,'forum')">💬 Forum</div>
     </div>
 
     <!-- ===== PROGRAM ===== -->
@@ -242,6 +243,72 @@
       </div>
     </div>
 
+    <!-- ===== FORUM ===== -->
+    <div id="tab-forum" class="tab-panel">
+
+      <!-- Forum link -->
+      <div class="groupbox">
+        <span class="groupbox-title">💬 Forum & Chat</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">📋</div>
+          <div class="alert-msg">Share this link with your viewers so they can chat in your forum.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Forum Page Link:</label>
+          <div class="url-box">
+            <div class="url-display" id="forumUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('forumUrl')">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom topics -->
+      <div class="groupbox">
+        <span class="groupbox-title">📋 Custom Topics</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">💡</div>
+          <div class="alert-msg">3 default topics (General, Hours Studied, My Study Space) are always shown. Add your own topics here!</div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
+          <div style="width:60px">Icon</div>
+          <div style="flex:1">Topic Name</div>
+          <div style="flex:2">Description (optional)</div>
+          <div style="width:60px"></div>
+        </div>
+        <div id="topicsContainer"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="retro-btn" onclick="addTopic()">+ Add Topic</button>
+          <button class="retro-btn primary" onclick="saveTopics()">💾 Save Topics</button>
+        </div>
+        <div id="topicsSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Topics saved!</div>
+      </div>
+
+      <!-- Moderators -->
+      <div class="groupbox">
+        <span class="groupbox-title">🛡️ Moderators</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">🔧</div>
+          <div class="alert-msg">Moderators can delete messages and ban users in the forum. Add moderators by username.</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+          <input class="retro-input" type="text" id="modUsername" placeholder="Enter username" style="flex:1">
+          <button class="retro-btn primary" onclick="addModerator()">+ Add Moderator</button>
+        </div>
+        <div id="modErr" style="color:red;font-size:12px;display:none;margin-bottom:6px"></div>
+        <div id="modsList" style="border:1px solid var(--win-dark);max-height:200px;overflow-y:auto">
+          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No moderators yet.</div>
+        </div>
+      </div>
+
+      <!-- Banned users -->
+      <div class="groupbox">
+        <span class="groupbox-title">🚫 Banned Users</span>
+        <div id="bannedList" style="border:1px solid var(--win-dark);max-height:160px;overflow-y:auto">
+          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No banned users.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Alt butonlar -->
     <hr class="retro">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -385,6 +452,8 @@ function applyLang() {
   document.getElementById('t-tab2').textContent = tr.tab2;
   document.getElementById('t-tab3').textContent = tr.tab3;
   document.getElementById('t-tab4').textContent = tr.tab4;
+  const tab5 = document.getElementById('t-tab5');
+  if (tab5) tab5.textContent = lang === 'tr' ? '💬 Forum' : '💬 Forum';
   document.getElementById('t-img-title').textContent = tr.imgTitle;
   document.getElementById('t-upload-lbl').textContent = tr.uploadLbl;
   document.getElementById('t-upload-hint').textContent = tr.uploadHint;
@@ -608,6 +677,7 @@ onAuthStateChanged(auth, async user => {
     if (p.donateText) document.getElementById('donateText').value = p.donateText;
     setStatus(t().loaded);
     loadSessionStatus();
+    loadForumConfig();
   } catch(e) { setStatus('Error: ' + e.message); }
 });
 
@@ -766,6 +836,171 @@ function showMsg2(text, type) {
   saved.style.display = 'block';
   setTimeout(()=>saved.style.display='none', 3000);
 }
+
+// ── FORUM MANAGEMENT ──────────────────────────────────
+let topicsData = [];
+let modsData = [];
+let bannedData = [];
+
+async function loadForumConfig() {
+  if (!currentUser) return;
+  try {
+    // Load custom topics
+    const topicSnap = await getDoc(doc(db, 'users', currentUser, 'forum', 'config'));
+    if (topicSnap.exists()) {
+      topicsData = topicSnap.data().topics || [];
+    } else {
+      topicsData = [];
+    }
+    renderTopics();
+
+    // Load mods and banned from main user doc
+    const userSnap = await getDoc(doc(db, 'users', currentUser));
+    if (userSnap.exists()) {
+      modsData = userSnap.data().mods || [];
+      bannedData = userSnap.data().banned || [];
+    }
+    renderMods();
+    renderBanned();
+
+    // Set forum URL
+    const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+    document.getElementById('forumUrl').textContent = base + 'forum.html?user=' + currentUser;
+  } catch(e) {}
+}
+
+function renderTopics() {
+  const container = document.getElementById('topicsContainer');
+  if (!topicsData.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#888;padding:8px;border:1px dashed #ccc;text-align:center">No custom topics. Click "+ Add Topic" to add one.</div>';
+    return;
+  }
+  container.innerHTML = topicsData.map((t, i) => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <input class="retro-input" type="text" value="${t.icon}" onchange="updateTopic(${i},'icon',this.value)" style="width:60px;text-align:center" placeholder="📚">
+      <input class="retro-input" type="text" value="${t.name||''}" onchange="updateTopic(${i},'name',this.value)" style="flex:1;min-width:140px" placeholder="Topic name">
+      <input class="retro-input" type="text" value="${t.description||''}" onchange="updateTopic(${i},'description',this.value)" style="flex:2;min-width:160px" placeholder="Description">
+      <button onclick="removeTopic(${i})" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:3px 8px;font-size:12px;font-family:var(--font-main)">✕ Remove</button>
+    </div>
+  `).join('');
+}
+
+window.updateTopic = (i, field, value) => { topicsData[i][field] = value; };
+
+window.addTopic = () => {
+  const id = 'custom_' + Date.now();
+  topicsData.push({ id, icon: '📚', name: 'New Topic', description: '' });
+  renderTopics();
+};
+
+window.removeTopic = (i) => {
+  if (!confirm('Remove this topic and all its messages?')) return;
+  topicsData.splice(i, 1);
+  renderTopics();
+};
+
+window.saveTopics = async () => {
+  if (!currentUser) return;
+  // Validate
+  for (const t of topicsData) {
+    if (!t.name || !t.name.trim()) { alert('All topics must have a name!'); return; }
+    if (!t.icon || !t.icon.trim()) { t.icon = '📚'; }
+  }
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'forum', 'config'), { topics: topicsData });
+    const msg = document.getElementById('topicsSavedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    setStatus('Topics saved ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── Moderators ────────────────────────────────────────
+function renderMods() {
+  const container = document.getElementById('modsList');
+  if (!modsData.length) {
+    container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No moderators yet.</div>';
+    return;
+  }
+  container.innerHTML = modsData.map((u, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #ddd;font-size:12px;font-family:var(--font-main);background:${i%2===0?'#fff':'#f4f4f8'}">
+      <div style="font-size:16px">🛡️</div>
+      <div style="flex:1;font-weight:bold;color:#000080">${u}</div>
+      <button onclick="removeMod('${u}')" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:2px 8px;font-size:11px;font-family:var(--font-main)">Remove</button>
+    </div>
+  `).join('');
+}
+
+window.addModerator = async () => {
+  const input = document.getElementById('modUsername');
+  const username = input.value.trim().toLowerCase().replace(/\s+/g,'_');
+  const errEl = document.getElementById('modErr');
+  errEl.style.display = 'none';
+
+  if (!username) { errEl.textContent = '⚠ Enter a username.'; errEl.style.display = 'block'; return; }
+  if (modsData.includes(username)) { errEl.textContent = '⚠ Already a moderator.'; errEl.style.display = 'block'; return; }
+  if (username === currentUser) { errEl.textContent = '⚠ You are the streamer, not a mod.'; errEl.style.display = 'block'; return; }
+
+  // Check if user exists in forum (has sent at least 1 message OR has registered)
+  try {
+    // Check if user is registered (main users collection)
+    const userSnap = await getDoc(doc(db, 'users', username));
+    if (!userSnap.exists()) {
+      // Check if they have forum activity
+      const forumUserSnap = await getDoc(doc(db, 'users', currentUser, 'forumUsers', username));
+      if (!forumUserSnap.exists()) {
+        errEl.textContent = '⚠ User "' + username + '" not found. They must register or send a message first.';
+        errEl.style.display = 'block';
+        return;
+      }
+    }
+
+    // Confirm
+    if (!confirm(`Make "${username}" a moderator? They will be able to delete messages and ban users in your forum.`)) return;
+
+    modsData.push(username);
+    await updateDoc(doc(db, 'users', currentUser), { mods: modsData });
+    input.value = '';
+    renderMods();
+    setStatus('Moderator added ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.removeMod = async (username) => {
+  if (!confirm(`Remove "${username}" as moderator?`)) return;
+  try {
+    modsData = modsData.filter(u => u !== username);
+    await updateDoc(doc(db, 'users', currentUser), { mods: modsData });
+    renderMods();
+    setStatus('Moderator removed ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── Banned ────────────────────────────────────────────
+function renderBanned() {
+  const container = document.getElementById('bannedList');
+  if (!bannedData.length) {
+    container.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No banned users.</div>';
+    return;
+  }
+  container.innerHTML = bannedData.map((u, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #ddd;font-size:12px;font-family:var(--font-main);background:${i%2===0?'#fff':'#f4f4f8'}">
+      <div style="font-size:16px">🚫</div>
+      <div style="flex:1;color:#aa0000">${u}</div>
+      <button onclick="unbanUser('${u}')" style="background:#e8ffe0;border:1px solid #006400;color:#006400;cursor:pointer;padding:2px 8px;font-size:11px;font-family:var(--font-main)">Unban</button>
+    </div>
+  `).join('');
+}
+
+window.unbanUser = async (username) => {
+  if (!confirm(`Unban "${username}"?`)) return;
+  try {
+    bannedData = bannedData.filter(u => u !== username);
+    await updateDoc(doc(db, 'users', currentUser), { banned: bannedData });
+    renderBanned();
+    setStatus('User unbanned ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
 
 window.saveProfile = async () => {
   if (!currentUser) return;

@@ -41,6 +41,10 @@
         <div class="profile-name" id="streamerName">Loading...</div>
         <div class="profile-handle">Attendance & Streak Tracker</div>
       </div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <a href="#" id="profileLink" class="retro-btn" style="font-size:11px;padding:4px 10px">📅 Profile</a>
+        <a href="#" id="forumLink" class="retro-btn" style="font-size:11px;padding:4px 10px">💬 Forum</a>
+      </div>
     </div>
 
     <!-- Message -->
@@ -254,6 +258,8 @@ async function updateCheckinUI() {
 async function loadStreamerInfo() {
   if (!streamer) return;
   document.getElementById('addrBar').value = 'lessonschedule.app/attendance?user=' + streamer;
+  document.getElementById('profileLink').href = 'profile.html?user=' + streamer;
+  document.getElementById('forumLink').href = 'forum.html?user=' + streamer;
   try {
     const snap = await getDoc(doc(db, 'users', streamer));
     if (snap.exists()) {

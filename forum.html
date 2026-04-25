@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forum</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.forum-layout{display:flex;gap:8px;height:calc(100vh - 240px);min-height:480px}
+.topics-panel{width:200px;flex-shrink:0;background:var(--win-bg);border:1px solid var(--win-dark);overflow-y:auto}
+.topic-header{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;padding:6px 10px;font-size:11px;font-weight:bold;font-family:var(--font-main)}
+.topic-item{padding:8px 10px;border-bottom:1px solid #ddd;cursor:pointer;font-size:12px;font-family:var(--font-main);display:flex;align-items:center;gap:6px}
+.topic-item:hover{background:#e8e8f0}
+.topic-item.active{background:var(--accent);color:#fff}
+.topic-item.active .topic-count{color:#fff}
+.topic-icon{font-size:14px}
+.topic-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topic-count{font-size:10px;color:#888;background:#fff;padding:1px 5px;border:1px solid #aaa}
+.topic-item.active .topic-count{background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.5)}
+
+.chat-panel{flex:1;display:flex;flex-direction:column;background:#fff;border:1px solid var(--win-dark);min-width:0}
+.chat-header{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#fff;padding:8px 12px;font-family:var(--font-main);display:flex;justify-content:space-between;align-items:center}
+.chat-title{font-weight:bold;font-size:13px}
+.chat-count{font-size:11px;opacity:0.9}
+
+.chat-messages{flex:1;overflow-y:auto;padding:8px;background:#fafaff;display:flex;flex-direction:column;gap:6px}
+.msg{display:flex;gap:8px;padding:6px;background:#fff;border:1px solid #e0e0e8;animation:msgIn .2s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:36px;height:36px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:18px;flex-shrink:0;cursor:pointer}
+.msg-avatar:hover{background:var(--accent2)}
+.msg-body{flex:1;min-width:0}
+.msg-head{display:flex;gap:6px;align-items:center;margin-bottom:2px;flex-wrap:wrap}
+.msg-author{font-weight:bold;color:#000080;font-size:12px;cursor:pointer;font-family:var(--font-main)}
+.msg-author:hover{text-decoration:underline}
+.msg-role{font-size:9px;background:var(--accent2);color:#fff;padding:1px 5px;font-family:var(--font-main)}
+.msg-time{font-size:10px;color:#888;font-family:var(--font-main)}
+.msg-mod-tag{font-size:9px;background:#cc4444;color:#fff;padding:1px 5px;font-family:var(--font-main)}
+.msg-streamer-tag{font-size:9px;background:#aa00aa;color:#fff;padding:1px 5px;font-family:var(--font-main)}
+.msg-text{font-size:13px;color:#222;font-family:var(--font-main);word-wrap:break-word;line-height:1.4}
+.msg-image{max-width:300px;max-height:200px;border:1px solid #ccc;cursor:pointer;margin-top:4px;display:block}
+.msg-actions{display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap}
+.reaction{font-size:11px;background:#f0f0f8;border:1px solid #ccc;padding:1px 6px;cursor:pointer;font-family:var(--font-main);display:inline-flex;align-items:center;gap:3px}
+.reaction:hover{background:#e0e0f0}
+.reaction.mine{background:#d0e0ff;border-color:#5588cc}
+.reaction-add{font-size:11px;background:transparent;border:1px dashed #aaa;padding:1px 6px;cursor:pointer;color:#888;font-family:var(--font-main)}
+.reaction-add:hover{background:#f0f0f8;color:#000}
+.msg-mod-actions{display:flex;gap:4px;margin-left:auto;opacity:0;transition:opacity .15s}
+.msg:hover .msg-mod-actions{opacity:1}
+.mod-btn{background:#fff;border:1px solid #888;padding:1px 5px;font-size:10px;cursor:pointer;font-family:var(--font-main)}
+.mod-btn.danger{background:#ffeeee;border-color:#cc4444;color:#cc4444}
+.mod-btn:hover{background:#eee}
+
+.chat-input-wrap{border-top:1px solid var(--win-dark);padding:8px;background:var(--win-bg)}
+.chat-input-row{display:flex;gap:6px;align-items:flex-start}
+.chat-input{flex:1;border-top:1px solid #404040;border-left:1px solid #404040;border-right:1px solid #fff;border-bottom:1px solid #fff;background:#fff;padding:6px 8px;font-family:var(--font-main);font-size:13px;outline:none;resize:none;min-height:36px;max-height:120px}
+.chat-input:focus{outline:1px dotted #000080}
+.chat-input:disabled{background:#eee;color:#888}
+.send-btn{background:var(--accent);color:#fff;border:1px solid #404040;padding:0 16px;cursor:pointer;font-family:var(--font-main);font-size:12px;font-weight:bold}
+.send-btn:hover{background:var(--accent2)}
+.send-btn:disabled{background:#aaa;cursor:not-allowed}
+
+.input-toolbar{display:flex;gap:4px;margin-bottom:6px;align-items:center;font-size:11px;color:#666;font-family:var(--font-main);flex-wrap:wrap}
+.tool-btn{background:#fff;border:1px solid #aaa;padding:2px 8px;cursor:pointer;font-size:11px;font-family:var(--font-main)}
+.tool-btn:hover{background:#e8e8f0}
+
+.cooldown-msg{font-size:11px;color:#aa6600;font-family:var(--font-main)}
+.banned-msg{padding:14px;text-align:center;background:#ffeeee;border:1px solid #cc4444;color:#cc4444;font-family:var(--font-main);font-size:12px}
+
+.image-preview{display:none;margin-top:6px;padding:6px;background:#f0f0f8;border:1px solid #aaa}
+.image-preview img{max-height:80px;display:block;margin-bottom:4px}
+.image-preview button{font-size:10px}
+
+.empty-msg{text-align:center;padding:24px;color:#888;font-family:var(--font-main);font-size:12px}
+
+.emoji-picker{position:absolute;background:#fff;border:1px solid var(--win-dark);padding:6px;display:none;z-index:100;max-width:280px;flex-wrap:wrap;gap:2px;box-shadow:2px 2px 0 rgba(0,0,0,0.2)}
+.emoji-picker.show{display:flex}
+.emoji-btn{font-size:18px;padding:2px 4px;cursor:pointer;background:transparent;border:none}
+.emoji-btn:hover{background:#e0e8ff}
+
+.user-info-bar{display:flex;align-items:center;gap:10px;background:#e8e8f0;padding:6px 10px;border:1px solid #ccc;font-size:12px;font-family:var(--font-main);margin-bottom:8px}
+.user-info-bar .username{flex:1;font-weight:bold;color:#000080}
+.user-points{background:var(--accent);color:#fff;padding:2px 8px;font-size:11px}
+
+@media(max-width:700px){
+  .forum-layout{flex-direction:column;height:auto;min-height:600px}
+  .topics-panel{width:100%;max-height:160px}
+  .chat-panel{min-height:400px}
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="window-titlebar">
+    <div class="window-title">
+      <div class="window-title-icon"></div>
+      <span id="pageTitle">Forum</span>
+    </div>
+    <div class="window-controls">
+      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
+    </div>
+  </div>
+  <div class="menubar">
+    <div class="menu-item">File</div>
+    <div class="menu-item">View</div>
+    <div class="menu-item">Help</div>
+  </div>
+  <div class="addressbar">
+    <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
+    <div class="addr-label">Address:</div>
+    <input class="addr-input" id="addrBar" value="" readonly>
+    <div class="addr-go">▶</div>
+  </div>
+
+  <div class="window-content">
+
+    <!-- Streamer header -->
+    <div class="profile-header" style="margin-bottom:14px">
+      <div class="profile-avatar" id="streamerAvatar">??</div>
+      <div>
+        <div class="profile-name" id="streamerName">Loading...</div>
+        <div class="profile-handle">📋 Forum & Chat</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <a href="#" id="profileLink" class="retro-btn" style="font-size:11px;padding:4px 10px">📅 Profile</a>
+        <a href="#" id="attendLink" class="retro-btn" style="font-size:11px;padding:4px 10px">✅ Attendance</a>
+      </div>
+    </div>
+
+    <!-- User bar (when logged in) -->
+    <div id="userBar" class="user-info-bar" style="display:none">
+      <div>👤</div>
+      <div class="username" id="userName">-</div>
+      <div class="user-points" id="userPoints">0 pts</div>
+      <div style="font-size:11px;color:#555">Messages: <strong id="userMsgCount">0</strong></div>
+      <button class="retro-btn" onclick="doSignOut()" style="font-size:11px;padding:2px 10px">Sign Out</button>
+    </div>
+
+    <!-- Login required message -->
+    <div id="loginRequired" style="display:none;padding:20px;text-align:center;background:#fffae8;border:1px solid #cc9900;color:#aa6600;font-family:var(--font-main);font-size:13px;margin-bottom:12px">
+      🔒 You need to <a href="#" onclick="goToAttendance()" style="color:#000080;font-weight:bold">sign in</a> to participate in the forum.
+    </div>
+
+    <!-- Forum layout -->
+    <div class="forum-layout">
+
+      <!-- Topics list -->
+      <div class="topics-panel">
+        <div class="topic-header">📋 TOPICS</div>
+        <div id="topicsList">
+          <div class="empty-msg">Loading topics...</div>
+        </div>
+      </div>
+
+      <!-- Chat area -->
+      <div class="chat-panel">
+        <div class="chat-header">
+          <div class="chat-title" id="chatTitle">Select a topic</div>
+          <div class="chat-count" id="chatCount"></div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="empty-msg">👈 Select a topic on the left to start chatting</div>
+        </div>
+
+        <!-- Banned notice -->
+        <div id="bannedMsg" class="banned-msg" style="display:none">
+          🚫 You are banned from this forum.
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-wrap" id="inputWrap" style="display:none">
+          <!-- Image preview -->
+          <div id="imagePreview" class="image-preview">
+            <img id="previewImg" alt="preview">
+            <button class="retro-btn" onclick="clearImage()">✕ Remove image</button>
+          </div>
+          <div class="input-toolbar">
+            <button class="tool-btn" onclick="document.getElementById('imageInput').click()">📷 Image</button>
+            <button class="tool-btn" onclick="toggleEmoji(event)">😀 Emoji</button>
+            <span style="flex:1"></span>
+            <span id="cooldownTxt" class="cooldown-msg"></span>
+          </div>
+          <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImage(this)">
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="msgInput" placeholder="Type a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emoji picker -->
+    <div id="emojiPicker" class="emoji-picker">
+      <button class="emoji-btn" onclick="addEmoji('😀')">😀</button>
+      <button class="emoji-btn" onclick="addEmoji('😂')">😂</button>
+      <button class="emoji-btn" onclick="addEmoji('🥰')">🥰</button>
+      <button class="emoji-btn" onclick="addEmoji('😎')">😎</button>
+      <button class="emoji-btn" onclick="addEmoji('🤔')">🤔</button>
+      <button class="emoji-btn" onclick="addEmoji('😴')">😴</button>
+      <button class="emoji-btn" onclick="addEmoji('🥺')">🥺</button>
+      <button class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
+      <button class="emoji-btn" onclick="addEmoji('💯')">💯</button>
+      <button class="emoji-btn" onclick="addEmoji('❤️')">❤️</button>
+      <button class="emoji-btn" onclick="addEmoji('👍')">👍</button>
+      <button class="emoji-btn" onclick="addEmoji('👏')">👏</button>
+      <button class="emoji-btn" onclick="addEmoji('🎉')">🎉</button>
+      <button class="emoji-btn" onclick="addEmoji('💪')">💪</button>
+      <button class="emoji-btn" onclick="addEmoji('📚')">📚</button>
+      <button class="emoji-btn" onclick="addEmoji('✏️')">✏️</button>
+      <button class="emoji-btn" onclick="addEmoji('☕')">☕</button>
+      <button class="emoji-btn" onclick="addEmoji('🌙')">🌙</button>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status-panel" id="statusText">Loading...</div>
+    <div class="status-panel" style="flex:0 0 140px" id="onlineCount">Forum 💬</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, limit, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const streamer = new URLSearchParams(window.location.search).get('user');
+let currentUser = null;
+let currentTopic = null;
+let messagesUnsub = null;
+let imageData = null;
+let lastSendTime = 0;
+let mods = [];
+let banned = [];
+let topics = [];
+
+// Default topics
+const DEFAULT_TOPICS = [
+  { id: 'general', icon: '💬', name: 'General Chat', description: 'Talk about anything', isDefault: true },
+  { id: 'hours', icon: '⏰', name: 'Hours Studied', description: 'Share your study hours', isDefault: true },
+  { id: 'space', icon: '🪴', name: 'My Study Space', description: 'Show your study setup', isDefault: true },
+];
+
+const setStatus = msg => document.getElementById('statusText').textContent = msg;
+
+// ── Helpers ──────────────────────────────────────────
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function getInitial(name) {
+  return (name||'?')[0].toUpperCase();
+}
+
+function getRoleByMessages(count) {
+  // Auto-roles based on message count (will be customizable later)
+  if (count >= 500) return { name: 'Veteran', icon: '🔥', color: '#ff4400' };
+  if (count >= 200) return { name: 'Active', icon: '💬', color: '#0088cc' };
+  if (count >= 50)  return { name: 'Regular', icon: '🌱', color: '#22aa22' };
+  if (count >= 10)  return { name: 'Newbie', icon: '👋', color: '#888888' };
+  return null;
+}
+
+// ── Load streamer info ────────────────────────────────
+async function loadStreamerInfo() {
+  if (!streamer) return;
+  document.getElementById('addrBar').value = 'lessonschedule.app/forum?user=' + streamer;
+  document.getElementById('profileLink').href = 'profile.html?user=' + streamer;
+  document.getElementById('attendLink').href = 'attendance.html?user=' + streamer;
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer));
+    if (snap.exists()) {
+      const p = snap.data().profile || {};
+      const name = p.name || streamer;
+      document.getElementById('streamerName').textContent = name;
+      document.getElementById('streamerAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'??';
+      document.getElementById('pageTitle').textContent = 'Forum — ' + name;
+      document.title = 'Forum — ' + name;
+      // Load mods and banned lists
+      mods = snap.data().mods || [];
+      banned = snap.data().banned || [];
+    }
+  } catch(e) {}
+}
+
+// ── Load topics ───────────────────────────────────────
+async function loadTopics() {
+  if (!streamer) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer, 'forum', 'config'));
+    let customTopics = [];
+    if (snap.exists()) {
+      customTopics = snap.data().topics || [];
+    }
+    // Combine defaults + custom (defaults always first)
+    topics = [...DEFAULT_TOPICS, ...customTopics];
+    renderTopics();
+    // Auto-select first topic
+    if (!currentTopic && topics.length > 0) {
+      selectTopic(topics[0].id);
+    }
+  } catch(e) {
+    topics = [...DEFAULT_TOPICS];
+    renderTopics();
+    if (topics.length > 0) selectTopic(topics[0].id);
+  }
+}
+
+function renderTopics() {
+  const container = document.getElementById('topicsList');
+  if (!topics.length) { container.innerHTML = '<div class="empty-msg">No topics</div>'; return; }
+  container.innerHTML = topics.map(t => `
+    <div class="topic-item ${t.id===currentTopic?'active':''}" onclick="selectTopic('${t.id}')">
+      <div class="topic-icon">${t.icon}</div>
+      <div class="topic-name">${escapeHtml(t.name)}</div>
+    </div>
+  `).join('');
+}
+
+window.selectTopic = (topicId) => {
+  currentTopic = topicId;
+  const t = topics.find(x => x.id === topicId);
+  if (!t) return;
+  document.getElementById('chatTitle').textContent = t.icon + '  ' + t.name;
+  document.getElementById('chatCount').textContent = t.description || '';
+  renderTopics();
+  loadMessages(topicId);
+};
+
+// ── Load messages (realtime) ──────────────────────────
+function loadMessages(topicId) {
+  if (messagesUnsub) messagesUnsub();
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '<div class="empty-msg">Loading messages...</div>';
+
+  const msgRef = collection(db, 'users', streamer, 'forum', topicId, 'messages');
+  const q = query(msgRef, orderBy('timestamp', 'desc'), limit(100));
+
+  messagesUnsub = onSnapshot(q, snap => {
+    const msgs = [];
+    snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+    msgs.reverse(); // Show oldest first
+    renderMessages(msgs);
+  }, err => {
+    container.innerHTML = '<div class="empty-msg" style="color:red">Error: ' + err.message + '</div>';
+  });
+}
+
+function renderMessages(msgs) {
+  const container = document.getElementById('chatMessages');
+  if (!msgs.length) {
+    container.innerHTML = '<div class="empty-msg">💬 No messages yet. Be the first!</div>';
+    return;
+  }
+
+  const isStreamer = currentUser === streamer;
+  const isMod = mods.includes(currentUser);
+  const canModerate = isStreamer || isMod;
+
+  container.innerHTML = msgs.map(m => {
+    const role = getRoleByMessages(m.authorMsgCount || 0);
+    const isAuthorMod = mods.includes(m.author);
+    const isAuthorStreamer = m.author === streamer;
+    const reactions = m.reactions || {};
+    const reactionsHtml = Object.entries(reactions).map(([emoji, users]) => {
+      if (!users.length) return '';
+      const mine = users.includes(currentUser);
+      return `<span class="reaction ${mine?'mine':''}" onclick="toggleReaction('${m.id}','${emoji}')">${emoji} ${users.length}</span>`;
+    }).join('');
+
+    return `<div class="msg" data-id="${m.id}">
+      <div class="msg-avatar" onclick="viewProfile('${m.author}')">${getInitial(m.author)}</div>
+      <div class="msg-body">
+        <div class="msg-head">
+          <span class="msg-author" onclick="viewProfile('${m.author}')">${escapeHtml(m.author)}</span>
+          ${isAuthorStreamer ? '<span class="msg-streamer-tag">📺 STREAMER</span>' : ''}
+          ${isAuthorMod && !isAuthorStreamer ? '<span class="msg-mod-tag">🛡 MOD</span>' : ''}
+          ${role ? `<span class="msg-role" style="background:${role.color}">${role.icon} ${role.name}</span>` : ''}
+          <span class="msg-time">${formatTime(m.timestamp)}</span>
+          ${canModerate ? `<div class="msg-mod-actions">
+            <button class="mod-btn danger" onclick="deleteMsg('${m.id}')" title="Delete">🗑</button>
+            ${!isAuthorStreamer ? `<button class="mod-btn danger" onclick="banUser('${m.author}')" title="Ban">🚫</button>` : ''}
+          </div>` : ''}
+        </div>
+        ${m.text ? `<div class="msg-text">${escapeHtml(m.text)}</div>` : ''}
+        ${m.image ? `<img class="msg-image" src="${m.image}" onclick="window.open(this.src,'_blank')">` : ''}
+        <div class="msg-actions">
+          ${reactionsHtml}
+          <button class="reaction-add" onclick="showReactionPicker(event,'${m.id}')">😀 +</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Send message ──────────────────────────────────────
+window.sendMessage = async () => {
+  if (!currentUser || !currentTopic) return;
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text && !imageData) return;
+
+  // Cooldown check (30 sec between messages — not for streamer/mods)
+  const isStreamer = currentUser === streamer;
+  const isMod = mods.includes(currentUser);
+  if (!isStreamer && !isMod) {
+    const sinceLastMs = Date.now() - lastSendTime;
+    if (sinceLastMs < 30000) {
+      const wait = Math.ceil((30000 - sinceLastMs) / 1000);
+      document.getElementById('cooldownTxt').textContent = `⏳ Wait ${wait}s before sending again`;
+      return;
+    }
+  }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    // Get user message count for role
+    let msgCount = 0;
+    let userPts = 0;
+    const userSnap = await getDoc(doc(db, 'users', streamer, 'forumUsers', currentUser));
+    if (userSnap.exists()) {
+      msgCount = userSnap.data().msgCount || 0;
+      userPts = userSnap.data().points || 0;
+    }
+
+    // Send the message
+    await addDoc(collection(db, 'users', streamer, 'forum', currentTopic, 'messages'), {
+      author: currentUser,
+      text: text,
+      image: imageData || null,
+      timestamp: serverTimestamp(),
+      authorMsgCount: msgCount + 1,
+      reactions: {}
+    });
+
+    // Update user's message count and points
+    await setDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), {
+      msgCount: increment(1),
+      points: increment(1),
+      lastMsg: serverTimestamp(),
+      username: currentUser
+    }, { merge: true });
+
+    input.value = '';
+    autoResize(input);
+    clearImage();
+    lastSendTime = Date.now();
+    document.getElementById('cooldownTxt').textContent = '';
+    updateUserBar();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send';
+    input.focus();
+  }
+};
+
+// ── Reactions ─────────────────────────────────────────
+window.toggleReaction = async (msgId, emoji) => {
+  if (!currentUser) { alert('Sign in to react!'); return; }
+  try {
+    const ref = doc(db, 'users', streamer, 'forum', currentTopic, 'messages', msgId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const reactions = snap.data().reactions || {};
+    const users = reactions[emoji] || [];
+    const idx = users.indexOf(currentUser);
+    if (idx >= 0) users.splice(idx, 1); else users.push(currentUser);
+    if (users.length === 0) delete reactions[emoji];
+    else reactions[emoji] = users;
+    await updateDoc(ref, { reactions });
+  } catch(e) { console.error(e); }
+};
+
+window.showReactionPicker = (event, msgId) => {
+  event.stopPropagation();
+  const picker = document.getElementById('emojiPicker');
+  const rect = event.target.getBoundingClientRect();
+  picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  picker.style.left = (rect.left + window.scrollX) + 'px';
+  picker.classList.add('show');
+  picker.dataset.mode = 'reaction';
+  picker.dataset.msgId = msgId;
+};
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.emoji-picker') && !e.target.closest('.tool-btn') && !e.target.closest('.reaction-add')) {
+    document.getElementById('emojiPicker').classList.remove('show');
+  }
+});
+
+// ── Emoji ─────────────────────────────────────────────
+window.toggleEmoji = (event) => {
+  event.stopPropagation();
+  const picker = document.getElementById('emojiPicker');
+  if (picker.classList.contains('show') && picker.dataset.mode === 'input') {
+    picker.classList.remove('show');
+    return;
+  }
+  const rect = event.target.getBoundingClientRect();
+  picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  picker.style.left = (rect.left + window.scrollX) + 'px';
+  picker.classList.add('show');
+  picker.dataset.mode = 'input';
+};
+
+window.addEmoji = (emoji) => {
+  const picker = document.getElementById('emojiPicker');
+  if (picker.dataset.mode === 'reaction') {
+    toggleReaction(picker.dataset.msgId, emoji);
+  } else {
+    const input = document.getElementById('msgInput');
+    const start = input.selectionStart;
+    input.value = input.value.slice(0,start) + emoji + input.value.slice(input.selectionEnd);
+    input.focus();
+    input.setSelectionRange(start+emoji.length, start+emoji.length);
+    autoResize(input);
+  }
+  picker.classList.remove('show');
+};
+
+// ── Image upload ──────────────────────────────────────
+window.handleImage = (input) => {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 800000) { alert('Image too large! Max 800KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    imageData = e.target.result;
+    document.getElementById('previewImg').src = imageData;
+    document.getElementById('imagePreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearImage = () => {
+  imageData = null;
+  document.getElementById('imageInput').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+};
+
+// ── Moderation ────────────────────────────────────────
+window.deleteMsg = async (msgId) => {
+  if (!confirm('Delete this message?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', streamer, 'forum', currentTopic, 'messages', msgId));
+    setStatus('Message deleted ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.banUser = async (username) => {
+  if (currentUser !== streamer && !mods.includes(currentUser)) return;
+  if (!confirm(`Ban "${username}" from the forum?`)) return;
+  try {
+    if (!banned.includes(username)) banned.push(username);
+    await updateDoc(doc(db, 'users', streamer), { banned });
+    setStatus('User banned ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── Profile view (placeholder for now) ───────────────
+window.viewProfile = (username) => {
+  // Will redirect to user-profile.html in next phase
+  window.open('user-profile.html?user=' + streamer + '&viewer=' + username, '_blank');
+};
+
+// ── User bar ──────────────────────────────────────────
+async function updateUserBar() {
+  if (!currentUser) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer, 'forumUsers', currentUser));
+    if (snap.exists()) {
+      const data = snap.data();
+      document.getElementById('userPoints').textContent = (data.points||0) + ' pts';
+      document.getElementById('userMsgCount').textContent = (data.msgCount||0);
+    } else {
+      document.getElementById('userPoints').textContent = '0 pts';
+      document.getElementById('userMsgCount').textContent = '0';
+    }
+  } catch(e) {}
+}
+
+// ── Input helpers ─────────────────────────────────────
+window.autoResize = (textarea) => {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+};
+
+window.handleKey = (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+};
+
+// ── Sign out ──────────────────────────────────────────
+window.doSignOut = async () => {
+  await signOut(auth);
+  localStorage.removeItem('dp_current');
+  window.location.reload();
+};
+
+window.goToAttendance = () => {
+  window.location.href = 'attendance.html?user=' + streamer;
+};
+
+// ── Auth ──────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const username = localStorage.getItem('dp_current') || user.email.replace('@lessonschedule.app','');
+    currentUser = username;
+    document.getElementById('userBar').style.display = 'flex';
+    document.getElementById('userName').textContent = username;
+    document.getElementById('loginRequired').style.display = 'none';
+
+    // Check if banned
+    if (banned.includes(username) && username !== streamer) {
+      document.getElementById('inputWrap').style.display = 'none';
+      document.getElementById('bannedMsg').style.display = 'block';
+    } else {
+      document.getElementById('inputWrap').style.display = 'block';
+      document.getElementById('bannedMsg').style.display = 'none';
+    }
+
+    setStatus('Signed in as ' + username);
+    updateUserBar();
+  } else {
+    document.getElementById('userBar').style.display = 'none';
+    document.getElementById('loginRequired').style.display = 'block';
+    document.getElementById('inputWrap').style.display = 'none';
+    setStatus('Not signed in');
+  }
+});
+
+// ── Init ──────────────────────────────────────────────
+if (!streamer) {
+  document.querySelector('.window-content').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Missing ?user=USERNAME in URL!</div></div>';
+} else {
+  loadStreamerInfo().then(() => loadTopics());
+}
+</script>
+</body>
+</html>
