@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
+.shop-item{background:#fff;border:2px solid var(--win-dark);padding:12px;display:flex;flex-direction:column;gap:8px;font-family:var(--font-main)}
+.shop-item-icon{font-size:48px;text-align:center}
+.shop-item-name{font-weight:bold;color:#000080;font-size:14px;text-align:center}
+.shop-item-desc{font-size:11px;color:#555;text-align:center;flex:1;line-height:1.4}
+.shop-item-price{text-align:center;font-family:var(--font-display);font-size:24px;color:var(--accent);padding:6px;background:#f0f4ff;border:1px solid #ccd}
+.shop-item-buy{background:var(--accent);color:#fff;border:1px solid #404040;padding:6px;cursor:pointer;font-family:var(--font-main);font-weight:bold;font-size:12px}
+.shop-item-buy:hover{background:var(--accent2)}
+.shop-item-buy:disabled{background:#aaa;cursor:not-allowed}
+.shop-item-buy.special{background:#aa00aa}
+.shop-item-buy.special:hover{background:#cc00cc}
+
+.points-display{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;padding:10px 16px;font-family:var(--font-main);margin-bottom:12px}
+.points-display .label{font-size:12px;opacity:0.9}
+.points-display .value{font-family:var(--font-display);font-size:32px;flex:1}
+
+.purchase-history{margin-top:16px}
+.history-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #ddd;font-size:11px;font-family:var(--font-main)}
+.history-item .icon{font-size:18px}
+.history-item .name{flex:1;font-weight:bold;color:#000080}
+.history-item .price{color:var(--accent);font-family:var(--font-display);font-size:16px}
+.history-item .time{color:#888;font-size:10px}
+
+.empty-shop{padding:30px;text-align:center;color:#888;font-family:var(--font-main);font-size:13px}
+</style>
+</head>
+<body>
+<div class="window" style="max-width:780px;margin:20px auto">
+  <div class="window-titlebar">
+    <div class="window-title">
+      <div class="window-title-icon"></div>
+      <span id="pageTitle">Shop</span>
+    </div>
+    <div class="window-controls">
+      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
+    </div>
+  </div>
+  <div class="menubar">
+    <div class="menu-item">File</div>
+    <div class="menu-item">View</div>
+    <div class="menu-item">Help</div>
+  </div>
+  <div class="addressbar">
+    <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
+    <div class="addr-label">Address:</div>
+    <input class="addr-input" id="addrBar" value="" readonly>
+    <div class="addr-go">▶</div>
+  </div>
+
+  <div class="window-content">
+
+    <div class="profile-header" style="margin-bottom:12px">
+      <div class="profile-avatar" id="streamerAvatar">??</div>
+      <div>
+        <div class="profile-name" id="streamerName">Loading...</div>
+        <div class="profile-handle">🛒 Points Shop</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <a href="#" id="forumLink" class="retro-btn" style="font-size:11px;padding:4px 10px">💬 Forum</a>
+        <a href="#" id="attendLink" class="retro-btn" style="font-size:11px;padding:4px 10px">✅ Attendance</a>
+      </div>
+    </div>
+
+    <!-- Points display -->
+    <div id="pointsDisplay" class="points-display" style="display:none">
+      <div>⭐</div>
+      <div>
+        <div class="label">YOUR POINTS</div>
+        <div class="value" id="userPoints">0</div>
+      </div>
+      <div style="font-size:11px;text-align:right;opacity:0.9">
+        Earn 1 point per chat message<br>
+        (30 sec cooldown)
+      </div>
+    </div>
+
+    <!-- Login required -->
+    <div id="loginRequired" style="display:none;padding:20px;text-align:center;background:#fffae8;border:1px solid #cc9900;color:#aa6600;font-family:var(--font-main);font-size:13px">
+      🔒 You need to <a href="#" onclick="goToAttendance()" style="color:#000080;font-weight:bold">sign in</a> to use the shop.
+    </div>
+
+    <div class="section-title" style="margin-top:6px">🛒 Items for Sale</div>
+    <div id="shopGrid" class="shop-grid">
+      <div class="empty-shop">Loading...</div>
+    </div>
+
+    <div class="section-title" style="margin-top:18px">📜 Your Purchase History</div>
+    <div id="historyList">
+      <div style="padding:12px;text-align:center;color:#888;font-family:var(--font-main);font-size:12px">No purchases yet.</div>
+    </div>
+
+  </div>
+
+  <div class="statusbar">
+    <div class="status-panel" id="statusText">Ready</div>
+    <div class="status-panel" style="flex:0 0 140px">Shop 🛒</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const streamer = new URLSearchParams(window.location.search).get('user');
+let currentUser = null;
+let userPoints = 0;
+let shopItems = [];
+
+const STREAK_RECOVERY_PRICE = 50;
+const setStatus = m => document.getElementById('statusText').textContent = m;
+
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleString();
+}
+
+// ── Load streamer info ────────────────────────────────
+async function loadStreamerInfo() {
+  if (!streamer) return;
+  document.getElementById('addrBar').value = 'lessonschedule.app/shop?user=' + streamer;
+  document.getElementById('forumLink').href = 'forum.html?user=' + streamer;
+  document.getElementById('attendLink').href = 'attendance.html?user=' + streamer;
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer));
+    if (snap.exists()) {
+      const p = snap.data().profile || {};
+      const name = p.name || streamer;
+      document.getElementById('streamerName').textContent = name;
+      document.getElementById('streamerAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'??';
+      document.getElementById('pageTitle').textContent = 'Shop — ' + name;
+    }
+  } catch(e) {}
+}
+
+// ── Load shop items ───────────────────────────────────
+async function loadShop() {
+  const grid = document.getElementById('shopGrid');
+  try {
+    // Default items (always available)
+    const defaultItems = [
+      {
+        id: 'streak_recovery',
+        icon: '💖',
+        name: 'Streak Recovery',
+        description: 'Restore your last lost streak. Use it within 7 days of losing your streak. Default item.',
+        price: STREAK_RECOVERY_PRICE,
+        special: true,
+        isDefault: true
+      }
+    ];
+
+    // Load custom items from streamer
+    let customItems = [];
+    try {
+      const snap = await getDoc(doc(db, 'users', streamer, 'shop', 'config'));
+      if (snap.exists()) customItems = snap.data().items || [];
+    } catch(e) {}
+
+    shopItems = [...defaultItems, ...customItems];
+
+    if (!shopItems.length) {
+      grid.innerHTML = '<div class="empty-shop">No items available yet.</div>';
+      return;
+    }
+
+    grid.innerHTML = shopItems.map(item => {
+      const canAfford = userPoints >= item.price;
+      return `<div class="shop-item">
+        <div class="shop-item-icon">${item.icon}</div>
+        <div class="shop-item-name">${escapeHtml(item.name)}</div>
+        <div class="shop-item-desc">${escapeHtml(item.description)}</div>
+        <div class="shop-item-price">⭐ ${item.price}</div>
+        <button class="shop-item-buy ${item.special?'special':''}"
+          ${!currentUser || !canAfford ? 'disabled' : ''}
+          onclick="buyItem('${item.id}')">
+          ${!currentUser ? '🔒 Sign in to buy' : !canAfford ? `Need ${item.price - userPoints} more points` : '🛒 Buy Now'}
+        </button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<div style="color:red;padding:12px">Error: ' + e.message + '</div>';
+  }
+}
+
+// ── Buy item ──────────────────────────────────────────
+window.buyItem = async (itemId) => {
+  if (!currentUser) return;
+  const item = shopItems.find(i => i.id === itemId);
+  if (!item) return;
+  if (userPoints < item.price) { alert('Not enough points!'); return; }
+
+  let confirmMsg = `Buy "${item.name}" for ⭐ ${item.price} points?`;
+  if (item.id === 'streak_recovery') {
+    // Check if user has a lost streak to recover
+    try {
+      const attSnap = await getDoc(doc(db, 'users', streamer, 'attendance', currentUser));
+      if (!attSnap.exists() || !attSnap.data().lastLostStreak || attSnap.data().lastLostStreak < 1) {
+        alert('You have no lost streak to recover! This item is only useful after losing a streak.');
+        return;
+      }
+      const lostStreak = attSnap.data().lastLostStreak;
+      confirmMsg = `Restore your previous streak of ${lostStreak} days for ⭐ ${item.price} points?`;
+    } catch(e) {}
+  }
+
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    // Deduct points
+    await updateDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), {
+      points: increment(-item.price)
+    });
+
+    // Special handling for streak recovery
+    if (item.id === 'streak_recovery') {
+      const attSnap = await getDoc(doc(db, 'users', streamer, 'attendance', currentUser));
+      if (attSnap.exists()) {
+        const lostStreak = attSnap.data().lastLostStreak || 0;
+        await updateDoc(doc(db, 'users', streamer, 'attendance', currentUser), {
+          streak: lostStreak,
+          lastLostStreak: 0
+        });
+      }
+    }
+
+    // Record purchase
+    await addDoc(collection(db, 'users', streamer, 'shop', 'purchases', 'all'), {
+      buyer: currentUser,
+      itemId: item.id,
+      itemName: item.name,
+      itemIcon: item.icon,
+      itemDescription: item.description,
+      price: item.price,
+      timestamp: serverTimestamp(),
+      isDefault: item.isDefault || false
+    });
+
+    // Send OBS alert (only for non-streak-recovery items)
+    if (item.id !== 'streak_recovery') {
+      await setDoc(doc(db, 'users', streamer, 'shopAlerts', Date.now().toString()), {
+        buyer: currentUser,
+        itemName: item.name,
+        itemIcon: item.icon,
+        itemDescription: item.description,
+        price: item.price,
+        timestamp: serverTimestamp()
+      });
+    }
+
+    userPoints -= item.price;
+    document.getElementById('userPoints').textContent = userPoints;
+
+    if (item.id === 'streak_recovery') {
+      alert('🎉 Your streak has been restored! Check your attendance page.');
+    } else {
+      alert(`✅ Purchase successful! ${streamer} will see your purchase on stream.`);
+    }
+    setStatus('Purchase complete ✔');
+    loadShop();
+    loadHistory();
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── Load purchase history ────────────────────────────
+async function loadHistory() {
+  if (!currentUser) return;
+  const list = document.getElementById('historyList');
+  try {
+    const q = query(collection(db, 'users', streamer, 'shop', 'purchases', 'all'),
+      where('buyer', '==', currentUser), orderBy('timestamp', 'desc'), limit(20));
+    const snaps = await getDocs(q);
+    const items = [];
+    snaps.forEach(d => items.push({ id: d.id, ...d.data() }));
+    if (!items.length) {
+      list.innerHTML = '<div style="padding:12px;text-align:center;color:#888;font-family:var(--font-main);font-size:12px">No purchases yet.</div>';
+      return;
+    }
+    list.innerHTML = items.map(p => `
+      <div class="history-item">
+        <div class="icon">${p.itemIcon || '🛒'}</div>
+        <div class="name">${escapeHtml(p.itemName)}</div>
+        <div class="time">${formatTime(p.timestamp)}</div>
+        <div class="price">⭐ ${p.price}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="color:red;padding:10px">Error loading history</div>';
+  }
+}
+
+// ── Load user points ──────────────────────────────────
+async function loadUserPoints() {
+  if (!currentUser) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer, 'forumUsers', currentUser));
+    if (snap.exists()) {
+      userPoints = snap.data().points || 0;
+    }
+    document.getElementById('userPoints').textContent = userPoints;
+  } catch(e) {}
+}
+
+window.goToAttendance = () => {
+  window.location.href = 'attendance.html?user=' + streamer;
+};
+
+// ── Auth ──────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = localStorage.getItem('dp_current') || user.email.replace('@lessonschedule.app','');
+    document.getElementById('pointsDisplay').style.display = 'flex';
+    document.getElementById('loginRequired').style.display = 'none';
+    await loadUserPoints();
+    await loadShop();
+    await loadHistory();
+    setStatus('Signed in as ' + currentUser);
+  } else {
+    document.getElementById('pointsDisplay').style.display = 'none';
+    document.getElementById('loginRequired').style.display = 'block';
+    await loadShop();
+    setStatus('Not signed in');
+  }
+});
+
+if (!streamer) {
+  document.querySelector('.window-content').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Missing ?user=USERNAME in URL!</div></div>';
+} else {
+  loadStreamerInfo();
+}
+</script>
+</body>
+</html>

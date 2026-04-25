@@ -55,6 +55,7 @@
       <div class="nav-tab" id="t-tab3" onclick="switchTab(event,'donate')">💰 Bağış</div>
       <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
       <div class="nav-tab" id="t-tab5" onclick="switchTab(event,'forum')">💬 Forum</div>
+      <div class="nav-tab" id="t-tab6" onclick="switchTab(event,'shop')">🛒 Shop</div>
     </div>
 
     <!-- ===== PROGRAM ===== -->
@@ -305,6 +306,80 @@
         <span class="groupbox-title">🚫 Banned Users</span>
         <div id="bannedList" style="border:1px solid var(--win-dark);max-height:160px;overflow-y:auto">
           <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No banned users.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SHOP ===== -->
+    <div id="tab-shop" class="tab-panel">
+
+      <!-- Shop URL -->
+      <div class="groupbox">
+        <span class="groupbox-title">🛒 Shop Page</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">💡</div>
+          <div class="alert-msg">Viewers earn 1 point per chat message (with 30s cooldown). They can spend points in the shop. Streak Recovery is the default item.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Shop Page Link:</label>
+          <div class="url-box">
+            <div class="url-display" id="shopUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('shopUrl')">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom shop items -->
+      <div class="groupbox">
+        <span class="groupbox-title">📦 Custom Shop Items</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">⚙️</div>
+          <div class="alert-msg">Add custom items viewers can buy with points. Examples: "Make me drink water", "Pick a song", "Write me a motivation note". When bought, you'll see an OBS alert telling you what to do.</div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
+          <div style="width:50px">Icon</div>
+          <div style="flex:2">Name</div>
+          <div style="flex:3">What you should do</div>
+          <div style="width:80px">Price (⭐)</div>
+          <div style="width:60px"></div>
+        </div>
+        <div id="shopItemsContainer"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="retro-btn" onclick="addShopItem()">+ Add Item</button>
+          <button class="retro-btn primary" onclick="saveShopItems()">💾 Save Items</button>
+        </div>
+        <div id="shopItemsSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Items saved!</div>
+      </div>
+
+      <!-- OBS Shop Alert URL -->
+      <div class="groupbox">
+        <span class="groupbox-title">📺 OBS Shop Alert Overlay</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">🔔</div>
+          <div class="alert-msg">Add this in OBS as a Browser Source. When someone buys an item, an alert will appear on screen telling you what to do.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">🛒 Shop Alert Overlay — Width: 700px, Height: 200px</label>
+          <div class="url-box">
+            <div class="url-display" id="shopAlertUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('shopAlertUrl')">📋 Copy</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <label style="font-size:12px;font-family:var(--font-main)">Display duration:</label>
+            <input type="range" id="shopAlertDurSlider" min="5" max="20" value="8" step="1" style="width:120px" oninput="updateShopAlertDur(this.value)">
+            <span style="font-family:var(--font-main);font-size:12px;min-width:40px" id="shopAlertDurVal">8s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales history -->
+      <div class="groupbox">
+        <span class="groupbox-title">📊 Recent Sales</span>
+        <div style="margin-bottom:8px">
+          <button class="retro-btn" onclick="loadSales()" style="font-size:12px">🔄 Refresh</button>
+        </div>
+        <div id="salesList" style="border:1px solid var(--win-dark);max-height:240px;overflow-y:auto">
+          <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Click Refresh to load sales</div>
         </div>
       </div>
     </div>
@@ -601,6 +676,7 @@ function setOBSUrls(user) {
   const base = window.location.origin + window.location.pathname.replace('dashboard.html', '');
   const count = localStorage.getItem('dp_overlay_count_'+user) || '5';
   const duration = localStorage.getItem('dp_alert_duration_'+user) || '5';
+  const shopDur = localStorage.getItem('dp_shop_alert_dur_'+user) || '8';
   document.getElementById('overlayCount').value = count;
   document.getElementById('alertDurationSlider').value = duration;
   document.getElementById('alertDurationVal').textContent = duration + 's';
@@ -608,6 +684,15 @@ function setOBSUrls(user) {
   document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user + '&duration=' + duration;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
   document.getElementById('forumUrl').textContent    = base + 'forum.html?user=' + user;
+  // Shop
+  const shopUrlEl = document.getElementById('shopUrl');
+  if (shopUrlEl) shopUrlEl.textContent = base + 'shop.html?user=' + user;
+  const shopAlertEl = document.getElementById('shopAlertUrl');
+  if (shopAlertEl) {
+    shopAlertEl.textContent = base + 'shop-alert.html?user=' + user + '&duration=' + shopDur;
+    document.getElementById('shopAlertDurSlider').value = shopDur;
+    document.getElementById('shopAlertDurVal').textContent = shopDur + 's';
+  }
 }
 
 window.copyId = id => {
@@ -679,6 +764,7 @@ onAuthStateChanged(auth, async user => {
     setStatus(t().loaded);
     loadSessionStatus();
     loadForumConfig();
+    loadShopConfig();
   } catch(e) { setStatus('Error: ' + e.message); }
 });
 
@@ -815,7 +901,7 @@ window.closeAttendance = async () => {
         const data = d.data();
         // If viewer has a streak > 0 but did NOT check in this session → reset
         if ((data.streak || 0) > 0 && data.lastSessionId !== sessionId) {
-          batch.update(d.ref, { streak: 0 });
+          batch.update(d.ref, { streak: 0, lastLostStreak: data.streak });
           resetCount++;
         }
       });
@@ -1001,6 +1087,99 @@ window.unbanUser = async (username) => {
     renderBanned();
     setStatus('User unbanned ✔');
   } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── SHOP MANAGEMENT ───────────────────────────────────
+let shopItemsData = [];
+
+async function loadShopConfig() {
+  if (!currentUser) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser, 'shop', 'config'));
+    if (snap.exists()) shopItemsData = snap.data().items || [];
+    else shopItemsData = [];
+    renderShopItems();
+  } catch(e) {}
+}
+
+function renderShopItems() {
+  const container = document.getElementById('shopItemsContainer');
+  if (!container) return;
+  if (!shopItemsData.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#888;padding:8px;border:1px dashed #ccc;text-align:center">No custom items yet. Add one!</div>';
+    return;
+  }
+  container.innerHTML = shopItemsData.map((it, i) => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <input class="retro-input" type="text" value="${it.icon||'🎁'}" onchange="updateShopItem(${i},'icon',this.value)" style="width:50px;text-align:center" placeholder="🎁">
+      <input class="retro-input" type="text" value="${it.name||''}" onchange="updateShopItem(${i},'name',this.value)" style="flex:2;min-width:120px" placeholder="Drink water">
+      <input class="retro-input" type="text" value="${it.description||''}" onchange="updateShopItem(${i},'description',this.value)" style="flex:3;min-width:140px" placeholder="Take a sip of water">
+      <input class="retro-input" type="number" min="1" value="${it.price||10}" onchange="updateShopItem(${i},'price',parseInt(this.value)||10)" style="width:80px">
+      <button onclick="removeShopItem(${i})" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:3px 8px;font-size:12px;font-family:var(--font-main)">✕ Remove</button>
+    </div>
+  `).join('');
+}
+
+window.updateShopItem = (i, field, value) => { shopItemsData[i][field] = value; };
+
+window.addShopItem = () => {
+  const id = 'item_' + Date.now();
+  shopItemsData.push({ id, icon:'🎁', name:'New Item', description:'Describe what you do', price:10 });
+  renderShopItems();
+};
+
+window.removeShopItem = (i) => {
+  if (!confirm('Remove this item?')) return;
+  shopItemsData.splice(i, 1);
+  renderShopItems();
+};
+
+window.saveShopItems = async () => {
+  if (!currentUser) return;
+  for (const it of shopItemsData) {
+    if (!it.name || !it.name.trim()) { alert('All items must have a name!'); return; }
+    if (!it.icon) it.icon = '🎁';
+    if (!it.price || it.price < 1) it.price = 10;
+  }
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'shop', 'config'), { items: shopItemsData });
+    const msg = document.getElementById('shopItemsSavedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    setStatus('Shop items saved ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.updateShopAlertDur = (val) => {
+  document.getElementById('shopAlertDurVal').textContent = val + 's';
+  localStorage.setItem('dp_shop_alert_dur_'+(currentUser||''), val);
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+  document.getElementById('shopAlertUrl').textContent = base + 'shop-alert.html?user=' + currentUser + '&duration=' + val;
+};
+
+window.loadSales = async () => {
+  if (!currentUser) return;
+  const list = document.getElementById('salesList');
+  list.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Loading...</div>';
+  try {
+    const { getDocs, collection: col, query: q, orderBy: ob, limit: lim } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snaps = await getDocs(q(col(db, 'users', currentUser, 'shop', 'purchases', 'all'), ob('timestamp','desc'), lim(50)));
+    const items = [];
+    snaps.forEach(d => items.push({ id:d.id, ...d.data() }));
+    if (!items.length) {
+      list.innerHTML = '<div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">No sales yet.</div>';
+      return;
+    }
+    list.innerHTML = items.map((p, i) => {
+      const time = p.timestamp ? p.timestamp.toDate().toLocaleString() : '';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #ddd;font-size:11px;font-family:var(--font-main);background:${i%2===0?'#fff':'#f4f4f8'}">
+        <div style="font-size:18px">${p.itemIcon||'🛒'}</div>
+        <div style="flex:1"><strong>${p.buyer}</strong> bought <strong style="color:#000080">${p.itemName}</strong></div>
+        <div style="color:#888;font-size:10px">${time}</div>
+        <div style="color:var(--accent);font-family:var(--font-display);font-size:16px">⭐${p.price}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { list.innerHTML = '<div style="color:red;padding:10px">Error: '+e.message+'</div>'; }
 };
 
 window.saveProfile = async () => {

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Profile</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.up-wrap{max-width:680px;margin:0 auto}
+
+.up-card{background:#fff;border:2px solid var(--win-dark);overflow:hidden;margin-bottom:14px}
+
+.up-banner{height:140px;background:linear-gradient(135deg,#000080,#1084d0);position:relative;overflow:hidden}
+.up-banner img{width:100%;height:100%;object-fit:cover;display:block}
+.up-banner-edit{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.9);border:1px solid #888;padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--font-main);display:none}
+.up-banner-edit.show{display:block}
+
+.up-header{padding:0 18px 18px;position:relative}
+.up-photo{width:100px;height:100px;background:var(--accent);border:4px solid #fff;color:#fff;font-family:var(--font-display);font-size:48px;display:flex;align-items:center;justify-content:center;margin-top:-50px;position:relative;cursor:pointer;overflow:hidden}
+.up-photo img{width:100%;height:100%;object-fit:cover}
+.up-photo-edit{position:absolute;bottom:0;right:0;background:var(--accent);color:#fff;border:2px solid #fff;width:30px;height:30px;display:none;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+.up-photo-edit.show{display:flex}
+
+.up-name-row{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.up-name{font-family:var(--font-display);font-size:28px;color:#000080}
+.up-handle{color:#666;font-size:13px;font-family:var(--font-main)}
+.up-badges{display:flex;gap:5px;flex-wrap:wrap}
+.up-badge{background:var(--accent);color:#fff;padding:2px 8px;font-size:11px;font-family:var(--font-main)}
+.up-badge.streamer{background:#aa00aa}
+.up-badge.mod{background:#cc4444}
+
+.up-stats{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap}
+.up-stat{flex:1;min-width:90px;background:#f0f4ff;border:1px solid #ccd;padding:8px;text-align:center;font-family:var(--font-main)}
+.up-stat-num{font-family:var(--font-display);font-size:22px;color:var(--accent)}
+.up-stat-label{font-size:10px;color:#666;text-transform:uppercase}
+
+.up-section-title{display:flex;align-items:center;gap:6px;font-family:var(--font-main);font-weight:bold;color:#000080;font-size:13px;margin-bottom:8px;border-bottom:1px solid #aaa;padding-bottom:4px}
+.up-edit-btn{background:transparent;border:1px solid #888;font-size:10px;padding:1px 6px;cursor:pointer;font-family:var(--font-main);margin-left:auto;display:none}
+.up-edit-btn.show{display:inline-block}
+
+.up-about-text{padding:10px;background:#fafaff;border:1px solid #ccd;font-family:var(--font-main);font-size:12px;line-height:1.5;color:#222;white-space:pre-wrap;min-height:60px}
+.up-about-text.empty{color:#888;font-style:italic}
+.up-about-edit{display:none}
+.up-about-edit.show{display:block}
+.up-about-edit textarea{width:100%;font-family:var(--font-main);font-size:12px;padding:8px;border:1px solid #aaa;min-height:80px;resize:vertical;box-sizing:border-box}
+.up-about-edit-actions{display:flex;gap:6px;margin-top:6px}
+
+.up-blog-list{display:flex;flex-direction:column;gap:8px}
+.up-blog-post{background:#fafaff;border:1px solid #ccd;padding:10px;font-family:var(--font-main)}
+.up-blog-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.up-blog-title{font-weight:bold;color:#000080;font-size:13px;flex:1}
+.up-blog-time{font-size:10px;color:#888}
+.up-blog-text{font-size:12px;color:#333;white-space:pre-wrap;line-height:1.4}
+.up-blog-img{margin-top:6px;max-width:100%;max-height:240px;border:1px solid #ccc;display:block}
+.up-blog-actions{display:flex;gap:6px;margin-top:6px}
+.up-blog-actions button{font-size:10px;padding:1px 6px;background:#f0f0f8;border:1px solid #888;cursor:pointer;font-family:var(--font-main)}
+.up-blog-actions button.danger{background:#ffeeee;border-color:#cc4444;color:#cc4444}
+
+.up-blog-empty{padding:20px;text-align:center;color:#888;font-family:var(--font-main);font-size:12px;background:#fafaff;border:1px dashed #aaa}
+
+.up-blog-add{background:#fafaff;border:1px solid #ccd;padding:10px;display:none}
+.up-blog-add.show{display:block}
+.up-blog-add input,.up-blog-add textarea{width:100%;font-family:var(--font-main);font-size:12px;padding:6px;border:1px solid #aaa;box-sizing:border-box;margin-bottom:6px}
+.up-blog-add textarea{min-height:60px;resize:vertical}
+.up-blog-add-actions{display:flex;gap:6px;align-items:center}
+
+.color-picker{display:flex;gap:4px;align-items:center;margin-top:6px}
+.color-swatch{width:24px;height:24px;cursor:pointer;border:2px solid #888}
+.color-swatch.active{border-color:#000;box-shadow:0 0 0 2px var(--accent)}
+</style>
+</head>
+<body>
+<div class="window" style="max-width:720px;margin:20px auto">
+  <div class="window-titlebar">
+    <div class="window-title">
+      <div class="window-title-icon"></div>
+      <span id="pageTitle">User Profile</span>
+    </div>
+    <div class="window-controls">
+      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
+    </div>
+  </div>
+  <div class="menubar">
+    <div class="menu-item">File</div>
+    <div class="menu-item">View</div>
+    <div class="menu-item">Help</div>
+  </div>
+  <div class="addressbar">
+    <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
+    <div class="addr-label">Address:</div>
+    <input class="addr-input" id="addrBar" value="" readonly>
+    <div class="addr-go">▶</div>
+  </div>
+
+  <div class="window-content" style="padding:14px">
+    <div class="up-wrap" id="profileWrap" style="display:none">
+
+      <!-- PROFILE CARD -->
+      <div class="up-card">
+        <!-- Banner -->
+        <div class="up-banner" id="bannerBox">
+          <button class="up-banner-edit" id="bannerEditBtn" onclick="document.getElementById('bannerInput').click()">📷 Change Banner</button>
+          <input type="file" id="bannerInput" accept="image/*" style="display:none" onchange="uploadBanner(this)">
+        </div>
+
+        <!-- Header -->
+        <div class="up-header">
+          <!-- Profile photo -->
+          <div style="position:relative;width:100px">
+            <div class="up-photo" id="profilePhoto" onclick="onPhotoClick()">
+              <span id="photoInitial">?</span>
+            </div>
+            <div class="up-photo-edit" id="photoEditBtn" onclick="document.getElementById('photoInput').click()" title="Change photo">📷</div>
+            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+          </div>
+
+          <!-- Name + badges -->
+          <div class="up-name-row">
+            <div class="up-name" id="profileName">-</div>
+            <div class="up-badges" id="profileBadges"></div>
+          </div>
+          <div class="up-handle" id="profileHandle">@username</div>
+
+          <!-- Stats -->
+          <div class="up-stats">
+            <div class="up-stat">
+              <div class="up-stat-num" id="statStreak">0</div>
+              <div class="up-stat-label">🔥 Streak</div>
+            </div>
+            <div class="up-stat">
+              <div class="up-stat-num" id="statMessages">0</div>
+              <div class="up-stat-label">💬 Messages</div>
+            </div>
+            <div class="up-stat">
+              <div class="up-stat-num" id="statPoints">0</div>
+              <div class="up-stat-label">⭐ Points</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT SECTION -->
+      <div class="up-card" style="padding:14px">
+        <div class="up-section-title">
+          <span>📝 About Me</span>
+          <button class="up-edit-btn" id="aboutEditBtn" onclick="toggleAboutEdit()">✏ Edit</button>
+        </div>
+        <div class="up-about-text" id="aboutDisplay">No bio yet.</div>
+        <div class="up-about-edit" id="aboutEdit">
+          <textarea id="aboutInput" placeholder="Tell people about yourself..." maxlength="500"></textarea>
+          <div class="up-about-edit-actions">
+            <button class="retro-btn primary" onclick="saveAbout()">💾 Save</button>
+            <button class="retro-btn" onclick="toggleAboutEdit()">Cancel</button>
+            <span style="font-size:10px;color:#888">Max 500 chars</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOG SECTION -->
+      <div class="up-card" style="padding:14px">
+        <div class="up-section-title">
+          <span>📰 My Blog</span>
+          <button class="up-edit-btn" id="blogAddBtn" onclick="toggleBlogAdd()">+ New Post</button>
+        </div>
+
+        <!-- Add post form -->
+        <div class="up-blog-add" id="blogAdd">
+          <input type="text" id="blogTitle" placeholder="Post title..." maxlength="80">
+          <textarea id="blogText" placeholder="What's on your mind?..." maxlength="2000"></textarea>
+          <div id="blogPreview" style="display:none;margin-bottom:6px">
+            <img id="blogPreviewImg" style="max-height:100px;display:block;border:1px solid #ccc">
+            <button onclick="clearBlogImg()" style="font-size:10px;margin-top:4px">✕ Remove image</button>
+          </div>
+          <input type="file" id="blogImgInput" accept="image/*" style="display:none" onchange="handleBlogImg(this)">
+          <div class="up-blog-add-actions">
+            <button class="retro-btn" onclick="document.getElementById('blogImgInput').click()" style="font-size:11px">📷 Image</button>
+            <button class="retro-btn primary" onclick="saveBlogPost()" style="font-size:11px">💾 Post</button>
+            <button class="retro-btn" onclick="toggleBlogAdd()" style="font-size:11px">Cancel</button>
+          </div>
+        </div>
+
+        <div id="blogList" class="up-blog-list">
+          <div class="up-blog-empty">No posts yet.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="loadingMsg" style="text-align:center;padding:40px;font-family:var(--font-main);color:#888">Loading profile...</div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status-panel" id="statusText">Ready</div>
+    <div class="status-panel" style="flex:0 0 140px">User Profile</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const streamer = params.get('user');
+const viewer = params.get('viewer');
+const profileId = viewer || streamer; // Whose profile we're viewing
+
+let currentUser = null;
+let isOwnProfile = false;
+let blogImageData = null;
+
+const setStatus = m => document.getElementById('statusText').textContent = m;
+
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = Date.now() - d.getTime();
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  return d.toLocaleDateString();
+}
+
+// ── Load profile ──────────────────────────────────────
+async function loadProfile() {
+  if (!streamer || !profileId) {
+    document.getElementById('loadingMsg').textContent = 'Missing parameters in URL';
+    return;
+  }
+
+  document.getElementById('addrBar').value = 'lessonschedule.app/' + profileId;
+  document.getElementById('pageTitle').textContent = profileId + ' — Profile';
+  document.title = profileId + ' — Profile';
+
+  try {
+    // Load custom profile
+    const profSnap = await getDoc(doc(db, 'userProfiles', profileId));
+    const customProfile = profSnap.exists() ? profSnap.data() : {};
+
+    // Load streak from streamer's attendance
+    let streak = 0;
+    try {
+      const attSnap = await getDoc(doc(db, 'users', streamer, 'attendance', profileId));
+      if (attSnap.exists()) streak = attSnap.data().streak || 0;
+    } catch(e) {}
+
+    // Load forum stats
+    let messages = 0, points = 0;
+    try {
+      const fuSnap = await getDoc(doc(db, 'users', streamer, 'forumUsers', profileId));
+      if (fuSnap.exists()) {
+        messages = fuSnap.data().msgCount || 0;
+        points = fuSnap.data().points || 0;
+      }
+    } catch(e) {}
+
+    // Display name
+    document.getElementById('profileName').textContent = profileId;
+    document.getElementById('profileHandle').textContent = '@' + profileId;
+    document.getElementById('photoInitial').textContent = profileId[0].toUpperCase();
+
+    // Photo
+    if (customProfile.photo) {
+      document.getElementById('profilePhoto').innerHTML = `<img src="${customProfile.photo}">`;
+    }
+    // Banner
+    if (customProfile.banner) {
+      document.getElementById('bannerBox').innerHTML = `<img src="${customProfile.banner}">`;
+    }
+    // About
+    if (customProfile.about) {
+      document.getElementById('aboutDisplay').textContent = customProfile.about;
+      document.getElementById('aboutDisplay').classList.remove('empty');
+    } else {
+      document.getElementById('aboutDisplay').textContent = 'No bio yet.';
+      document.getElementById('aboutDisplay').classList.add('empty');
+    }
+
+    // Stats
+    document.getElementById('statStreak').textContent = streak;
+    document.getElementById('statMessages').textContent = messages;
+    document.getElementById('statPoints').textContent = points;
+
+    // Badges
+    const badges = [];
+    if (profileId === streamer) badges.push('<span class="up-badge streamer">📺 STREAMER</span>');
+    try {
+      const userSnap = await getDoc(doc(db, 'users', streamer));
+      if (userSnap.exists() && (userSnap.data().mods||[]).includes(profileId)) {
+        badges.push('<span class="up-badge mod">🛡 MOD</span>');
+      }
+    } catch(e) {}
+    if (streak >= 30) badges.push('<span class="up-badge">🔥 30+ Days</span>');
+    if (messages >= 100) badges.push('<span class="up-badge">💬 100+ Msgs</span>');
+    document.getElementById('profileBadges').innerHTML = badges.join('');
+
+    // Load blog posts
+    await loadBlog();
+
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('profileWrap').style.display = 'block';
+    setStatus('Profile loaded');
+  } catch(e) {
+    document.getElementById('loadingMsg').innerHTML = '<div style="color:red">Error: ' + e.message + '</div>';
+  }
+}
+
+async function loadBlog() {
+  const list = document.getElementById('blogList');
+  try {
+    const q = query(collection(db, 'userProfiles', profileId, 'blog'), orderBy('timestamp','desc'), limit(20));
+    const snaps = await getDocs(q);
+    const posts = [];
+    snaps.forEach(d => posts.push({ id: d.id, ...d.data() }));
+    if (!posts.length) {
+      list.innerHTML = '<div class="up-blog-empty">No posts yet.</div>';
+      return;
+    }
+    list.innerHTML = posts.map(p => `
+      <div class="up-blog-post">
+        <div class="up-blog-head">
+          <div class="up-blog-title">${escapeHtml(p.title || '(untitled)')}</div>
+          <div class="up-blog-time">${formatTime(p.timestamp)}</div>
+        </div>
+        ${p.text ? `<div class="up-blog-text">${escapeHtml(p.text)}</div>` : ''}
+        ${p.image ? `<img class="up-blog-img" src="${p.image}" onclick="window.open(this.src,'_blank')">` : ''}
+        ${isOwnProfile ? `<div class="up-blog-actions">
+          <button class="danger" onclick="deletePost('${p.id}')">🗑 Delete</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="color:red;padding:10px">Error loading blog</div>';
+  }
+}
+
+// ── Edit functions (only if own profile) ─────────────
+function enableEditing() {
+  document.getElementById('bannerEditBtn').classList.add('show');
+  document.getElementById('photoEditBtn').classList.add('show');
+  document.getElementById('aboutEditBtn').classList.add('show');
+  document.getElementById('blogAddBtn').classList.add('show');
+}
+
+window.onPhotoClick = () => {
+  if (isOwnProfile) document.getElementById('photoInput').click();
+};
+
+window.uploadPhoto = (input) => {
+  if (!input.files || !input.files[0]) return;
+  if (input.files[0].size > 600000) { alert('Image too large! Max 600KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const data = e.target.result;
+    try {
+      await setDoc(doc(db, 'userProfiles', profileId), { photo: data }, { merge: true });
+      document.getElementById('profilePhoto').innerHTML = `<img src="${data}">`;
+      setStatus('Photo updated ✔');
+    } catch(err) { alert('Error: ' + err.message); }
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
+window.uploadBanner = (input) => {
+  if (!input.files || !input.files[0]) return;
+  if (input.files[0].size > 800000) { alert('Image too large! Max 800KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const data = e.target.result;
+    try {
+      await setDoc(doc(db, 'userProfiles', profileId), { banner: data }, { merge: true });
+      document.getElementById('bannerBox').innerHTML = `<img src="${data}"><button class="up-banner-edit show" onclick="document.getElementById('bannerInput').click()">📷 Change Banner</button>`;
+      setStatus('Banner updated ✔');
+    } catch(err) { alert('Error: ' + err.message); }
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
+window.toggleAboutEdit = () => {
+  const display = document.getElementById('aboutDisplay');
+  const edit = document.getElementById('aboutEdit');
+  const input = document.getElementById('aboutInput');
+  if (edit.classList.contains('show')) {
+    edit.classList.remove('show');
+    display.style.display = 'block';
+  } else {
+    edit.classList.add('show');
+    display.style.display = 'none';
+    input.value = display.classList.contains('empty') ? '' : display.textContent;
+    input.focus();
+  }
+};
+
+window.saveAbout = async () => {
+  const text = document.getElementById('aboutInput').value.trim();
+  try {
+    await setDoc(doc(db, 'userProfiles', profileId), { about: text }, { merge: true });
+    const display = document.getElementById('aboutDisplay');
+    display.textContent = text || 'No bio yet.';
+    display.classList.toggle('empty', !text);
+    toggleAboutEdit();
+    setStatus('About saved ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.toggleBlogAdd = () => {
+  document.getElementById('blogAdd').classList.toggle('show');
+  document.getElementById('blogTitle').value = '';
+  document.getElementById('blogText').value = '';
+  clearBlogImg();
+};
+
+window.handleBlogImg = (input) => {
+  if (!input.files || !input.files[0]) return;
+  if (input.files[0].size > 800000) { alert('Image too large! Max 800KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    blogImageData = e.target.result;
+    document.getElementById('blogPreviewImg').src = blogImageData;
+    document.getElementById('blogPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
+window.clearBlogImg = () => {
+  blogImageData = null;
+  document.getElementById('blogPreview').style.display = 'none';
+  document.getElementById('blogImgInput').value = '';
+};
+
+window.saveBlogPost = async () => {
+  const title = document.getElementById('blogTitle').value.trim();
+  const text = document.getElementById('blogText').value.trim();
+  if (!title && !text) { alert('Add a title or some text!'); return; }
+  try {
+    await addDoc(collection(db, 'userProfiles', profileId, 'blog'), {
+      title, text, image: blogImageData || null,
+      timestamp: serverTimestamp(),
+      author: profileId
+    });
+    toggleBlogAdd();
+    await loadBlog();
+    setStatus('Post published ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.deletePost = async (id) => {
+  if (!confirm('Delete this post?')) return;
+  try {
+    await deleteDoc(doc(db, 'userProfiles', profileId, 'blog', id));
+    await loadBlog();
+    setStatus('Post deleted ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+// ── Auth ──────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = localStorage.getItem('dp_current') || user.email.replace('@lessonschedule.app','');
+    isOwnProfile = currentUser === profileId;
+    if (isOwnProfile) enableEditing();
+  }
+  loadProfile();
+});
+
+// If not logged in, still show profile (read-only)
+setTimeout(() => {
+  if (!currentUser) loadProfile();
+}, 1000);
+</script>
+</body>
+</html>

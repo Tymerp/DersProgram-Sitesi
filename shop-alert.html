@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shop Alert</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:transparent;overflow:hidden;width:700px;height:200px}
+.container{position:fixed;top:20px;left:20px;right:20px;pointer-events:none}
+.card{
+  background:linear-gradient(135deg,#aa00aa,#ff44ff);
+  border:3px solid #fff;
+  padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  opacity:0;transform:translateX(-100%);
+  box-shadow:4px 4px 0 rgba(0,0,0,0.5),0 0 30px rgba(255,100,255,0.4);
+}
+.card.show{animation:slideIn .5s cubic-bezier(.34,1.56,.64,1) forwards, slideOut .4s ease-in calc(var(--dur, 8s) - 0.4s) forwards}
+@keyframes slideIn{0%{opacity:0;transform:translateX(-100%)}100%{opacity:1;transform:translateX(0)}}
+@keyframes slideOut{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(-100%)}}
+
+.icon{font-size:64px;line-height:1;flex-shrink:0;animation:bounce .6s ease-in-out .5s 3}
+@keyframes bounce{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.2) rotate(-5deg)}}
+
+.info{flex:1;min-width:0}
+.title{font-family:'VT323',monospace;font-size:18px;color:#ffdd00;letter-spacing:2px;margin-bottom:2px;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
+.buyer{font-family:'VT323',monospace;font-size:30px;color:#fff;line-height:1.1;text-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.action{font-family:'Share Tech Mono',monospace;font-size:14px;color:#ffeeff;margin-top:4px;line-height:1.3}
+.action b{color:#ffdd00}
+
+.price{font-family:'VT323',monospace;font-size:42px;color:#ffdd00;line-height:1;text-shadow:2px 2px 0 rgba(0,0,0,.5);flex-shrink:0;text-align:center;min-width:90px}
+.price-label{font-size:12px;color:#fff;opacity:0.8;font-family:'Share Tech Mono',monospace}
+
+.confetti{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="confetti" id="confetti"></div>
+<div class="container">
+  <div class="card" id="card">
+    <div class="icon" id="icon">🛒</div>
+    <div class="info">
+      <div class="title">⭐ SHOP PURCHASE ⭐</div>
+      <div class="buyer" id="buyer">User</div>
+      <div class="action" id="action">bought <b>Item Name</b></div>
+    </div>
+    <div class="price">
+      <div id="priceNum">0</div>
+      <div class="price-label">⭐ pts</div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",authDomain:"dersprogram-31d2d.firebaseapp.com",projectId:"dersprogram-31d2d",storageBucket:"dersprogram-31d2d.firebasestorage.app",messagingSenderId:"910271309823",appId:"1:910271309823:web:87684f55e386e0ef5e29ca"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const params=new URLSearchParams(window.location.search);
+const streamer=params.get('user');
+const duration=parseInt(params.get('duration')||'8')*1000;
+let queue=[],showing=false;
+
+function confetti(){
+  const c=document.getElementById('confetti'); c.innerHTML='';
+  const colors=['#ffdd00','#ff00ff','#00ddff','#ff8800','#ff44ff'];
+  const style=document.createElement('style');
+  style.textContent='@keyframes fall{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(180px) rotate(720deg)}}';
+  c.appendChild(style);
+  for(let i=0;i<50;i++){
+    const p=document.createElement('div');
+    p.style.cssText=`position:absolute;width:10px;height:10px;left:${Math.random()*100}%;background:${colors[i%colors.length]};border-radius:${Math.random()>.5?'50%':'0'};animation:fall ${1+Math.random()*1.5}s ease-in ${Math.random()*.6}s forwards`;
+    c.appendChild(p);
+  }
+}
+
+function show(data){
+  document.getElementById('buyer').textContent=data.buyer;
+  document.getElementById('priceNum').textContent=data.price;
+  document.getElementById('icon').textContent=data.itemIcon || '🛒';
+  document.getElementById('action').innerHTML=`bought <b>${data.itemName}</b>${data.itemDescription ? `<br><span style="font-size:12px;opacity:0.85">→ ${data.itemDescription}</span>`:''}`;
+  const card=document.getElementById('card');
+  card.style.setProperty('--dur', (duration/1000) + 's');
+  card.className='card show';
+  confetti();
+  showing=true;
+  setTimeout(()=>{card.className='card';showing=false;setTimeout(next,600)}, duration);
+}
+function next(){if(queue.length&&!showing) show(queue.shift());}
+
+if(streamer){
+  onSnapshot(collection(db,'users',streamer,'shopAlerts'),async snap=>{
+    for(const ch of snap.docChanges()){
+      if(ch.type==='added'){
+        queue.push({...ch.doc.data(),id:ch.doc.id});
+        try{await deleteDoc(doc(db,'users',streamer,'shopAlerts',ch.doc.id))}catch(e){}
+      }
+    }
+    next();
+  });
+} else {
+  document.body.innerHTML='<div style="color:white;padding:20px;font-family:monospace">Add ?user=USERNAME to URL</div>';
+}
+</script>
+</body>
+</html>
