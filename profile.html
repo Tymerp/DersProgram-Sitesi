@@ -3,52 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lesson Schedule Profile</title>
+<title>Profile Card</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  body { background: #008080; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  .profile-window { width: 500px; max-height: 90vh; display: flex; flex-direction: column; }
+  
+  .card-container { background: #d4d0c8; border: 2px solid; border-color: #fff #888 #888 #fff; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
+  .banner { width: 100%; height: 120px; background: #888; position: relative; border-bottom: 2px solid #555; }
+  .banner img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .avatar-wrapper { position: absolute; left: 20px; bottom: -40px; width: 80px; height: 80px; border: 4px solid #d4d0c8; background: #c0c0c0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 32px; font-family: var(--font-display); color: #000080; }
+  .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .card-header { padding: 50px 20px 20px 20px; }
+  .card-name { font-size: 24px; font-family: var(--font-display); color: #000; }
+  .card-handle { font-size: 13px; color: #555; font-family: var(--font-main); }
+  
+  .card-tabs { display: flex; border-bottom: 2px solid #888; background: #c0c0c0; }
+  .card-tab { padding: 8px 16px; font-family: var(--font-main); font-size: 13px; cursor: pointer; border-right: 1px solid #888; }
+  .card-tab.active { background: #d4d0c8; font-weight: bold; border-top: 2px solid #000080; }
+  
+  .card-content { flex: 1; padding: 20px; overflow-y: auto; background: #d4d0c8; font-family: var(--font-main); font-size: 13px; }
+  
+  .info-box { background: #fff; border: 2px solid; border-color: #888 #fff #fff #888; padding: 12px; margin-bottom: 16px; }
+  .info-title { font-weight: bold; margin-bottom: 8px; color: #000080; font-size: 11px; text-transform: uppercase; }
+  
+  .blog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .blog-img { width: 100%; height: 120px; object-fit: cover; border: 2px solid; border-color: #888 #fff #fff #888; }
+</style>
 </head>
 <body>
-<div class="window">
+
+<div class="window profile-window">
   <div class="window-titlebar">
-    <div class="window-title"><div class="window-title-icon"></div><span id="titlebarName">Lesson Schedule Profile</span></div>
+    <div class="window-title"><div class="window-title-icon"></div><span id="titlebarName">User Profile</span></div>
     <div class="window-controls">
-      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
+      <div class="win-btn" onclick="window.close()">✕</div>
     </div>
   </div>
-  <div class="menubar">
-    <div class="menu-item" id="t-menu1">Dosya</div>
-    <div class="menu-item" id="t-menu2">Düzenle</div>
-    <div class="menu-item" id="t-menu3">Görünüm</div>
-    <div class="menu-item" id="t-menu4">Favoriler</div>
-    <div class="menu-item" id="t-menu5">Yardım</div>
-    <div style="margin-left:auto;display:flex;gap:2px;padding:0 4px">
-      <div class="menu-item lang-btn" id="btn-tr" onclick="setLang('tr')">🇹🇷 TR</div>
-      <div class="menu-item lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</div>
-    </div>
-  </div>
-  <div class="addressbar">
-    <div class="addr-btn" onclick="history.back()">◀</div><div class="addr-btn">▶</div>
-    <div class="addr-btn" onclick="window.location.href='index.html'">⌂</div>
-    <div class="addr-label" id="t-addr">Adres:</div>
-    <input class="addr-input" id="addrBar" value="" readonly>
-    <div class="addr-go">▶</div>
-  </div>
-  <div class="window-content" id="mainContent">
-    <div style="text-align:center;padding:40px;color:#888;font-family:var(--font-main)" id="loadingMsg">Yükleniyor...</div>
-  </div>
-  <div class="statusbar">
-    <div class="status-panel" id="statusText">Yükleniyor...</div>
-    <div class="status-panel" style="flex:0 0 140px" id="statusRight">Profil</div>
+  
+  <div class="card-container" id="mainContent">
+    <div style="text-align:center;padding:40px;color:#888;font-family:var(--font-main)">Loading...</div>
   </div>
 </div>
 
-<style>
-.lang-btn { font-size:11px; padding:2px 6px; }
-.active-lang { background:#000080; color:#fff; }
-</style>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
@@ -61,186 +63,137 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const DAYS = {
-  tr: ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],
-  en: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-};
-
-const translations = {
-  tr: {
-    menu1:'Dosya', menu2:'Düzenle', menu3:'Görünüm', menu4:'Favoriler', menu5:'Yardım',
-    addr:'Adres:', loading:'Yükleniyor...', loaded:'Yüklendi', notFound:'Kullanıcı bulunamadı',
-    tab1:'📋 Program', tab2:'👤 Hakkımda', tab3:'💰 Bağış',
-    schedTitle:'📅 Yayın Programı', daysLabel:'Yayın Günleri:', timeLabel:'Yayın Saati:',
-    imgLabel:'Program Resmi:', notSpecified:'Belirtilmemiş', noImg:'Henüz program resmi eklenmemiş',
-    aboutTitle:'👤 Hakkımda', noAbout:'Henüz hakkımda yazısı eklenmemiş.',
-    socialMedia:'Sosyal Medya:', donateTitle:'💰 Bağış / Destek',
-    donateMsg1:'\'ı desteklemek için aşağıdaki butona tıklayabilirsiniz.',
-    donateMsg2:'Her destek büyük anlam ifade eder!', noDonate:'Bağış linki eklenmemiş',
-    footer:'DersProgramım ile oluşturuldu', footerLink:'Siz de oluşturun!',
-    errNoUser:'Kullanıcı belirtilmedi.', errNotFound:'Bu kullanıcı bulunamadı: ',
-    errConn:'Bağlantı hatası: ', yt:'▶ YouTube', ig:'📷 Instagram', tw:'🐦 Twitter'
-  },
-  en: {
-    menu1:'File', menu2:'Edit', menu3:'View', menu4:'Favorites', menu5:'Help',
-    addr:'Address:', loading:'Loading...', loaded:'Loaded', notFound:'User not found',
-    tab1:'📋 Schedule', tab2:'👤 About Me', tab3:'💰 Donate',
-    schedTitle:'📅 Broadcast Schedule', daysLabel:'Broadcast Days:', timeLabel:'Broadcast Time:',
-    imgLabel:'Schedule Image:', notSpecified:'Not specified', noImg:'No schedule image uploaded yet',
-    aboutTitle:'👤 About Me', noAbout:'No about me text added yet.',
-    socialMedia:'Social Media:', donateTitle:'💰 Donate / Support',
-    donateMsg1:' — click the button below to show your support.',
-    donateMsg2:'Every contribution means a lot!', noDonate:'No donation link added',
-    footer:'Created with LessonSchedule', footerLink:'Create yours!',
-    errNoUser:'No user specified.', errNotFound:'User not found: ',
-    errConn:'Connection error: ', yt:'▶ YouTube', ig:'📷 Instagram', tw:'🐦 Twitter'
-  }
-};
-
-let lang = localStorage.getItem('dp_lang') || 'tr';
 const user = new URLSearchParams(window.location.search).get('user');
+const streamerContext = new URLSearchParams(window.location.search).get('streamer');
 
-function t() { return translations[lang]; }
+window.switchTab = (tabId, el) => {
+  document.querySelectorAll('.card-tab').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(e => e.style.display = 'none');
+  document.getElementById('panel-' + tabId).style.display = 'block';
+};
 
-function applyMenuLang() {
-  const tr = t();
-  document.getElementById('t-menu1').textContent = tr.menu1;
-  document.getElementById('t-menu2').textContent = tr.menu2;
-  document.getElementById('t-menu3').textContent = tr.menu3;
-  document.getElementById('t-menu4').textContent = tr.menu4;
-  document.getElementById('t-menu5').textContent = tr.menu5;
-  document.getElementById('t-addr').textContent = tr.addr;
-  document.getElementById('btn-tr').classList.toggle('active-lang', lang==='tr');
-  document.getElementById('btn-en').classList.toggle('active-lang', lang==='en');
-}
-
-function getDayNames(days) {
-  if (!days || days.length === 0) return t().notSpecified;
-  return days.map(d => {
-    if (d.startsWith('day_')) {
-      const idx = parseInt(d.replace('day_',''));
-      return DAYS[lang][idx];
-    }
-    return d;
-  }).map(d => '<span class="day-badge">'+d+'</span>').join('');
-}
-
-function renderProfile(p, name) {
-  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
-  const tr = t();
-  const daysHtml = getDayNames(p.days);
-  let timeHtml = '';
-  if (p.startTime || p.endTime) timeHtml = '<span class="schedule-time-badge">'+(p.startTime||'?')+' - '+(p.endTime||'?')+'</span>';
-  if (p.scheduleNote) timeHtml += '<span style="font-size:12px;color:#555;margin-left:8px">'+p.scheduleNote+'</span>';
-  let socialHtml = '';
-  if (p.socialYT) socialHtml += '<a href="'+p.socialYT+'" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">'+tr.yt+'</a>';
-  if (p.socialIG) socialHtml += '<a href="'+p.socialIG+'" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">'+tr.ig+'</a>';
-  if (p.socialTW) socialHtml += '<a href="'+p.socialTW+'" target="_blank" style="margin-right:8px;color:#000080;font-size:12px">'+tr.tw+'</a>';
-  const schedImgHtml = p.scheduleImg
-    ? '<img src="'+p.scheduleImg+'" class="schedule-img" alt="Schedule">'
-    : '<div class="upload-area" style="cursor:default;color:#999">'+tr.noImg+'</div>';
-  const donateHtml = p.donateUrl
-    ? '<a href="'+p.donateUrl+'" target="_blank" class="donate-btn">'+(p.donateText||'💰 Support')+'</a>'
-    : '<div class="donate-btn" style="cursor:default;color:#999;pointer-events:none">'+tr.noDonate+'</div>';
-
-  document.getElementById('mainContent').innerHTML = `
-    <div class="marquee-box">
-      <marquee behavior="scroll" direction="left" scrollamount="3">
-        ⭐ ${name} &nbsp;&nbsp;&nbsp;
-        📅 ${tr.daysLabel} ${p.days&&p.days.length>0 ? p.days.map(d=>d.startsWith('day_')?DAYS[lang][parseInt(d.replace('day_',''))]:d).join(', ') : tr.notSpecified} &nbsp;&nbsp;&nbsp;
-        🕐 ${tr.timeLabel} ${p.startTime&&p.endTime?p.startTime+' - '+p.endTime:tr.notSpecified} &nbsp;&nbsp;&nbsp;
-        ⭐ ${name}
-      </marquee>
-    </div>
-    <div class="profile-header">
-      <div class="profile-avatar">${initials}</div>
-      <div>
-        <div class="profile-name">${name}</div>
-        <div class="profile-handle">${p.title?p.title+' | ':''}@${user}</div>
-        <div style="margin-top:6px">${socialHtml}</div>
-      </div>
-    </div>
-    <div class="nav-tabs">
-      <div class="nav-tab active" onclick="showPTab(event,'prog')">${tr.tab1}</div>
-      <div class="nav-tab" onclick="showPTab(event,'about')">${tr.tab2}</div>
-      <div class="nav-tab" onclick="showPTab(event,'donate')">${tr.tab3}</div>
-    </div>
-    <div id="ptab-prog" class="tab-panel active">
-      <div class="section-title">${tr.schedTitle}</div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:12px;color:#555;margin-bottom:4px;font-family:var(--font-main)">${tr.daysLabel}</div>
-        <div>${daysHtml}</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:12px;color:#555;margin-bottom:4px;font-family:var(--font-main)">${tr.timeLabel}</div>
-        <div>${timeHtml||'<span style="color:#888;font-size:12px">'+tr.notSpecified+'</span>'}</div>
-      </div>
-      <div>
-        <div style="font-size:12px;color:#555;margin-bottom:6px;font-family:var(--font-main)">${tr.imgLabel}</div>
-        ${schedImgHtml}
-      </div>
-    </div>
-    <div id="ptab-about" class="tab-panel">
-      <div class="section-title">${tr.aboutTitle}</div>
-      ${p.title?'<div style="font-size:13px;font-weight:bold;margin-bottom:10px;font-family:var(--font-main)">'+p.title+'</div>':''}
-      <div class="about-content">${p.about?p.about.replace(/</g,'&lt;').replace(/>/g,'&gt;'):'<span style="color:#888">'+tr.noAbout+'</span>'}</div>
-      ${socialHtml?'<hr class="retro"><div style="margin-top:8px"><div style="font-size:12px;color:#555;margin-bottom:6px">'+tr.socialMedia+'</div>'+socialHtml+'</div>':''}
-    </div>
-    <div id="ptab-donate" class="tab-panel">
-      <div class="section-title">${tr.donateTitle}</div>
-      <div class="alert-box">
-        <div class="alert-icon">🙏</div>
-        <div class="alert-msg"><strong>${name}</strong>${tr.donateMsg1} ${tr.donateMsg2}</div>
-      </div>
-      ${donateHtml}
-    </div>
-    <hr class="retro">
-    <div style="text-align:center;font-size:11px;color:#888;font-family:var(--font-main)">
-      ${tr.footer} &nbsp;|&nbsp; <a href="index.html" style="color:#000080">${tr.footerLink}</a>
-    </div>`;
-
-  document.getElementById('titlebarName').textContent = name + ' - ' + (lang==='tr'?'Ders Programı':'Lesson Schedule');
-  document.getElementById('statusText').textContent = tr.loaded + ' - ' + name;
-  document.getElementById('statusRight').textContent = '@' + user;
-}
-
-window.setLang = function(l) {
-  lang = l;
-  localStorage.setItem('dp_lang', lang);
-  applyMenuLang();
-  if (window._profileData) renderProfile(window._profileData, window._profileName);
-}
-
-window.showPTab = function(e, name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(tb => tb.classList.remove('active'));
-  document.getElementById('ptab-' + name).classList.add('active');
-  e.target.classList.add('active');
-}
-
-applyMenuLang();
-document.getElementById('addrBar').value = 'http://lessonschedule.app/' + (user || '?');
-
-if (!user) {
-  document.getElementById('mainContent').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">'+t().errNoUser+'</div></div>';
-} else {
-  document.getElementById('loadingMsg').textContent = t().loading;
-  getDoc(doc(db, 'users', user)).then(snap => {
+async function loadProfile() {
+  if (!user) {
+    document.getElementById('mainContent').innerHTML = '<div style="padding:20px">No user specified.</div>';
+    return;
+  }
+  
+  try {
+    const snap = await getDoc(doc(db, 'users', user));
     if (!snap.exists()) {
-      document.getElementById('mainContent').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">'+t().errNotFound+'<strong>'+user+'</strong></div></div>';
-      document.getElementById('statusText').textContent = t().notFound;
+      document.getElementById('mainContent').innerHTML = '<div style="padding:20px">User not found.</div>';
       return;
     }
+    
     const p = snap.data().profile || {};
     const name = p.name || user;
-    window._profileData = p;
-    window._profileName = name;
-    renderProfile(p, name);
-  }).catch(e => {
-    document.getElementById('mainContent').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">'+t().errConn+e.message+'</div></div>';
-    document.getElementById('statusText').textContent = 'Error';
-  });
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    
+    const bannerHtml = p.bannerImg ? `<img src="${p.bannerImg}">` : '';
+    const avatarHtml = p.avatarImg ? `<img src="${p.avatarImg}">` : initials;
+    
+    document.getElementById('titlebarName').textContent = name + ' - Profile';
+    
+    let html = `
+      <div class="banner">
+        ${bannerHtml}
+        <div class="avatar-wrapper">${avatarHtml}</div>
+      </div>
+      <div class="card-header">
+        <div class="card-name">${name}</div>
+        <div class="card-handle">@${user} ${p.title ? ' • ' + p.title : ''}</div>
+      </div>
+      <div class="card-tabs">
+        <div class="card-tab active" onclick="switchTab('about', this)">Hakkımda</div>
+        ${p.days ? `<div class="card-tab" onclick="switchTab('schedule', this)">Program</div>` : ''}
+        ${streamerContext ? `<div class="card-tab" onclick="switchTab('blog', this)">Blog</div>` : ''}
+      </div>
+      <div class="card-content">
+        <!-- About Panel -->
+        <div id="panel-about" class="tab-panel">
+          <div class="info-box">
+            <div class="info-title">Hakkımda</div>
+            <div>${p.about ? p.about.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style="color:#888">Belirtilmemiş.</span>'}</div>
+          </div>
+          ${(p.socialYT || p.socialIG || p.socialTW || p.donateUrl) ? `
+          <div class="info-box">
+            <div class="info-title">Bağlantılar</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              ${p.socialYT ? `<a href="${p.socialYT}" target="_blank" style="color:#000080">▶ YouTube</a>` : ''}
+              ${p.socialIG ? `<a href="${p.socialIG}" target="_blank" style="color:#000080">📷 Instagram</a>` : ''}
+              ${p.socialTW ? `<a href="${p.socialTW}" target="_blank" style="color:#000080">🐦 Twitter</a>` : ''}
+              ${p.donateUrl ? `<a href="${p.donateUrl}" target="_blank" style="color:#aa0000;font-weight:bold">💰 ${p.donateText||'Destek Ol'}</a>` : ''}
+            </div>
+          </div>` : ''}
+        </div>
+        
+        <!-- Schedule Panel -->
+        ${p.days ? `
+        <div id="panel-schedule" class="tab-panel" style="display:none">
+          <div class="info-box">
+            <div class="info-title">Yayın Saatleri</div>
+            <div>${p.startTime} - ${p.endTime} <span style="color:#555;font-size:11px">(${p.scheduleNote||''})</span></div>
+            <div style="margin-top:8px;font-weight:bold">${p.dayNames ? p.dayNames.join(', ') : 'Belirtilmemiş'}</div>
+          </div>
+          ${p.scheduleImg ? `<img src="${p.scheduleImg}" style="width:100%;border:2px solid #888">` : ''}
+        </div>
+        ` : ''}
+        
+        <!-- Blog Panel -->
+        ${streamerContext ? `
+        <div id="panel-blog" class="tab-panel" style="display:none">
+          <div class="info-box" id="blogContent">Yükleniyor...</div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = html;
+    
+    // Fetch blog if requested
+    if (streamerContext) {
+      loadBlogPhotos(streamerContext, user);
+    }
+    
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = '<div style="padding:20px;color:red">Error: ' + e.message + '</div>';
+  }
 }
+
+async function loadBlogPhotos(streamerId, userId) {
+  const container = document.getElementById('blogContent');
+  try {
+    const msgs = [];
+    // Just fetch recent from all topics where sender = user and photo exists
+    for (const topic of ['general', 'hours', 'workspace']) {
+      const q = query(collection(db, 'users', streamerId, 'forum', topic, 'messages'), where('sender', '==', userId));
+      const snaps = await getDocs(q);
+      snaps.forEach(d => {
+        const data = d.data();
+        if (data.photo) msgs.push(data);
+      });
+    }
+    
+    msgs.sort((a,b) => b.timestamp - a.timestamp);
+    
+    if (msgs.length === 0) {
+      container.innerHTML = '<span style="color:#888">Henüz fotoğraf paylaşmamış.</span>';
+    } else {
+      container.innerHTML = '<div class="blog-grid">' + msgs.map(m => `
+        <div>
+          <img src="${m.photo}" class="blog-img">
+          <div style="font-size:10px;color:#555;margin-top:4px">${m.text.substring(0,30)}...</div>
+        </div>
+      `).join('') + '</div>';
+    }
+  } catch(e) {
+    container.innerHTML = 'Hata: ' + e.message;
+  }
+}
+
+loadProfile();
+
 </script>
 </body>
 </html>
