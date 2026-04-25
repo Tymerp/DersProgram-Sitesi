@@ -234,10 +234,18 @@
         </div>
 
         <div class="form-row" style="margin-top:10px">
-          <label class="form-label" id="r-attendLabel">✅ Attendance Page — Share this link with your viewers</label>
+          <label class="form-label" id="r-attendLabel">✅ Yoklama Sayfası — Seyircilere bu linki ver</label>
           <div class="url-box">
             <div class="url-display" id="attendUrl" style="font-size:11px">-</div>
-            <button class="retro-btn" onclick="copyId('attendUrl')" id="r-copy3">📋 Copy</button>
+            <button class="retro-btn" onclick="copyId('attendUrl')" id="r-copy3">📋 Kopyala</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:10px">
+          <label class="form-label" id="r-forumLabel">💬 Forum & Chat Sayfası — Direkt link</label>
+          <div class="url-box">
+            <div class="url-display" id="forumUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('forumUrl')" id="r-copy4">📋 Kopyala</button>
           </div>
         </div>
       </div>
@@ -631,8 +639,9 @@ function setOBSUrls(user) {
   document.getElementById('alertDurationSlider').value = duration;
   document.getElementById('alertDurationVal').textContent = duration + 's';
   document.getElementById('overlayUrl').textContent  = base + 'overlay.html?user=' + user + '&count=' + count;
-  document.getElementById('alertUrl').textContent    = base + 'alert.html?user=' + user + '&duration=' + duration;
+  document.getElementById('alertUrl').textContent    = base + 'shop-alert.html?user=' + user + '&duration=' + duration;
   document.getElementById('attendUrl').textContent   = base + 'attendance.html?user=' + user;
+  document.getElementById('forumUrl').textContent    = base + 'forum.html?user=' + user;
 }
 
 window.copyId = id => {
