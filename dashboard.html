@@ -56,6 +56,7 @@
       <div class="nav-tab" id="t-tab4" onclick="switchTab(event,'roles')">🏅 Roller & OBS</div>
       <div class="nav-tab" id="t-tab5" onclick="switchTab(event,'forum')">💬 Forum</div>
       <div class="nav-tab" id="t-tab6" onclick="switchTab(event,'shop')">🛒 Shop</div>
+      <div class="nav-tab" id="t-tab7" onclick="switchTab(event,'lounge')">🛋️ Lounge</div>
     </div>
 
     <!-- ===== PROGRAM ===== -->
@@ -385,6 +386,66 @@
         <div id="salesList" style="border:1px solid var(--win-dark);max-height:240px;overflow-y:auto">
           <div style="padding:10px;text-align:center;font-size:12px;color:#888;font-family:var(--font-main)">Click Refresh to load sales</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== LOUNGE ===== -->
+    <div id="tab-lounge" class="tab-panel">
+
+      <!-- Lounge URL -->
+      <div class="groupbox">
+        <span class="groupbox-title">🛋️ Study Lounge</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">💡</div>
+          <div class="alert-msg">Multiplayer study rooms where viewers sit together with their characters and study with shared pomodoro timers. Earn 5 points per completed pomodoro.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Lounge Page Link:</label>
+          <div class="url-box">
+            <div class="url-display" id="loungeUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('loungeUrl')">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pomodoro settings -->
+      <div class="groupbox">
+        <span class="groupbox-title">⏱ Pomodoro Settings</span>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <div>
+            <label style="font-size:12px;font-family:var(--font-main);display:block;margin-bottom:3px">Study minutes:</label>
+            <input class="retro-input" type="number" id="pomoStudyMin" min="1" max="120" value="25" style="width:80px">
+          </div>
+          <div>
+            <label style="font-size:12px;font-family:var(--font-main);display:block;margin-bottom:3px">Break minutes:</label>
+            <input class="retro-input" type="number" id="pomoBreakMin" min="1" max="60" value="5" style="width:80px">
+          </div>
+          <div style="margin-top:18px">
+            <button class="retro-btn primary" onclick="savePomoSettings()">💾 Save</button>
+          </div>
+          <div id="pomoSavedMsg" style="margin-top:18px;color:green;font-size:12px;display:none">✔ Saved</div>
+        </div>
+      </div>
+
+      <!-- Rooms -->
+      <div class="groupbox">
+        <span class="groupbox-title">🏠 Rooms</span>
+        <div class="alert-box" style="margin-bottom:12px">
+          <div class="alert-icon">🎨</div>
+          <div class="alert-msg">Create themed rooms where viewers can sit together. Choose from 6 room themes (beach, library, cafe, garden, bedroom, space).</div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:11px;color:#555;margin-bottom:6px;font-weight:bold;padding:0 2px">
+          <div style="flex:2">Room Name</div>
+          <div style="width:110px">Theme</div>
+          <div style="width:80px">Capacity</div>
+          <div style="width:60px"></div>
+        </div>
+        <div id="roomsContainer"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="retro-btn" onclick="addRoom()">+ Add Room</button>
+          <button class="retro-btn primary" onclick="saveRooms()">💾 Save Rooms</button>
+        </div>
+        <div id="roomsSavedMsg" style="color:green;font-size:12px;margin-top:6px;display:none">✔ Rooms saved!</div>
       </div>
     </div>
 
@@ -819,6 +880,7 @@ onAuthStateChanged(auth, async user => {
     loadSessionStatus();
     loadForumConfig();
     loadShopConfig();
+    loadLoungeConfig();
   } catch(e) { setStatus('Error: ' + e.message); }
 });
 
@@ -1234,6 +1296,130 @@ window.loadSales = async () => {
       </div>`;
     }).join('');
   } catch(e) { list.innerHTML = '<div style="color:red;padding:10px">Error: '+e.message+'</div>'; }
+};
+
+// ── LOUNGE MANAGEMENT ─────────────────────────────────
+let roomsData = [];
+
+async function loadLoungeConfig() {
+  if (!currentUser) return;
+  try {
+    const userSnap = await getDoc(doc(db, 'users', currentUser));
+    if (userSnap.exists()) {
+      const lc = userSnap.data().loungeConfig || {};
+      document.getElementById('pomoStudyMin').value = lc.studyMin || 25;
+      document.getElementById('pomoBreakMin').value = lc.breakMin || 5;
+    }
+    // Load rooms
+    const { getDocs, collection: col } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snaps = await getDocs(col(db, 'users', currentUser, 'rooms'));
+    roomsData = [];
+    snaps.forEach(d => roomsData.push({ id: d.id, ...d.data() }));
+    roomsData.sort((a,b) => (a.order||0) - (b.order||0));
+    renderRooms();
+
+    // Set lounge URL
+    const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+    const lEl = document.getElementById('loungeUrl');
+    if (lEl) lEl.textContent = base + 'study-lounge.html?user=' + currentUser;
+  } catch(e) {}
+}
+
+function renderRooms() {
+  const container = document.getElementById('roomsContainer');
+  if (!container) return;
+  if (!roomsData.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#888;padding:8px;border:1px dashed #ccc;text-align:center">No rooms yet. Click "+ Add Room" to create one!</div>';
+    return;
+  }
+  container.innerHTML = roomsData.map((r, i) => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <input class="retro-input" type="text" value="${r.name||''}" onchange="updateRoom(${i},'name',this.value)" style="flex:2;min-width:140px" placeholder="Beach Vibes">
+      <select class="retro-input" onchange="updateRoom(${i},'theme',this.value)" style="width:110px">
+        <option value="beach"${r.theme==='beach'?' selected':''}>🏖️ Beach</option>
+        <option value="library"${r.theme==='library'?' selected':''}>📚 Library</option>
+        <option value="cafe"${r.theme==='cafe'?' selected':''}>☕ Cafe</option>
+        <option value="garden"${r.theme==='garden'?' selected':''}>🌸 Garden</option>
+        <option value="bedroom"${r.theme==='bedroom'?' selected':''}>🛏️ Bedroom</option>
+        <option value="space"${r.theme==='space'?' selected':''}>🚀 Space</option>
+      </select>
+      <input class="retro-input" type="number" min="2" max="16" value="${r.capacity||8}" onchange="updateRoom(${i},'capacity',parseInt(this.value)||8)" style="width:80px">
+      <button onclick="removeRoom(${i})" style="background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;padding:3px 8px;font-size:12px;font-family:var(--font-main)">✕ Remove</button>
+    </div>
+  `).join('');
+}
+
+window.updateRoom = (i, field, value) => { roomsData[i][field] = value; };
+
+window.addRoom = () => {
+  const id = 'room_' + Date.now();
+  roomsData.push({ id, name: 'New Room', theme: 'beach', capacity: 8, order: roomsData.length });
+  renderRooms();
+};
+
+window.removeRoom = async (i) => {
+  if (!confirm('Remove this room? Anyone currently inside will be kicked out.')) return;
+  const room = roomsData[i];
+  // Delete from Firestore if it exists
+  if (room.id && currentUser) {
+    try {
+      const { deleteDoc: delDoc, getDocs: gDocs, collection: col } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      // Delete seats
+      const seatsSnaps = await gDocs(col(db, 'users', currentUser, 'rooms', room.id, 'seats'));
+      for (const s of seatsSnaps.docs) await delDoc(s.ref);
+      // Delete bubbles
+      try {
+        const bubSnaps = await gDocs(col(db, 'users', currentUser, 'rooms', room.id, 'bubbles'));
+        for (const b of bubSnaps.docs) await delDoc(b.ref);
+      } catch(e) {}
+      // Delete room itself
+      await delDoc(doc(db, 'users', currentUser, 'rooms', room.id));
+    } catch(e) {}
+  }
+  roomsData.splice(i, 1);
+  renderRooms();
+};
+
+window.saveRooms = async () => {
+  if (!currentUser) return;
+  for (const r of roomsData) {
+    if (!r.name || !r.name.trim()) { alert('All rooms must have a name!'); return; }
+    if (!r.theme) r.theme = 'beach';
+    if (!r.capacity || r.capacity < 2) r.capacity = 8;
+    if (r.capacity > 16) r.capacity = 16;
+  }
+  try {
+    // Save each room
+    for (let i = 0; i < roomsData.length; i++) {
+      const r = roomsData[i];
+      r.order = i;
+      await setDoc(doc(db, 'users', currentUser, 'rooms', r.id), {
+        name: r.name,
+        theme: r.theme,
+        capacity: r.capacity,
+        order: i
+      }, { merge: true });
+    }
+    const msg = document.getElementById('roomsSavedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    setStatus('Rooms saved ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.savePomoSettings = async () => {
+  if (!currentUser) return;
+  const studyMin = parseInt(document.getElementById('pomoStudyMin').value) || 25;
+  const breakMin = parseInt(document.getElementById('pomoBreakMin').value) || 5;
+  try {
+    await updateDoc(doc(db, 'users', currentUser), {
+      loungeConfig: { studyMin, breakMin }
+    });
+    const msg = document.getElementById('pomoSavedMsg');
+    msg.style.display = 'inline-block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    setStatus('Pomodoro settings saved ✔');
+  } catch(e) { alert('Error: ' + e.message); }
 };
 
 window.saveProfile = async () => {
