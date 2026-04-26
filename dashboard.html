@@ -69,6 +69,10 @@
           </div>
           <input type="file" id="scheduleImgInput" accept="image/*" style="display:none" onchange="previewImage(this)">
           <img id="schedulePreview" class="upload-preview" alt="Preview">
+          <div id="scheduleImgActions" style="display:none;margin-top:6px;gap:6px">
+            <button class="retro-btn" onclick="document.getElementById('scheduleImgInput').click()" style="font-size:11px">📷 Replace Image</button>
+            <button class="retro-btn" onclick="removeScheduleImg()" style="font-size:11px;background:#ffeeee;color:#cc4444">🗑 Remove Image</button>
+          </div>
         </div>
       </div>
       <div class="groupbox"><span class="groupbox-title" id="t-days-title">Yayın Günleri</span>
@@ -622,9 +626,26 @@ window.previewImage = input => {
     scheduleImgData = e.target.result;
     document.getElementById('schedulePreview').src = scheduleImgData;
     document.getElementById('schedulePreview').style.display = 'block';
+    document.getElementById('scheduleImgActions').style.display = 'flex';
     setStatus(t().imgLoaded);
   };
   reader.readAsDataURL(input.files[0]);
+};
+
+window.removeScheduleImg = async () => {
+  if (!confirm('Remove the schedule image?')) return;
+  scheduleImgData = '';
+  document.getElementById('schedulePreview').src = '';
+  document.getElementById('schedulePreview').style.display = 'none';
+  document.getElementById('scheduleImgActions').style.display = 'none';
+  document.getElementById('scheduleImgInput').value = '';
+  // Also save to firestore immediately
+  if (currentUser) {
+    try {
+      await updateDoc(doc(db, 'users', currentUser), { 'profile.scheduleImg': '' });
+      setStatus('Image removed ✔');
+    } catch(e) { alert('Error: ' + e.message); }
+  }
 };
 
 document.addEventListener('input', e => {
@@ -748,7 +769,7 @@ onAuthStateChanged(auth, async user => {
     rolesData = savedRoles;
     renderRoles();
 
-    if (p.scheduleImg) { scheduleImgData = p.scheduleImg; document.getElementById('schedulePreview').src = p.scheduleImg; document.getElementById('schedulePreview').style.display='block'; }
+    if (p.scheduleImg) { scheduleImgData = p.scheduleImg; document.getElementById('schedulePreview').src = p.scheduleImg; document.getElementById('schedulePreview').style.display='block'; document.getElementById('scheduleImgActions').style.display='flex'; }
     if (p.days) { selectedDays = [...p.days]; buildDaysGrid(); }
     if (p.startTime) document.getElementById('startTime').value = p.startTime;
     if (p.endTime) document.getElementById('endTime').value = p.endTime;

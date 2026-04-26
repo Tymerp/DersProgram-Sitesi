@@ -14,6 +14,8 @@
 .up-banner img{width:100%;height:100%;object-fit:cover;display:block}
 .up-banner-edit{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.9);border:1px solid #888;padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--font-main);display:none}
 .up-banner-edit.show{display:block}
+.up-banner-remove{position:absolute;top:8px;right:130px;background:rgba(255,200,200,0.95);border:1px solid #cc4444;color:#cc4444;padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--font-main);display:none}
+.up-banner-remove.show{display:block}
 
 .up-header{padding:0 18px 18px;position:relative}
 .up-photo{width:100px;height:100px;background:var(--accent);border:4px solid #fff;color:#fff;font-family:var(--font-display);font-size:48px;display:flex;align-items:center;justify-content:center;margin-top:-50px;position:relative;cursor:pointer;overflow:hidden}
@@ -99,7 +101,9 @@
       <div class="up-card">
         <!-- Banner -->
         <div class="up-banner" id="bannerBox">
+          <img id="bannerImg" style="display:none">
           <button class="up-banner-edit" id="bannerEditBtn" onclick="document.getElementById('bannerInput').click()">📷 Change Banner</button>
+          <button class="up-banner-remove" id="bannerRemoveBtn" onclick="removeBanner()">🗑 Remove</button>
           <input type="file" id="bannerInput" accept="image/*" style="display:none" onchange="uploadBanner(this)">
         </div>
 
@@ -113,6 +117,7 @@
             <div class="up-photo-edit" id="photoEditBtn" onclick="document.getElementById('photoInput').click()" title="Change photo">📷</div>
             <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
           </div>
+          <button id="photoRemoveBtn" onclick="removePhoto()" style="display:none;font-size:10px;padding:2px 8px;background:#ffeeee;border:1px solid #cc4444;color:#cc4444;cursor:pointer;font-family:var(--font-main);margin-top:4px">🗑 Remove Photo</button>
 
           <!-- Name + badges -->
           <div class="up-name-row">
@@ -279,7 +284,9 @@ async function loadProfile() {
     }
     // Banner
     if (customProfile.banner) {
-      document.getElementById('bannerBox').innerHTML = `<img src="${customProfile.banner}">`;
+      const bImg = document.getElementById('bannerImg');
+      bImg.src = customProfile.banner;
+      bImg.style.display = 'block';
     }
     // About
     if (customProfile.about) {
@@ -354,6 +361,13 @@ function enableEditing() {
   document.getElementById('photoEditBtn').classList.add('show');
   document.getElementById('aboutEditBtn').classList.add('show');
   document.getElementById('blogAddBtn').classList.add('show');
+  // Show remove buttons if image exists
+  if (document.getElementById('bannerImg').style.display !== 'none') {
+    document.getElementById('bannerRemoveBtn').classList.add('show');
+  }
+  if (document.getElementById('profilePhoto').querySelector('img')) {
+    document.getElementById('photoRemoveBtn').style.display = 'inline-block';
+  }
 }
 
 window.onPhotoClick = () => {
@@ -369,6 +383,7 @@ window.uploadPhoto = (input) => {
     try {
       await setDoc(doc(db, 'userProfiles', profileId), { photo: data }, { merge: true });
       document.getElementById('profilePhoto').innerHTML = `<img src="${data}">`;
+      document.getElementById('photoRemoveBtn').style.display = 'inline-block';
       setStatus('Photo updated ✔');
     } catch(err) { alert('Error: ' + err.message); }
   };
@@ -383,11 +398,38 @@ window.uploadBanner = (input) => {
     const data = e.target.result;
     try {
       await setDoc(doc(db, 'userProfiles', profileId), { banner: data }, { merge: true });
-      document.getElementById('bannerBox').innerHTML = `<img src="${data}"><button class="up-banner-edit show" onclick="document.getElementById('bannerInput').click()">📷 Change Banner</button>`;
+      const bImg = document.getElementById('bannerImg');
+      bImg.src = data;
+      bImg.style.display = 'block';
+      // Show remove button
+      document.getElementById('bannerRemoveBtn').classList.add('show');
       setStatus('Banner updated ✔');
     } catch(err) { alert('Error: ' + err.message); }
   };
   reader.readAsDataURL(input.files[0]);
+};
+
+window.removeBanner = async () => {
+  if (!confirm('Remove banner?')) return;
+  try {
+    await setDoc(doc(db, 'userProfiles', profileId), { banner: null }, { merge: true });
+    document.getElementById('bannerImg').style.display = 'none';
+    document.getElementById('bannerImg').src = '';
+    document.getElementById('bannerRemoveBtn').classList.remove('show');
+    document.getElementById('bannerInput').value = '';
+    setStatus('Banner removed ✔');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.removePhoto = async () => {
+  if (!confirm('Remove profile photo?')) return;
+  try {
+    await setDoc(doc(db, 'userProfiles', profileId), { photo: null }, { merge: true });
+    document.getElementById('profilePhoto').innerHTML = '<span id="photoInitial">' + profileId[0].toUpperCase() + '</span>';
+    document.getElementById('photoInput').value = '';
+    document.getElementById('photoRemoveBtn').style.display = 'none';
+    setStatus('Photo removed ✔');
+  } catch(e) { alert('Error: ' + e.message); }
 };
 
 window.toggleAboutEdit = () => {
