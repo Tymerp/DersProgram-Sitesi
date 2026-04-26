@@ -397,13 +397,25 @@
         <span class="groupbox-title">🛋️ Study Lounge</span>
         <div class="alert-box" style="margin-bottom:12px">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">Multiplayer study rooms where viewers sit together with their characters and study with shared pomodoro timers. Earn 5 points per completed pomodoro.</div>
+          <div class="alert-msg">Multiplayer study rooms appear at the bottom of the forum page. Viewers pick a room, sit down with their character, and study together with shared pomodoro timers. Earn 5 points per completed pomodoro.</div>
         </div>
         <div class="form-row">
-          <label class="form-label">Lounge Page Link:</label>
+          <label class="form-label">Forum + Lounge Page Link (share this with viewers):</label>
           <div class="url-box">
             <div class="url-display" id="loungeUrl" style="font-size:11px">-</div>
             <button class="retro-btn" onclick="copyId('loungeUrl')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px">
+          <label class="form-label">📺 OBS Overlay — "Studying With Me" widget — Width: 300px, Height: auto</label>
+          <div class="url-box">
+            <div class="url-display" id="loungeOverlayUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('loungeOverlayUrl')">📋 Copy</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <label style="font-size:12px;font-family:var(--font-main)">Show top:</label>
+            <input class="retro-input" type="number" id="loungeOverlayCount" min="3" max="20" value="8" style="width:60px" onchange="updateLoungeOverlay()">
+            <span style="font-size:12px;font-family:var(--font-main)">viewers</span>
           </div>
         </div>
       </div>
@@ -792,6 +804,7 @@ function setOBSUrls(user) {
   const count = localStorage.getItem('dp_overlay_count_'+user) || '5';
   const duration = localStorage.getItem('dp_alert_duration_'+user) || '5';
   const shopDur = localStorage.getItem('dp_shop_alert_dur_'+user) || '8';
+  const lcCount = localStorage.getItem('dp_lounge_overlay_count_'+user) || '8';
   document.getElementById('overlayCount').value = count;
   document.getElementById('alertDurationSlider').value = duration;
   document.getElementById('alertDurationVal').textContent = duration + 's';
@@ -808,7 +821,23 @@ function setOBSUrls(user) {
     document.getElementById('shopAlertDurSlider').value = shopDur;
     document.getElementById('shopAlertDurVal').textContent = shopDur + 's';
   }
+  // Lounge — link points to forum since lounge is now embedded there
+  const loungeEl = document.getElementById('loungeUrl');
+  if (loungeEl) loungeEl.textContent = base + 'forum.html?user=' + user;
+  const loungeOvEl = document.getElementById('loungeOverlayUrl');
+  if (loungeOvEl) {
+    loungeOvEl.textContent = base + 'lounge-overlay.html?user=' + user + '&count=' + lcCount;
+    document.getElementById('loungeOverlayCount').value = lcCount;
+  }
 }
+
+window.updateLoungeOverlay = () => {
+  const count = parseInt(document.getElementById('loungeOverlayCount').value) || 8;
+  localStorage.setItem('dp_lounge_overlay_count_'+(currentUser||''), count);
+  const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+  document.getElementById('loungeOverlayUrl').textContent = base + 'lounge-overlay.html?user=' + currentUser + '&count=' + count;
+  setStatus('Overlay updated ✔');
+};
 
 window.copyId = id => {
   const text = document.getElementById(id).textContent;
@@ -1318,10 +1347,10 @@ async function loadLoungeConfig() {
     roomsData.sort((a,b) => (a.order||0) - (b.order||0));
     renderRooms();
 
-    // Set lounge URL
+    // Set lounge URL (points to forum since it's embedded there)
     const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
     const lEl = document.getElementById('loungeUrl');
-    if (lEl) lEl.textContent = base + 'study-lounge.html?user=' + currentUser;
+    if (lEl) lEl.textContent = base + 'forum.html?user=' + currentUser;
   } catch(e) {}
 }
 

@@ -140,6 +140,383 @@
   .topics-panel{width:100%;max-height:160px}
   .chat-panel{min-height:400px}
 }
+
+/* ═════════════ STUDY LOUNGE (Pixel Art) ═════════════ */
+.lounge-section{margin-top:20px}
+.lounge-header{
+  background:linear-gradient(90deg,#000080,#1084d0);
+  color:#fff;padding:8px 12px;
+  display:flex;justify-content:space-between;align-items:center;
+  border:1px solid var(--win-dark);
+  font-family:var(--font-main);
+  flex-wrap:wrap;gap:8px;
+}
+.lounge-header h3{font-size:13px;margin:0;display:flex;align-items:center;gap:6px}
+.lounge-rooms-tabs{display:flex;gap:0;background:var(--win-bg);border:1px solid var(--win-dark);border-top:none;flex-wrap:wrap}
+.lr-tab{
+  padding:6px 12px;font-size:11px;cursor:pointer;
+  font-family:var(--font-main);
+  border-right:1px solid var(--win-dark);
+  display:flex;align-items:center;gap:4px;
+  background:#e8e8f0;
+}
+.lr-tab:hover{background:#d8d8e8}
+.lr-tab.active{background:#fff;font-weight:bold;color:#000080;box-shadow:inset 0 -2px 0 var(--accent)}
+.lr-tab .count-badge{background:var(--accent);color:#fff;font-size:9px;padding:0 5px;margin-left:4px}
+
+/* Pixel art canvas */
+.lounge-canvas-wrap{
+  border:1px solid var(--win-dark);
+  border-top:none;
+  background:#000;
+  position:relative;
+  image-rendering:pixelated;
+  image-rendering:-moz-crisp-edges;
+}
+.lounge-canvas{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  max-height:340px;
+  overflow:hidden;
+  image-rendering:pixelated;
+}
+
+/* Pixel-art backgrounds via CSS gradients */
+.lc-beach{
+  background:
+    /* Sun */
+    radial-gradient(circle at 85% 20%, #ffeb3b 0%, #ffeb3b 4%, transparent 4.5%),
+    /* Sky to sand gradient */
+    linear-gradient(180deg, #87CEEB 0%, #87CEEB 55%, #f4d28e 55%, #f4d28e 65%, #e8b87a 65%, #e8b87a 100%);
+}
+.lc-beach::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    /* Cloud 1 */
+    radial-gradient(ellipse at 15% 18%, #fff 0, #fff 1.5%, transparent 2%),
+    /* Cloud 2 */
+    radial-gradient(ellipse at 50% 12%, #fff 0, #fff 2%, transparent 2.5%),
+    /* Wave 1 */
+    repeating-linear-gradient(90deg, transparent 0 12px, rgba(255,255,255,0.3) 12px 14px, transparent 14px 24px);
+  background-size:100% 100%, 100% 100%, 100% 100%;
+  background-position:0 0, 0 0, 0 50%;
+  background-repeat:no-repeat,no-repeat,repeat-x;
+  pointer-events:none;
+}
+.lc-beach::after{
+  content:'🌴 🌴';position:absolute;
+  bottom:34%;left:0;right:0;
+  display:flex;justify-content:space-between;
+  padding:0 4%;
+  font-size:48px;line-height:1;
+  pointer-events:none;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.3));
+}
+
+.lc-library{
+  background:
+    /* Ceiling */
+    linear-gradient(180deg, #5d3a1a 0%, #5d3a1a 8%, #6b4226 8%, #6b4226 12%,
+    /* Wallpaper with stripes */
+    #d4a574 12%, #d4a574 60%,
+    /* Floor */
+    #8b5a2b 60%, #6b4423 100%);
+}
+.lc-library::before{
+  content:'';position:absolute;inset:0;
+  background:
+    /* Bookshelf left */
+    linear-gradient(180deg, transparent 12%, #4a2c0f 12%, #4a2c0f 58%, transparent 58%) 4% 0/12% 100% no-repeat,
+    /* Bookshelf right */
+    linear-gradient(180deg, transparent 12%, #4a2c0f 12%, #4a2c0f 58%, transparent 58%) 96% 0/12% 100% no-repeat,
+    /* Books on shelves left */
+    repeating-linear-gradient(90deg, #c0392b 0 4%, #2980b9 4% 8%, #27ae60 8% 12%, #f39c12 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 4% 18%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #2980b9 0 4%, #c0392b 4% 8%, #f39c12 8% 12%, #27ae60 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 4% 28%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #27ae60 0 4%, #f39c12 4% 8%, #c0392b 8% 12%, #2980b9 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 4% 38%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #f39c12 0 4%, #8e44ad 4% 8%, #c0392b 8% 12%, #2980b9 12% 16%, #27ae60 16% 20%, transparent 20% 100%) 4% 48%/12% 8% no-repeat,
+    /* Books on shelves right */
+    repeating-linear-gradient(90deg, #c0392b 0 4%, #2980b9 4% 8%, #27ae60 8% 12%, #f39c12 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 96% 18%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #2980b9 0 4%, #c0392b 4% 8%, #f39c12 8% 12%, #27ae60 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 96% 28%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #27ae60 0 4%, #f39c12 4% 8%, #c0392b 8% 12%, #2980b9 12% 16%, #8e44ad 16% 20%, transparent 20% 100%) 96% 38%/12% 8% no-repeat,
+    repeating-linear-gradient(90deg, #f39c12 0 4%, #8e44ad 4% 8%, #c0392b 8% 12%, #2980b9 12% 16%, #27ae60 16% 20%, transparent 20% 100%) 96% 48%/12% 8% no-repeat;
+  pointer-events:none;
+}
+.lc-library::after{
+  content:'🖼️';position:absolute;top:18%;left:48%;font-size:28px;
+  pointer-events:none;filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+}
+
+.lc-cafe{
+  background:linear-gradient(180deg,
+    /* Top wall */
+    #4a2c20 0%, #4a2c20 12%,
+    /* Wall with brick texture */
+    #8b4513 12%, #8b4513 65%,
+    /* Floor */
+    #654321 65%, #4a2c1a 100%);
+}
+.lc-cafe::before{
+  content:'';position:absolute;inset:0;
+  background:
+    /* Brick pattern */
+    repeating-linear-gradient(90deg, transparent 0 8%, rgba(0,0,0,0.2) 8% 8.5%, transparent 8.5% 16%, rgba(0,0,0,0.2) 16% 16.5%) 0 14%/100% 51% repeat,
+    repeating-linear-gradient(0deg, transparent 0 12%, rgba(0,0,0,0.2) 12% 12.5%) 0 14%/100% 51% repeat,
+    /* Counter */
+    linear-gradient(180deg, #3d2817 0%, #3d2817 100%) 30% 50%/40% 14% no-repeat;
+  pointer-events:none;
+}
+.lc-cafe::after{
+  content:'☕ 🍰 ☕';position:absolute;top:53%;left:0;right:0;
+  text-align:center;font-size:18px;letter-spacing:14px;
+  pointer-events:none;
+}
+
+.lc-garden{
+  background:linear-gradient(180deg,
+    #87CEEB 0%, #87CEEB 35%,
+    /* Hills */
+    #228B22 35%, #228B22 50%,
+    /* Grass */
+    #6db33f 50%, #4a8b2a 100%);
+}
+.lc-garden::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 12% 20%, #fff 0%, #fff 1.5%, transparent 2%),
+    radial-gradient(ellipse at 50% 12%, #fff 0%, #fff 2%, transparent 2.5%),
+    radial-gradient(ellipse at 85% 22%, #fff 0%, #fff 1.5%, transparent 2%),
+    /* Flowers grid */
+    radial-gradient(circle at 10% 80%, #ff69b4 0%, #ff69b4 1%, transparent 1.5%),
+    radial-gradient(circle at 25% 88%, #ffd700 0%, #ffd700 1%, transparent 1.5%),
+    radial-gradient(circle at 40% 78%, #ff1493 0%, #ff1493 1%, transparent 1.5%),
+    radial-gradient(circle at 60% 88%, #ff69b4 0%, #ff69b4 1%, transparent 1.5%),
+    radial-gradient(circle at 75% 78%, #ffd700 0%, #ffd700 1%, transparent 1.5%),
+    radial-gradient(circle at 90% 88%, #ff1493 0%, #ff1493 1%, transparent 1.5%);
+  pointer-events:none;
+}
+.lc-garden::after{
+  content:'🌳 🌳';position:absolute;top:22%;left:0;right:0;
+  display:flex;justify-content:space-between;padding:0 6%;
+  font-size:42px;pointer-events:none;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.3));
+}
+
+.lc-bedroom{
+  background:linear-gradient(180deg,
+    /* Wall pink */
+    #ffb6c1 0%, #ffb6c1 65%,
+    /* Carpet */
+    #d4a574 65%, #c19660 100%);
+}
+.lc-bedroom::before{
+  content:'';position:absolute;inset:0;
+  background:
+    /* Wallpaper pattern dots */
+    radial-gradient(circle at 15% 18%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 35% 28%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 55% 18%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 75% 28%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 25% 38%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 65% 38%, #ffd1dc 0 1%, transparent 1.5%),
+    radial-gradient(circle at 85% 38%, #ffd1dc 0 1%, transparent 1.5%);
+  pointer-events:none;
+}
+.lc-bedroom::after{
+  content:'🪞 🖼️';position:absolute;top:18%;left:0;right:0;
+  display:flex;justify-content:space-around;padding:0 18%;
+  font-size:28px;pointer-events:none;
+}
+
+.lc-space{
+  background:radial-gradient(ellipse at center, #1a0033 0%, #000011 100%);
+}
+.lc-space::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 8% 12%, #fff 0 0.4%, transparent 0.6%),
+    radial-gradient(circle at 22% 22%, #fff 0 0.3%, transparent 0.5%),
+    radial-gradient(circle at 35% 8%, #fff 0 0.5%, transparent 0.7%),
+    radial-gradient(circle at 48% 18%, #fff 0 0.3%, transparent 0.5%),
+    radial-gradient(circle at 62% 10%, #fff 0 0.4%, transparent 0.6%),
+    radial-gradient(circle at 78% 24%, #fff 0 0.5%, transparent 0.7%),
+    radial-gradient(circle at 92% 14%, #fff 0 0.3%, transparent 0.5%),
+    radial-gradient(circle at 15% 32%, #fff 0 0.3%, transparent 0.5%),
+    radial-gradient(circle at 88% 32%, #fff 0 0.4%, transparent 0.6%),
+    /* Moon */
+    radial-gradient(circle at 80% 18%, #f4f1c1 0% 4%, transparent 4.5%);
+  pointer-events:none;
+}
+.lc-space::after{
+  content:'🌍 🪐 ☄️';position:absolute;top:8%;left:0;right:0;
+  display:flex;justify-content:space-around;padding:0 25%;
+  font-size:24px;pointer-events:none;
+}
+
+/* Floor / ground for character placement */
+.lc-floor{
+  position:absolute;
+  left:0;right:0;
+  bottom:0;
+  height:35%;
+  z-index:1;
+  pointer-events:none;
+}
+
+/* Pixel-art character */
+.lc-char{
+  position:absolute;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:none;
+  z-index:5;
+}
+.lc-char-pixel{
+  width:32px;height:48px;
+  position:relative;
+  image-rendering:pixelated;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.4));
+}
+/* CSS pixel-art characters using box-shadow */
+.lc-pixel-body{
+  width:8px;height:8px;
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+}
+.lc-char-emoji{
+  font-size:30px;
+  line-height:1;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.3));
+  animation:charBob 3s ease-in-out infinite;
+}
+@keyframes charBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.lc-char-name{
+  font-family:var(--font-main);
+  font-size:9px;
+  color:#fff;
+  background:rgba(0,0,0,0.75);
+  padding:1px 5px;
+  margin-top:1px;
+  white-space:nowrap;
+  max-width:90px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  image-rendering:auto;
+}
+
+/* Pixel art seat/furniture */
+.lc-seat{
+  position:absolute;
+  width:42px;height:36px;
+  cursor:pointer;
+  z-index:3;
+  display:flex;align-items:flex-end;justify-content:center;
+  transition:transform .1s;
+}
+.lc-seat:hover{transform:scale(1.1)}
+.lc-seat-occupied{cursor:default;pointer-events:none}
+.lc-seat-icon{
+  font-size:30px;
+  line-height:1;
+  filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+  image-rendering:pixelated;
+}
+
+/* Speech bubble */
+.lc-bubble{
+  position:absolute;
+  bottom:100%;left:50%;
+  transform:translateX(-50%);
+  background:#fff;
+  border:2px solid #000;
+  padding:3px 7px;
+  font-size:10px;
+  font-family:var(--font-main);
+  white-space:nowrap;
+  max-width:120px;
+  overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:4px;
+  pointer-events:none;
+  animation:bubbleIn .2s ease-out;
+  z-index:10;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.3);
+}
+.lc-bubble::after{
+  content:'';position:absolute;
+  top:100%;left:50%;
+  transform:translateX(-50%);
+  border:5px solid transparent;
+  border-top-color:#000;
+}
+@keyframes bubbleIn{from{opacity:0;transform:translate(-50%,5px)}to{opacity:1;transform:translate(-50%,0)}}
+
+.lc-status-icon{
+  position:absolute;
+  top:-2px;right:-4px;
+  font-size:12px;
+  background:#fff;border:2px solid #000;
+  width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:6;
+}
+
+/* Pomodoro bar */
+.lc-pomo{
+  background:#fafafa;
+  border:1px solid var(--win-dark);
+  border-top:none;
+  padding:8px 12px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.lc-pomo-time{
+  font-family:var(--font-display);
+  font-size:24px;color:#000080;line-height:1;min-width:80px;
+}
+.lc-pomo-time.break{color:#F59E0B}
+.lc-pomo-time.idle{color:#888}
+.lc-pomo-status{font-size:11px;color:#666;font-family:var(--font-main)}
+.lc-pomo-status.studying{color:#39A239;font-weight:bold}
+.lc-pomo-status.break{color:#F59E0B;font-weight:bold}
+.lc-pomo-progress{flex:1;min-width:100px;height:12px;background:#ddd;border:1px solid #888;overflow:hidden}
+.lc-pomo-fill{height:100%;background:linear-gradient(90deg,#39A239,#5BB85B);transition:width 1s linear;width:0%}
+.lc-pomo-fill.break{background:linear-gradient(90deg,#F59E0B,#FFC107)}
+.lc-pomo-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Bottom controls bar */
+.lc-controls{
+  background:var(--win-bg);
+  border:1px solid var(--win-dark);
+  border-top:none;
+  padding:8px 10px;
+}
+.lc-char-picker{
+  display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-bottom:6px;
+}
+.lc-char-picker-label{font-size:11px;color:#444;font-family:var(--font-main);margin-right:4px}
+.lc-char-opt{
+  font-size:20px;cursor:pointer;
+  padding:2px 4px;border:2px solid transparent;
+  background:#fff;line-height:1;
+}
+.lc-char-opt:hover{background:#e0e8ff}
+.lc-char-opt.selected{border-color:var(--accent);background:#cce0ff}
+.lc-chat-row{display:flex;gap:6px;align-items:center}
+.lc-chat-row input{flex:1;border-top:1px solid #404040;border-left:1px solid #404040;border-right:1px solid #fff;border-bottom:1px solid #fff;background:#fff;padding:5px 8px;font-family:var(--font-main);font-size:13px;outline:none}
+.lc-empty{
+  text-align:center;color:#fff;
+  padding:80px 20px;
+  font-family:var(--font-main);
+  font-size:13px;
+  background:rgba(0,0,0,0.5);
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:20;
+}
+.lc-no-rooms{
+  background:#fffae8;border:1px solid #cc9900;color:#aa6600;
+  padding:14px;text-align:center;font-family:var(--font-main);font-size:13px;
+  margin:8px;
+}
 </style>
 </head>
 <body>
@@ -240,6 +617,65 @@
             <textarea class="chat-input" id="msgInput" placeholder="Type a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
             <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════ STUDY LOUNGE ═════════════ -->
+    <div class="lounge-section" id="loungeSection">
+      <div class="lounge-header">
+        <h3>🛋️ Study Lounge</h3>
+        <span style="font-size:11px;opacity:0.9">Pick a room and study together! Earn ⭐ +5 per pomodoro.</span>
+      </div>
+
+      <!-- Room tabs -->
+      <div class="lounge-rooms-tabs" id="loungeRoomTabs"></div>
+
+      <!-- Pomodoro bar -->
+      <div class="lc-pomo" id="lcPomo" style="display:none">
+        <div>
+          <div class="lc-pomo-time idle" id="lcPomoTime">--:--</div>
+          <div class="lc-pomo-status" id="lcPomoStatus">Idle</div>
+        </div>
+        <div class="lc-pomo-progress"><div class="lc-pomo-fill" id="lcPomoFill"></div></div>
+        <div class="lc-pomo-actions" id="lcPomoActions">
+          <button class="retro-btn primary" id="lcPomoStart" onclick="lcStartPomo()" style="font-size:11px">▶ Start</button>
+          <button class="retro-btn" id="lcPomoStop" onclick="lcStopPomo()" style="display:none;font-size:11px">⏹ Stop</button>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="lounge-canvas-wrap">
+        <div class="lounge-canvas lc-beach" id="lcCanvas">
+          <div class="lc-empty" id="lcEmpty">👈 Pick a room to enter</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="lc-controls" id="lcControls" style="display:none">
+        <div class="lc-char-picker">
+          <span class="lc-char-picker-label">Character:</span>
+          <span class="lc-char-opt" data-char="🧑‍🎓" onclick="lcSetChar('🧑‍🎓')">🧑‍🎓</span>
+          <span class="lc-char-opt" data-char="👩‍🎓" onclick="lcSetChar('👩‍🎓')">👩‍🎓</span>
+          <span class="lc-char-opt" data-char="🧑" onclick="lcSetChar('🧑')">🧑</span>
+          <span class="lc-char-opt" data-char="👨" onclick="lcSetChar('👨')">👨</span>
+          <span class="lc-char-opt" data-char="👩" onclick="lcSetChar('👩')">👩</span>
+          <span class="lc-char-opt" data-char="🧓" onclick="lcSetChar('🧓')">🧓</span>
+          <span class="lc-char-opt" data-char="🧑‍💻" onclick="lcSetChar('🧑‍💻')">🧑‍💻</span>
+          <span class="lc-char-opt" data-char="🧑‍🎨" onclick="lcSetChar('🧑‍🎨')">🧑‍🎨</span>
+          <span class="lc-char-opt" data-char="🐱" onclick="lcSetChar('🐱')">🐱</span>
+          <span class="lc-char-opt" data-char="🐶" onclick="lcSetChar('🐶')">🐶</span>
+          <span class="lc-char-opt" data-char="🦊" onclick="lcSetChar('🦊')">🦊</span>
+          <span class="lc-char-opt" data-char="🐼" onclick="lcSetChar('🐼')">🐼</span>
+          <span class="lc-char-opt" data-char="🐰" onclick="lcSetChar('🐰')">🐰</span>
+          <span class="lc-char-opt" data-char="🦁" onclick="lcSetChar('🦁')">🦁</span>
+          <span class="lc-char-opt" data-char="🐨" onclick="lcSetChar('🐨')">🐨</span>
+          <span class="lc-char-opt" data-char="🦄" onclick="lcSetChar('🦄')">🦄</span>
+        </div>
+        <div class="lc-chat-row">
+          <input type="text" id="lcChatInput" placeholder="Say something..." maxlength="80" onkeydown="if(event.key==='Enter')lcSendBubble()">
+          <button class="retro-btn primary" onclick="lcSendBubble()" style="font-size:11px">💬 Say</button>
+          <button class="retro-btn" onclick="lcLeaveRoom()" style="font-size:11px;background:#ffeeee">🚪 Leave</button>
         </div>
       </div>
     </div>
@@ -945,8 +1381,339 @@ onAuthStateChanged(auth, async user => {
 if (!streamer) {
   document.querySelector('.window-content').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Missing ?user=USERNAME in URL!</div></div>';
 } else {
-  loadStreamerInfo().then(() => loadTopics());
+  loadStreamerInfo().then(() => { loadTopics(); lcInit(); });
 }
+
+// ═══════════════════ STUDY LOUNGE ═══════════════════
+let lcRooms = {};
+let lcCurrentRoom = null;
+let lcMySeat = null;
+let lcMyChar = localStorage.getItem('dp_lounge_char') || '🧑‍🎓';
+let lcOccupantsUnsub = null;
+let lcBubblesUnsub = null;
+let lcRoomDocUnsub = null;
+let lcPomoInterval = null;
+let lcPomoConfig = { studyMin: 25, breakMin: 5 };
+
+const LC_THEME_ICONS = { beach:'🏖️', library:'📚', cafe:'☕', garden:'🌸', bedroom:'🛏️', space:'🚀' };
+const LC_FURNITURE = { beach:'⛱️', library:'🪑', cafe:'☕', garden:'🪑', bedroom:'🛏️', space:'🚀' };
+
+async function lcInit() {
+  // Load lounge config (pomodoro times)
+  try {
+    const snap = await getDoc(doc(db, 'users', streamer));
+    if (snap.exists()) {
+      const lc = snap.data().loungeConfig || {};
+      lcPomoConfig = { studyMin: lc.studyMin || 25, breakMin: lc.breakMin || 5 };
+    }
+  } catch(e){}
+
+  // Highlight selected character
+  document.querySelectorAll('.lc-char-opt').forEach(el => {
+    el.classList.toggle('selected', el.dataset.char === lcMyChar);
+  });
+
+  // Listen to rooms
+  onSnapshot(collection(db, 'users', streamer, 'rooms'), async snap => {
+    lcRooms = {};
+    snap.forEach(d => lcRooms[d.id] = d.data());
+    await lcRenderTabs();
+  });
+}
+
+async function lcRenderTabs() {
+  const container = document.getElementById('loungeRoomTabs');
+  const roomList = Object.entries(lcRooms);
+  if (!roomList.length) {
+    container.innerHTML = '<div class="lc-no-rooms">No rooms yet. The streamer needs to create rooms in the dashboard!</div>';
+    document.getElementById('lcCanvas').innerHTML = '<div class="lc-empty">No rooms available</div>';
+    return;
+  }
+  // Sort by order
+  roomList.sort((a,b) => (a[1].order||0) - (b[1].order||0));
+
+  // Get occupant counts
+  const counts = await Promise.all(roomList.map(async ([id]) => {
+    try {
+      const seatsSnap = await getDocs(collection(db, 'users', streamer, 'rooms', id, 'seats'));
+      let c = 0;
+      seatsSnap.forEach(s => { if (s.data().occupant) c++; });
+      return c;
+    } catch(e) { return 0; }
+  }));
+
+  container.innerHTML = roomList.map(([id, r], i) => {
+    const icon = LC_THEME_ICONS[r.theme] || '🏠';
+    const cap = r.capacity || 8;
+    const cnt = counts[i];
+    return `<div class="lr-tab ${id===lcCurrentRoom?'active':''}" onclick="lcEnterRoom('${id}')">
+      ${icon} ${escapeHtml(r.name||'Room')} <span class="count-badge">${cnt}/${cap}</span>
+    </div>`;
+  }).join('');
+}
+
+function lcGenerateSeats(capacity) {
+  const seats = [];
+  const topCount = Math.ceil(capacity / 2);
+  const botCount = capacity - topCount;
+  for (let i = 0; i < topCount; i++) {
+    const x = 12 + (i / Math.max(topCount-1, 1)) * 76;
+    seats.push({ x: x + '%', y: '46%', scale: 0.85, depth: 'back' });
+  }
+  for (let i = 0; i < botCount; i++) {
+    const x = 18 + (i / Math.max(botCount-1, 1)) * 64;
+    seats.push({ x: x + '%', y: '70%', scale: 1.0, depth: 'front' });
+  }
+  return seats;
+}
+
+window.lcEnterRoom = async (roomId) => {
+  if (!currentUser) { alert('Sign in to use the lounge!'); return; }
+  if (lcCurrentRoom === roomId) return;
+
+  // Leave current
+  if (lcCurrentRoom && lcMySeat !== null) {
+    try { await deleteDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(lcMySeat))); } catch(e){}
+  }
+  if (lcOccupantsUnsub) lcOccupantsUnsub();
+  if (lcBubblesUnsub) lcBubblesUnsub();
+  if (lcRoomDocUnsub) lcRoomDocUnsub();
+  if (lcPomoInterval) clearInterval(lcPomoInterval);
+
+  lcCurrentRoom = roomId;
+  lcMySeat = null;
+
+  const room = lcRooms[roomId];
+  if (!room) return;
+
+  const theme = room.theme || 'beach';
+  const capacity = room.capacity || 8;
+  const seats = lcGenerateSeats(capacity);
+
+  // Build canvas
+  const canvas = document.getElementById('lcCanvas');
+  canvas.className = 'lounge-canvas lc-' + theme;
+  canvas.innerHTML = '';
+
+  // Add seats
+  seats.forEach((pos, i) => {
+    const seat = document.createElement('div');
+    seat.className = 'lc-seat';
+    seat.dataset.idx = i;
+    seat.style.left = pos.x;
+    seat.style.top = pos.y;
+    seat.style.transform = `translateX(-50%) scale(${pos.scale})`;
+    seat.innerHTML = `<div class="lc-seat-icon">${LC_FURNITURE[theme]||'🪑'}</div>`;
+    seat.onclick = () => lcSitDown(i);
+    canvas.appendChild(seat);
+  });
+
+  document.getElementById('lcControls').style.display = 'block';
+  document.getElementById('lcPomo').style.display = 'flex';
+
+  // Listen to seats
+  lcOccupantsUnsub = onSnapshot(collection(db, 'users', streamer, 'rooms', roomId, 'seats'), snap => {
+    const occs = {};
+    snap.forEach(s => { occs[parseInt(s.id)] = s.data(); });
+    lcRenderOccupants(occs, seats);
+    lcRenderTabs(); // Update tab counts
+  });
+
+  // Listen to bubbles
+  lcBubblesUnsub = onSnapshot(collection(db, 'users', streamer, 'rooms', roomId, 'bubbles'), snap => {
+    snap.docChanges().forEach(ch => {
+      if (ch.type === 'added') {
+        lcShowBubble(ch.doc.data());
+        setTimeout(async () => { try { await deleteDoc(ch.doc.ref); } catch(e){} }, 5000);
+      }
+    });
+  });
+
+  // Listen to room doc (pomodoro)
+  lcRoomDocUnsub = onSnapshot(doc(db, 'users', streamer, 'rooms', roomId), s => {
+    if (s.exists()) lcUpdatePomodoro(s.data().pomodoro);
+  });
+};
+
+function lcRenderOccupants(seats, seatPositions) {
+  const canvas = document.getElementById('lcCanvas');
+  canvas.querySelectorAll('.lc-char').forEach(c => c.remove());
+  canvas.querySelectorAll('.lc-seat').forEach((seatEl, idx) => {
+    seatEl.classList.remove('lc-seat-occupied');
+    const seat = seats[idx];
+    if (seat && seat.occupant) {
+      seatEl.classList.add('lc-seat-occupied');
+      const pos = seatPositions[idx];
+      const char = document.createElement('div');
+      char.className = 'lc-char';
+      char.style.left = pos.x;
+      char.style.top = `calc(${pos.y} - 18px)`;
+      char.style.transform = `translateX(-50%) scale(${pos.scale})`;
+      char.dataset.user = seat.occupant;
+      char.innerHTML = `
+        <div class="lc-char-emoji">${seat.character || '🧑‍🎓'}</div>
+        <div class="lc-char-name">${escapeHtml(seat.occupant)}</div>
+      `;
+      canvas.appendChild(char);
+    }
+  });
+}
+
+window.lcSitDown = async (idx) => {
+  if (!currentUser) return;
+  if (lcMySeat === idx) return;
+  try {
+    const seatSnap = await getDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(idx)));
+    if (seatSnap.exists() && seatSnap.data().occupant && seatSnap.data().occupant !== currentUser) return;
+    if (lcMySeat !== null) {
+      try { await deleteDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(lcMySeat))); } catch(e){}
+    }
+    await setDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(idx)), {
+      occupant: currentUser,
+      character: lcMyChar,
+      sitAt: serverTimestamp()
+    });
+    lcMySeat = idx;
+  } catch(e) {}
+};
+
+function lcShowBubble(data) {
+  const canvas = document.getElementById('lcCanvas');
+  const charEl = canvas.querySelector(`.lc-char[data-user="${data.user}"]`);
+  if (!charEl) return;
+  charEl.querySelectorAll('.lc-bubble').forEach(b => b.remove());
+  const bubble = document.createElement('div');
+  bubble.className = 'lc-bubble';
+  bubble.textContent = data.text;
+  charEl.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 4500);
+}
+
+window.lcSendBubble = async () => {
+  if (!currentUser || !lcCurrentRoom) return;
+  if (lcMySeat === null) { alert('Sit on a seat first!'); return; }
+  const input = document.getElementById('lcChatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    await setDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'bubbles', Date.now().toString()), {
+      user: currentUser, text: text.slice(0,80), timestamp: serverTimestamp()
+    });
+    input.value = '';
+  } catch(e){}
+};
+
+window.lcSetChar = async (char) => {
+  lcMyChar = char;
+  localStorage.setItem('dp_lounge_char', char);
+  document.querySelectorAll('.lc-char-opt').forEach(el => {
+    el.classList.toggle('selected', el.dataset.char === char);
+  });
+  if (lcMySeat !== null && lcCurrentRoom) {
+    try { await updateDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(lcMySeat)), { character: char }); } catch(e){}
+  }
+};
+
+window.lcStartPomo = async () => {
+  if (!lcCurrentRoom || lcMySeat === null) { alert('Sit down first!'); return; }
+  const studyMs = lcPomoConfig.studyMin * 60 * 1000;
+  const breakMs = lcPomoConfig.breakMin * 60 * 1000;
+  try {
+    await updateDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom), {
+      pomodoro: { active:true, phase:'study', startedBy: currentUser, startedAt: Date.now(), studyMs, breakMs }
+    });
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.lcStopPomo = async () => {
+  if (!lcCurrentRoom) return;
+  try {
+    await updateDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom), { pomodoro:{ active:false } });
+  } catch(e){}
+};
+
+function lcUpdatePomodoro(pomo) {
+  if (lcPomoInterval) clearInterval(lcPomoInterval);
+  if (!pomo || !pomo.active) {
+    document.getElementById('lcPomoTime').textContent = '--:--';
+    document.getElementById('lcPomoTime').className = 'lc-pomo-time idle';
+    document.getElementById('lcPomoStatus').textContent = `Idle — ${lcPomoConfig.studyMin}min study, ${lcPomoConfig.breakMin}min break`;
+    document.getElementById('lcPomoStatus').className = 'lc-pomo-status';
+    document.getElementById('lcPomoFill').style.width = '0%';
+    document.getElementById('lcPomoStart').style.display = 'inline-block';
+    document.getElementById('lcPomoStop').style.display = 'none';
+    document.querySelectorAll('.lc-status-icon').forEach(i => i.remove());
+    return;
+  }
+  const tick = () => {
+    const elapsed = Date.now() - pomo.startedAt;
+    const studyMs = pomo.studyMs;
+    const breakMs = pomo.breakMs;
+    const totalMs = studyMs + breakMs;
+    let phase, remaining, pct;
+    if (elapsed < studyMs) { phase='study'; remaining=studyMs-elapsed; pct=(elapsed/studyMs)*100; }
+    else if (elapsed < totalMs) { phase='break'; remaining=totalMs-elapsed; pct=((elapsed-studyMs)/breakMs)*100; }
+    else {
+      clearInterval(lcPomoInterval);
+      document.getElementById('lcPomoTime').textContent = '✓';
+      document.getElementById('lcPomoStatus').textContent = '🎉 Pomodoro complete!';
+      document.getElementById('lcPomoStatus').className = 'lc-pomo-status';
+      // +5 points
+      if (lcMySeat !== null && currentUser && pomo.startedAt) {
+        const lastReward = localStorage.getItem('dp_pomo_last_'+lcCurrentRoom+'_'+pomo.startedAt);
+        if (!lastReward) {
+          localStorage.setItem('dp_pomo_last_'+lcCurrentRoom+'_'+pomo.startedAt, '1');
+          updateDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), { points: increment(5) }).catch(()=>{});
+        }
+      }
+      if (pomo.startedBy === currentUser) lcStopPomo();
+      return;
+    }
+    const mm = Math.floor(remaining / 60000), ss = Math.floor((remaining%60000)/1000);
+    document.getElementById('lcPomoTime').textContent = String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+    document.getElementById('lcPomoTime').className = 'lc-pomo-time '+phase;
+    document.getElementById('lcPomoStatus').textContent = phase==='study' ? '📚 STUDY TIME' : '☕ BREAK TIME';
+    document.getElementById('lcPomoStatus').className = 'lc-pomo-status '+phase;
+    document.getElementById('lcPomoFill').style.width = pct+'%';
+    document.getElementById('lcPomoFill').className = 'lc-pomo-fill '+(phase==='break'?'break':'');
+
+    document.querySelectorAll('.lc-char').forEach(c => {
+      c.querySelectorAll('.lc-status-icon').forEach(i => i.remove());
+      const s = document.createElement('div');
+      s.className = 'lc-status-icon';
+      s.textContent = phase==='study' ? '📚' : '☕';
+      c.appendChild(s);
+    });
+  };
+  tick();
+  lcPomoInterval = setInterval(tick, 1000);
+  document.getElementById('lcPomoStart').style.display = 'none';
+  document.getElementById('lcPomoStop').style.display = pomo.startedBy===currentUser ? 'inline-block' : 'none';
+}
+
+window.lcLeaveRoom = async () => {
+  if (!lcCurrentRoom) return;
+  if (lcMySeat !== null) {
+    try { await deleteDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(lcMySeat))); } catch(e){}
+  }
+  if (lcOccupantsUnsub) lcOccupantsUnsub();
+  if (lcBubblesUnsub) lcBubblesUnsub();
+  if (lcRoomDocUnsub) lcRoomDocUnsub();
+  if (lcPomoInterval) clearInterval(lcPomoInterval);
+  lcCurrentRoom = null; lcMySeat = null;
+  document.getElementById('lcCanvas').innerHTML = '<div class="lc-empty">👈 Pick a room to enter</div>';
+  document.getElementById('lcCanvas').className = 'lounge-canvas lc-beach';
+  document.getElementById('lcControls').style.display = 'none';
+  document.getElementById('lcPomo').style.display = 'none';
+  lcRenderTabs();
+};
+
+// Cleanup on page leave
+window.addEventListener('beforeunload', () => {
+  if (lcCurrentRoom && lcMySeat !== null) {
+    try { deleteDoc(doc(db, 'users', streamer, 'rooms', lcCurrentRoom, 'seats', String(lcMySeat))); } catch(e){}
+  }
+});
 </script>
 </body>
 </html>

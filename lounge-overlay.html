@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Study Lounge Overlay</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:transparent;overflow:hidden;font-family:'Share Tech Mono',monospace;width:300px;padding:8px}
+
+.panel{
+  background:rgba(0,0,40,0.92);
+  border:2px solid #00ddff;
+  box-shadow:0 0 16px rgba(0,200,255,0.4),inset 0 0 12px rgba(0,200,255,0.15);
+  image-rendering:pixelated;
+}
+
+.header{
+  background:linear-gradient(90deg,#000080,#00ddff);
+  padding:6px 10px;
+  display:flex;align-items:center;gap:6px;
+  border-bottom:1px solid #00ddff;
+}
+.title{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px;
+  color:#ffdd00;
+  flex:1;
+  letter-spacing:1px;
+  text-shadow:1px 1px 0 rgba(0,0,0,.5);
+}
+.count{font-size:11px;color:#aaeeff;font-family:'VT323',monospace;font-size:16px}
+
+.body{padding:6px 0;max-height:400px;overflow-y:auto}
+.body::-webkit-scrollbar{display:none}
+
+.row{
+  display:flex;align-items:center;
+  padding:4px 10px;gap:8px;
+  border-bottom:1px solid rgba(0,221,255,0.1);
+  animation:slideIn .35s ease-out;
+}
+.row:last-child{border-bottom:none}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+
+.char{font-size:24px;flex-shrink:0;line-height:1;animation:bob 2.5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+
+.info{flex:1;min-width:0}
+.uname{
+  font-family:'VT323',monospace;
+  font-size:18px;color:#fff;
+  line-height:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.room{
+  font-size:10px;color:#aaeeff;
+  display:flex;align-items:center;gap:4px;
+  margin-top:2px;
+}
+
+.status{
+  font-family:'VT323',monospace;
+  font-size:14px;
+  padding:1px 6px;
+  flex-shrink:0;
+}
+.status.studying{color:#39ff39;background:rgba(57,255,57,0.1);border:1px solid rgba(57,255,57,0.4)}
+.status.break{color:#ffaa00;background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.4)}
+.status.idle{color:#888;background:rgba(150,150,150,0.1);border:1px solid rgba(150,150,150,0.3)}
+
+.empty{
+  text-align:center;
+  color:#444;font-size:11px;padding:18px 10px;
+  font-family:'VT323',monospace;
+  font-size:14px;
+}
+
+.footer{
+  padding:4px 10px;
+  font-size:9px;color:#445566;
+  border-top:1px solid rgba(0,221,255,0.2);
+  display:flex;justify-content:space-between;
+  font-family:'Share Tech Mono',monospace;
+}
+.timer{
+  font-family:'VT323',monospace;font-size:14px;color:#ffdd00;
+}
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="header">
+    <div>📚</div>
+    <div class="title" id="title">STUDYING WITH ME</div>
+    <div class="count" id="count">0</div>
+  </div>
+  <div class="body" id="body">
+    <div class="empty">Loading...</div>
+  </div>
+  <div class="footer">
+    <span id="handle">@...</span>
+    <span class="timer" id="liveTime">--:--</span>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const streamer = params.get('user');
+const maxShow = parseInt(params.get('count') || '8');
+
+const ROOM_ICONS = { beach:'🏖️', library:'📚', cafe:'☕', garden:'🌸', bedroom:'🛏️', space:'🚀' };
+
+let roomsData = {};
+let unsubsByRoom = {};
+let occupantsByRoom = {};
+let pomodoroState = null;
+let pomoInterval = null;
+
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+async function loadRooms() {
+  if (!streamer) return;
+  document.getElementById('handle').textContent = '@' + streamer;
+  // Listen to rooms collection
+  onSnapshot(collection(db, 'users', streamer, 'rooms'), snap => {
+    roomsData = {};
+    snap.forEach(d => roomsData[d.id] = d.data());
+    // Subscribe to seats of each room
+    Object.keys(roomsData).forEach(roomId => {
+      if (!unsubsByRoom[roomId]) {
+        unsubsByRoom[roomId] = onSnapshot(
+          collection(db, 'users', streamer, 'rooms', roomId, 'seats'),
+          seatSnap => {
+            const occs = [];
+            seatSnap.forEach(s => {
+              const data = s.data();
+              if (data.occupant) occs.push({
+                user: data.occupant,
+                character: data.character || '🧑‍🎓',
+                roomId
+              });
+            });
+            occupantsByRoom[roomId] = occs;
+            // Track pomodoro from room
+            const r = roomsData[roomId];
+            if (r && r.pomodoro && r.pomodoro.active) {
+              if (!pomodoroState || pomodoroState.startedAt < r.pomodoro.startedAt) {
+                pomodoroState = { ...r.pomodoro, roomId };
+              }
+            }
+            render();
+          }
+        );
+      }
+    });
+    // Cleanup deleted rooms
+    Object.keys(unsubsByRoom).forEach(rid => {
+      if (!roomsData[rid]) {
+        unsubsByRoom[rid]();
+        delete unsubsByRoom[rid];
+        delete occupantsByRoom[rid];
+      }
+    });
+  });
+
+  // Also listen to room documents (for pomodoro updates)
+  onSnapshot(collection(db, 'users', streamer, 'rooms'), snap => {
+    let activePomo = null;
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.pomodoro && data.pomodoro.active) {
+        if (!activePomo || data.pomodoro.startedAt > activePomo.startedAt) {
+          activePomo = { ...data.pomodoro, roomId: d.id };
+        }
+      }
+    });
+    pomodoroState = activePomo;
+    updateLiveTime();
+  });
+}
+
+function render() {
+  const body = document.getElementById('body');
+  const allOccupants = [];
+  Object.values(occupantsByRoom).forEach(occs => allOccupants.push(...occs));
+  document.getElementById('count').textContent = allOccupants.length;
+
+  if (!allOccupants.length) {
+    body.innerHTML = '<div class="empty">💤 No one studying yet</div>';
+    return;
+  }
+
+  const top = allOccupants.slice(0, maxShow);
+
+  // Determine status from pomodoro
+  const status = getPomodoroStatus();
+
+  body.innerHTML = top.map(o => {
+    const room = roomsData[o.roomId];
+    const roomTheme = room?.theme || 'beach';
+    const roomIcon = ROOM_ICONS[roomTheme] || '🏠';
+    const roomName = room?.name || roomTheme;
+
+    return `<div class="row">
+      <div class="char">${o.character}</div>
+      <div class="info">
+        <div class="uname">${escapeHtml(o.user)}</div>
+        <div class="room">${roomIcon} ${escapeHtml(roomName)}</div>
+      </div>
+      <div class="status ${status.cls}">${status.icon}</div>
+    </div>`;
+  }).join('');
+
+  // Show "+ N more" if truncated
+  if (allOccupants.length > maxShow) {
+    body.innerHTML += `<div class="empty" style="padding:6px">+ ${allOccupants.length - maxShow} more...</div>`;
+  }
+}
+
+function getPomodoroStatus() {
+  if (!pomodoroState || !pomodoroState.active) return { cls:'idle', icon:'💤' };
+  const elapsed = Date.now() - pomodoroState.startedAt;
+  if (elapsed < pomodoroState.studyMs) return { cls:'studying', icon:'📚' };
+  if (elapsed < (pomodoroState.studyMs + pomodoroState.breakMs)) return { cls:'break', icon:'☕' };
+  return { cls:'idle', icon:'✓' };
+}
+
+function updateLiveTime() {
+  const el = document.getElementById('liveTime');
+  if (!pomodoroState || !pomodoroState.active) {
+    el.textContent = '--:--';
+    if (pomoInterval) { clearInterval(pomoInterval); pomoInterval = null; }
+    return;
+  }
+  const tick = () => {
+    const elapsed = Date.now() - pomodoroState.startedAt;
+    const studyMs = pomodoroState.studyMs;
+    const breakMs = pomodoroState.breakMs;
+    const totalMs = studyMs + breakMs;
+    let remaining;
+    if (elapsed < studyMs) remaining = studyMs - elapsed;
+    else if (elapsed < totalMs) remaining = totalMs - elapsed;
+    else { el.textContent = '✓ done'; clearInterval(pomoInterval); render(); return; }
+    const mm = Math.floor(remaining / 60000);
+    const ss = Math.floor((remaining % 60000) / 1000);
+    el.textContent = String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    render();
+  };
+  if (pomoInterval) clearInterval(pomoInterval);
+  tick();
+  pomoInterval = setInterval(tick, 1000);
+}
+
+if (!streamer) {
+  document.body.innerHTML = '<div style="color:white;padding:20px;font-family:monospace">Add ?user=USERNAME to URL</div>';
+} else {
+  loadRooms();
+}
+</script>
+</body>
+</html>
