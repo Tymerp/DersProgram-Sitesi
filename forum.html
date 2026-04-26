@@ -360,6 +360,42 @@ function getInitial(name) {
   return (name||'?')[0].toUpperCase();
 }
 
+// ── Image Compression Helper ──────────────────────────
+// Compresses any image to max ~100KB using canvas
+async function compressImage(file, maxSizeKB = 100, maxDim = 800) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        // Resize if too large
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim/width, maxDim/height);
+          width = Math.floor(width * ratio);
+          height = Math.floor(height * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        // Try decreasing quality until size is acceptable
+        let quality = 0.85;
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.3) {
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function getRoleByMessages(count) {
   // Auto-roles based on message count (will be customizable later)
   if (count >= 500) return { name: 'Veteran', icon: '🔥', color: '#ff4400' };
@@ -450,9 +486,38 @@ function loadMessages(topicId) {
     snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
     msgs.reverse(); // Show oldest first
     renderMessages(msgs);
+    // Auto-cleanup messages older than 30 days (only run by streamer)
+    if (currentUser === streamer) cleanupOldMessages(topicId);
   }, err => {
     container.innerHTML = '<div class="empty-msg" style="color:red">Error: ' + err.message + '</div>';
   });
+}
+
+// Auto-delete messages older than 30 days
+let cleanupRan = {};
+async function cleanupOldMessages(topicId) {
+  // Run at most once per topic per page session
+  if (cleanupRan[topicId]) return;
+  cleanupRan[topicId] = true;
+
+  try {
+    const cutoff = new Date(Date.now() - 30*24*3600000);
+    const q = query(
+      collection(db, 'users', streamer, 'forum', topicId, 'messages'),
+      where('timestamp', '<', cutoff),
+      limit(50)
+    );
+    const snaps = await getDocs(q);
+    if (snaps.empty) return;
+    const { writeBatch } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const batch = writeBatch(db);
+    let count = 0;
+    snaps.forEach(d => { batch.delete(d.ref); count++; });
+    if (count > 0) {
+      await batch.commit();
+      console.log(`[Auto-cleanup] Deleted ${count} old messages from ${topicId}`);
+    }
+  } catch(e) { console.log('Cleanup skipped:', e.message); }
 }
 
 function renderMessages(msgs) {
@@ -760,17 +825,21 @@ window.addEmoji = (emoji) => {
 };
 
 // ── Image upload ──────────────────────────────────────
-window.handleImage = (input) => {
+window.handleImage = async (input) => {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
-  if (file.size > 800000) { alert('Image too large! Max 800KB.'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    imageData = e.target.result;
-    document.getElementById('previewImg').src = imageData;
+  if (file.size > 10000000) { alert('Image too large! Max 10MB.'); return; }
+  try {
+    document.getElementById('previewImg').src = '';
     document.getElementById('imagePreview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
+    document.getElementById('previewImg').alt = 'Compressing...';
+    imageData = await compressImage(file, 100, 800);
+    document.getElementById('previewImg').src = imageData;
+    document.getElementById('previewImg').alt = 'preview';
+  } catch(e) {
+    alert('Image compression failed: ' + e.message);
+    document.getElementById('imagePreview').style.display = 'none';
+  }
 };
 
 window.clearImage = () => {
