@@ -26,8 +26,9 @@
 .chat-messages{flex:1;overflow-y:auto;padding:8px;background:#fafaff;display:flex;flex-direction:column;gap:6px}
 .msg{display:flex;gap:8px;padding:6px;background:#fff;border:1px solid #e0e0e8;animation:msgIn .2s ease-out}
 @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-avatar{width:36px;height:36px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:18px;flex-shrink:0;cursor:pointer}
+.msg-avatar{width:36px;height:36px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:18px;flex-shrink:0;cursor:pointer;overflow:hidden}
 .msg-avatar:hover{background:var(--accent2)}
+.msg-avatar img{width:100%;height:100%;object-fit:cover}
 .msg-body{flex:1;min-width:0}
 .msg-head{display:flex;gap:6px;align-items:center;margin-bottom:2px;flex-wrap:wrap}
 .msg-author{font-weight:bold;color:#000080;font-size:12px;cursor:pointer;font-family:var(--font-main)}
@@ -80,6 +81,59 @@
 .user-info-bar{display:flex;align-items:center;gap:10px;background:#e8e8f0;padding:6px 10px;border:1px solid #ccc;font-size:12px;font-family:var(--font-main);margin-bottom:8px}
 .user-info-bar .username{flex:1;font-weight:bold;color:#000080}
 .user-points{background:var(--accent);color:#fff;padding:2px 8px;font-size:11px}
+
+/* Profile Preview Popup (Discord-like) */
+.profile-preview{
+  position:fixed;
+  width:280px;
+  background:#fff;
+  border:2px solid var(--win-dark);
+  box-shadow:4px 4px 0 rgba(0,0,0,0.3);
+  z-index:1000;
+  display:none;
+  font-family:var(--font-main);
+  overflow:hidden;
+}
+.profile-preview.show{display:block}
+.pp-banner{height:80px;background:linear-gradient(135deg,#000080,#1084d0);position:relative;overflow:hidden}
+.pp-banner img{width:100%;height:100%;object-fit:cover}
+.pp-photo{
+  width:70px;height:70px;
+  background:var(--accent);
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:32px;
+  border:4px solid #fff;
+  margin:-35px 0 0 12px;
+  position:relative;
+  overflow:hidden;
+}
+.pp-photo img{width:100%;height:100%;object-fit:cover}
+.pp-body{padding:8px 14px 14px}
+.pp-name{font-family:var(--font-display);font-size:20px;color:#000080;margin-top:6px}
+.pp-handle{color:#666;font-size:11px;margin-bottom:6px}
+.pp-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.pp-badge{background:var(--accent);color:#fff;padding:1px 6px;font-size:10px}
+.pp-badge.streamer{background:#aa00aa}
+.pp-badge.mod{background:#cc4444}
+.pp-about{
+  font-size:11px;color:#333;line-height:1.4;
+  background:#fafaff;border:1px solid #ddd;
+  padding:6px 8px;margin-bottom:8px;
+  max-height:60px;overflow:hidden;
+  white-space:pre-wrap;
+}
+.pp-about.empty{color:#888;font-style:italic}
+.pp-stats{display:flex;gap:6px;margin-bottom:8px}
+.pp-stat{flex:1;background:#f0f4ff;border:1px solid #ccd;padding:4px;text-align:center}
+.pp-stat-num{font-family:var(--font-display);font-size:16px;color:var(--accent);line-height:1}
+.pp-stat-label{font-size:9px;color:#666;text-transform:uppercase}
+.pp-view-btn{
+  display:block;width:100%;text-align:center;
+  padding:5px;background:var(--accent);color:#fff;
+  text-decoration:none;font-size:11px;font-weight:bold;
+}
+.pp-view-btn:hover{background:var(--accent2)}
 
 @media(max-width:700px){
   .forum-layout{flex-direction:column;height:auto;min-height:600px}
@@ -190,6 +244,33 @@
       </div>
     </div>
 
+    <!-- Profile Preview Popup (Discord-like) -->
+    <div id="profilePreview" class="profile-preview">
+      <div class="pp-banner" id="ppBanner"></div>
+      <div class="pp-photo" id="ppPhoto"></div>
+      <div class="pp-body">
+        <div class="pp-name" id="ppName">-</div>
+        <div class="pp-handle" id="ppHandle">@-</div>
+        <div class="pp-badges" id="ppBadges"></div>
+        <div class="pp-about" id="ppAbout">No bio yet.</div>
+        <div class="pp-stats">
+          <div class="pp-stat">
+            <div class="pp-stat-num" id="ppStreak">0</div>
+            <div class="pp-stat-label">🔥 Streak</div>
+          </div>
+          <div class="pp-stat">
+            <div class="pp-stat-num" id="ppMessages">0</div>
+            <div class="pp-stat-label">💬 Msgs</div>
+          </div>
+          <div class="pp-stat">
+            <div class="pp-stat-num" id="ppPoints">0</div>
+            <div class="pp-stat-label">⭐ Pts</div>
+          </div>
+        </div>
+        <a href="#" id="ppViewBtn" class="pp-view-btn">📄 View Full Profile</a>
+      </div>
+    </div>
+
     <!-- Emoji picker -->
     <div id="emojiPicker" class="emoji-picker">
       <button class="emoji-btn" onclick="addEmoji('😀')">😀</button>
@@ -245,6 +326,8 @@ let lastSendTime = 0;
 let mods = [];
 let banned = [];
 let topics = [];
+let profileCache = {}; // Cache user profiles {username: {photo, banner, about}}
+let previewTimer = null;
 
 // Default topics
 const DEFAULT_TOPICS = [
@@ -383,6 +466,10 @@ function renderMessages(msgs) {
   const isMod = mods.includes(currentUser);
   const canModerate = isStreamer || isMod;
 
+  // Get unique authors and load their profiles
+  const uniqueAuthors = [...new Set(msgs.map(m => m.author))];
+  uniqueAuthors.forEach(a => { if (!profileCache[a]) loadUserProfile(a); });
+
   container.innerHTML = msgs.map(m => {
     const role = getRoleByMessages(m.authorMsgCount || 0);
     const isAuthorMod = mods.includes(m.author);
@@ -394,11 +481,22 @@ function renderMessages(msgs) {
       return `<span class="reaction ${mine?'mine':''}" onclick="toggleReaction('${m.id}','${emoji}')">${emoji} ${users.length}</span>`;
     }).join('');
 
+    const profile = profileCache[m.author];
+    const avatarHtml = profile && profile.photo
+      ? `<img src="${profile.photo}">`
+      : getInitial(m.author);
+
     return `<div class="msg" data-id="${m.id}">
-      <div class="msg-avatar" onclick="viewProfile('${m.author}')">${getInitial(m.author)}</div>
+      <div class="msg-avatar"
+           onmouseenter="showProfilePreview(event,'${m.author}')"
+           onmouseleave="hideProfilePreview()"
+           onclick="viewProfile('${m.author}')">${avatarHtml}</div>
       <div class="msg-body">
         <div class="msg-head">
-          <span class="msg-author" onclick="viewProfile('${m.author}')">${escapeHtml(m.author)}</span>
+          <span class="msg-author"
+                onmouseenter="showProfilePreview(event,'${m.author}')"
+                onmouseleave="hideProfilePreview()"
+                onclick="viewProfile('${m.author}')">${escapeHtml(m.author)}</span>
           ${isAuthorStreamer ? '<span class="msg-streamer-tag">📺 STREAMER</span>' : ''}
           ${isAuthorMod && !isAuthorStreamer ? '<span class="msg-mod-tag">🛡 MOD</span>' : ''}
           ${role ? `<span class="msg-role" style="background:${role.color}">${role.icon} ${role.name}</span>` : ''}
@@ -421,6 +519,117 @@ function renderMessages(msgs) {
   // Scroll to bottom
   container.scrollTop = container.scrollHeight;
 }
+
+// Load user profile and update avatars in chat after loading
+async function loadUserProfile(username) {
+  if (profileCache[username]) return profileCache[username];
+  profileCache[username] = {}; // mark as loading
+  try {
+    const snap = await getDoc(doc(db, 'userProfiles', username));
+    if (snap.exists()) {
+      profileCache[username] = snap.data();
+      // Update all avatars for this user in the current chat
+      document.querySelectorAll('.msg').forEach(msg => {
+        const authorEl = msg.querySelector('.msg-author');
+        if (authorEl && authorEl.textContent === username) {
+          const avatar = msg.querySelector('.msg-avatar');
+          if (avatar && profileCache[username].photo) {
+            avatar.innerHTML = `<img src="${profileCache[username].photo}">`;
+          }
+        }
+      });
+    }
+  } catch(e) {}
+  return profileCache[username] || {};
+}
+
+// ── Profile Preview Hover ─────────────────────────────
+window.showProfilePreview = async (event, username) => {
+  if (previewTimer) clearTimeout(previewTimer);
+  previewTimer = setTimeout(async () => {
+    const popup = document.getElementById('profilePreview');
+    const target = event.target.closest('.msg-avatar') || event.target.closest('.msg-author');
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+
+    // Position popup
+    let top = rect.bottom + 8;
+    let left = rect.left;
+    if (left + 280 > window.innerWidth) left = window.innerWidth - 290;
+    if (top + 360 > window.innerHeight) top = rect.top - 360;
+    if (top < 10) top = 10;
+    popup.style.top = top + 'px';
+    popup.style.left = left + 'px';
+
+    // Load profile data
+    const profile = await loadUserProfile(username);
+
+    // Banner
+    if (profile.banner) {
+      document.getElementById('ppBanner').innerHTML = `<img src="${profile.banner}">`;
+    } else {
+      document.getElementById('ppBanner').innerHTML = '';
+    }
+    // Photo
+    if (profile.photo) {
+      document.getElementById('ppPhoto').innerHTML = `<img src="${profile.photo}">`;
+    } else {
+      document.getElementById('ppPhoto').innerHTML = getInitial(username);
+    }
+    document.getElementById('ppName').textContent = username;
+    document.getElementById('ppHandle').textContent = '@' + username;
+
+    // About
+    const aboutEl = document.getElementById('ppAbout');
+    if (profile.about) {
+      aboutEl.textContent = profile.about;
+      aboutEl.classList.remove('empty');
+    } else {
+      aboutEl.textContent = 'No bio yet.';
+      aboutEl.classList.add('empty');
+    }
+
+    // Badges
+    const badges = [];
+    if (username === streamer) badges.push('<span class="pp-badge streamer">📺 STREAMER</span>');
+    if (mods.includes(username)) badges.push('<span class="pp-badge mod">🛡 MOD</span>');
+    document.getElementById('ppBadges').innerHTML = badges.join('');
+
+    // Stats — load streak + forum stats
+    let streak = 0, msgCount = 0, points = 0;
+    try {
+      const attSnap = await getDoc(doc(db, 'users', streamer, 'attendance', username));
+      if (attSnap.exists()) streak = attSnap.data().streak || 0;
+      const fuSnap = await getDoc(doc(db, 'users', streamer, 'forumUsers', username));
+      if (fuSnap.exists()) {
+        msgCount = fuSnap.data().msgCount || 0;
+        points = fuSnap.data().points || 0;
+      }
+    } catch(e) {}
+    document.getElementById('ppStreak').textContent = streak;
+    document.getElementById('ppMessages').textContent = msgCount;
+    document.getElementById('ppPoints').textContent = points;
+    document.getElementById('ppViewBtn').href = 'user-profile.html?user=' + streamer + '&viewer=' + username;
+
+    popup.classList.add('show');
+  }, 350);
+};
+
+window.hideProfilePreview = () => {
+  if (previewTimer) { clearTimeout(previewTimer); previewTimer = null; }
+  setTimeout(() => {
+    const popup = document.getElementById('profilePreview');
+    if (!popup.matches(':hover')) popup.classList.remove('show');
+  }, 200);
+};
+
+// Keep preview open when hovering it
+document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('profilePreview');
+  if (popup) {
+    popup.addEventListener('mouseleave', () => popup.classList.remove('show'));
+  }
+});
 
 // ── Send message ──────────────────────────────────────
 window.sendMessage = async () => {

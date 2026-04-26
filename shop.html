@@ -248,7 +248,7 @@ window.buyItem = async (itemId) => {
     }
 
     // Record purchase
-    await addDoc(collection(db, 'users', streamer, 'shop', 'purchases', 'all'), {
+    await addDoc(collection(db, 'users', streamer, 'shopPurchases'), {
       buyer: currentUser,
       itemId: item.id,
       itemName: item.name,
@@ -290,7 +290,7 @@ async function loadHistory() {
   if (!currentUser) return;
   const list = document.getElementById('historyList');
   try {
-    const q = query(collection(db, 'users', streamer, 'shop', 'purchases', 'all'),
+    const q = query(collection(db, 'users', streamer, 'shopPurchases'),
       where('buyer', '==', currentUser), orderBy('timestamp', 'desc'), limit(20));
     const snaps = await getDocs(q);
     const items = [];
