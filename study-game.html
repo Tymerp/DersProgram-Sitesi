@@ -7,60 +7,23 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <style>
-.game-container{
-  position:relative;
-  width:100%;
-  max-width:800px;
-  margin:0 auto;
-  background:#000;
-  border:2px solid var(--win-dark);
-  image-rendering:pixelated;
-}
+.game-container{position:relative;width:100%;max-width:900px;margin:0 auto;background:#000;border:2px solid var(--win-dark);image-rendering:pixelated}
 #phaser-game{display:block;width:100%;image-rendering:pixelated}
-.game-hud{
-  position:absolute;top:8px;left:8px;
-  background:rgba(0,0,0,0.7);color:#fff;
-  font-family:var(--font-main);font-size:11px;
-  padding:6px 10px;border:1px solid var(--accent);
-  pointer-events:none;z-index:10;
-}
+.game-hud{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);color:#fff;font-family:var(--font-main);font-size:11px;padding:6px 10px;border:1px solid var(--accent);pointer-events:none;z-index:10}
 .game-hud .hud-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
 .game-hud .label{color:#aaeeff;text-transform:uppercase;font-size:9px;letter-spacing:1px}
 .game-hud .val{color:#fff;font-weight:bold}
-
-.char-picker-game{
-  position:absolute;top:8px;right:8px;
-  background:rgba(0,0,0,0.7);color:#fff;
-  font-family:var(--font-main);font-size:10px;
-  padding:6px 8px;border:1px solid var(--accent);
-  z-index:10;display:flex;flex-direction:column;gap:4px;
-}
+.char-picker-game{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.75);color:#fff;font-family:var(--font-main);font-size:10px;padding:6px 8px;border:1px solid var(--accent);z-index:10;display:flex;flex-direction:column;gap:4px}
 .char-picker-game .label{color:#aaeeff;font-size:9px;text-transform:uppercase}
 .char-row{display:flex;gap:4px}
-.char-row button{
-  width:28px;height:28px;
-  background:#222;border:1px solid #555;
-  cursor:pointer;font-size:14px;
-  display:flex;align-items:center;justify-content:center;
-}
+.char-row button{width:28px;height:28px;background:#222;border:1px solid #555;cursor:pointer;font-size:14px;color:#fff;display:flex;align-items:center;justify-content:center}
 .char-row button.selected{border-color:#fdfd66;background:#444}
-
-.game-controls{
-  display:flex;gap:8px;padding:8px;
-  background:var(--win-bg);border-top:1px solid var(--win-dark);
-  flex-wrap:wrap;align-items:center;
-}
+.interaction-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#ffdd00;font-family:var(--font-main);font-size:13px;padding:6px 14px;border:2px solid #ffdd00;z-index:10;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-3px)}}
+.game-controls{display:flex;gap:8px;padding:8px;background:var(--win-bg);border-top:1px solid var(--win-dark);flex-wrap:wrap;align-items:center}
 .game-controls .help{font-size:11px;color:#666;font-family:var(--font-main);flex:1;min-width:200px}
-.game-controls kbd{
-  background:#fff;border:1px solid #888;
-  padding:1px 5px;font-family:var(--font-main);font-size:10px;
-  box-shadow:1px 1px 0 #888;margin:0 1px;
-}
-.game-pomo-bar{
-  background:#fafafa;padding:6px 10px;
-  display:flex;align-items:center;gap:10px;
-  border-top:1px solid var(--win-dark);flex-wrap:wrap;
-}
+.game-controls kbd{background:#fff;border:1px solid #888;padding:1px 5px;font-family:var(--font-main);font-size:10px;box-shadow:1px 1px 0 #888;margin:0 1px}
+.game-pomo-bar{background:#fafafa;padding:6px 10px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--win-dark);flex-wrap:wrap}
 .game-pomo-time{font-family:var(--font-display);font-size:22px;color:#000080;line-height:1;min-width:74px}
 .game-pomo-time.break{color:#F59E0B}
 .game-pomo-time.idle{color:#888}
@@ -72,34 +35,19 @@
 .game-pomo-fill.break{background:linear-gradient(90deg,#F59E0B,#FFC107)}
 .chat-input-row{display:flex;gap:6px;padding:8px;background:var(--win-bg);border-top:1px solid var(--win-dark)}
 .chat-input-row input{flex:1;border-top:1px solid #404040;border-left:1px solid #404040;border-right:1px solid #fff;border-bottom:1px solid #fff;padding:5px 8px;font-family:var(--font-main);font-size:13px;outline:none}
-
-.loading-msg{
-  text-align:center;padding:60px 20px;
-  color:#fff;background:#000;font-family:var(--font-main);font-size:14px;
-}
 </style>
 </head>
 <body>
 <div class="window">
   <div class="window-titlebar">
-    <div class="window-title">
-      <div class="window-title-icon"></div>
-      <span id="pageTitle">Study Game</span>
-    </div>
-    <div class="window-controls">
-      <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
-    </div>
+    <div class="window-title"><div class="window-title-icon"></div><span id="pageTitle">Study Game</span></div>
+    <div class="window-controls"><div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div></div>
   </div>
-  <div class="menubar">
-    <div class="menu-item">File</div>
-    <div class="menu-item">View</div>
-    <div class="menu-item">Help</div>
-  </div>
+  <div class="menubar"><div class="menu-item">File</div><div class="menu-item">View</div><div class="menu-item">Help</div></div>
   <div class="addressbar">
     <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
     <div class="addr-label">Address:</div>
-    <input class="addr-input" id="addrBar" value="" readonly>
-    <div class="addr-go">▶</div>
+    <input class="addr-input" id="addrBar" value="" readonly><div class="addr-go">▶</div>
   </div>
 
   <div class="window-content">
@@ -107,7 +55,7 @@
       <div class="profile-avatar" id="streamerAvatar">??</div>
       <div>
         <div class="profile-name" id="streamerName">Loading...</div>
-        <div class="profile-handle">🎮 Multiplayer Study Game (Sprout Lands)</div>
+        <div class="profile-handle">🎮 Sprout Lands Study Game</div>
       </div>
       <div style="margin-left:auto;display:flex;gap:6px">
         <a href="#" id="forumLink" class="retro-btn" style="font-size:11px;padding:4px 10px">💬 Forum</a>
@@ -126,7 +74,6 @@
           <div class="hud-row"><span class="label">Players:</span> <span class="val" id="hudPlayers">0</span></div>
           <div class="hud-row"><span class="label">You:</span> <span class="val" id="hudMe">-</span></div>
         </div>
-
         <div class="char-picker-game">
           <div class="label">Character</div>
           <div class="char-row" id="charPicker">
@@ -134,8 +81,8 @@
             <button data-char="1" onclick="setChar(1)">2</button>
           </div>
         </div>
-
         <div id="phaser-game"></div>
+        <div id="interactHint" class="interaction-hint" style="display:none">Press <kbd style="background:#222;color:#ffdd00;border:1px solid #ffdd00;padding:1px 5px">SPACE</kbd> <span id="hintText">to interact</span></div>
       </div>
 
       <div class="game-pomo-bar">
@@ -155,9 +102,7 @@
 
       <div class="game-controls">
         <div class="help">
-          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows to move ·
-          <kbd>Enter</kbd> to chat ·
-          Walk through doors to change rooms
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows · <kbd>Space</kbd> to sit · <kbd>Enter</kbd> to chat · Walk on doors to enter buildings
         </div>
       </div>
     </div>
@@ -229,191 +174,193 @@ window.setChar = (idx) => {
 // PHASER GAME
 // ════════════════════════════════════════════════════
 
-const TILE = 16;            // Sprout Lands uses 16x16 tiles
-const SCALE = 2;            // Display scale
-const MAP_W = 40;           // Tiles wide
-const MAP_H = 25;           // Tiles tall
-const SPEED = 100;
+const TILE = 16;
+const SCALE = 2.5;             // Bigger scale = better visibility
+const SPEED = 110;
+const TS = TILE * SCALE;       // Tile size in pixels (40px)
 
-// Tile codes for maps:
-// .  = grass
-// p  = path
-// w  = water
-// f  = fence
-// d  = door (portal)
-// h  = house wall
-// r  = house roof
-// b  = bridge
-// t  = tree
-// s  = stone
-// F  = floor (interior)
-// C  = chair (interior, study spot)
-// T  = table (collidable)
+// Tile codes:
+// .  grass
+// p  path
+// w  water
+// f  fence (collidable)
+// d  door portal
+// h  house wall (collidable)
+// r  roof (collidable, decorative)
+// W  house facade (collidable, with window/details — uses Wooden House full image)
+// b  bridge
+// t  tree (collidable)
+// s  stone (collidable)
+// F  interior floor
+// C  chair (study spot — sittable!)
+// T  table (collidable)
+// _  carpet (interior floor variant)
+// |  door frame (just wall visual)
 
 const MAPS = {
   hub: {
     name: 'Sprout Town',
+    bgColor: 0x87b96b,
+    width: 30, height: 22,
     layout: [
-      "........................................",
-      ".....ttt......ttt..ttt......ttt.........",
-      "....ttttt....ttttt..ttttt..ttttt........",
-      "....ttttt.....ttt.....ttt..ttttt........",
-      ".......................................",
-      "....rrrrr.................rrrrr.........",
-      "....rrrrr.................rrrrr.........",
-      "....hhhhh.................hhhhh.........",
-      "....hhdhh.................hhdhh.........",
-      "..............ppppp.....................",
-      ".............ppppppp....................",
-      "............ppppppppp...................",
-      "............ppp..ppppp..................",
-      "............ppp..ppppp..................",
-      "............ppp..ppppp..................",
-      "...........pppp..pppppp.................",
-      "...........pppp..pppppp.................",
-      ".....rrrrr........pppp....rrrrr.........",
-      ".....rrrrr.................rrrrr........",
-      ".....hhhhh.................hhhhh........",
-      ".....hhdhh.................hhdhh........",
-      "........................................",
-      "....ttt..ttt......ttt......tttt.........",
-      "...ttttt.ttttt....ttttt....tttt.........",
-      "....ttt..ttt......ttt......tttt.........",
+      "ttttttttttttttttttttttttttttt.",  // top row of trees
+      "t.....t.t.t...........t.t.t.t.",
+      "t..rrr....rrr.....rrr....rrr.t",
+      "t..rrr....rrr.....rrr....rrr.t",
+      "t..hhh....hhh.....hhh....hhh.t",
+      "t..hdh....hdh.....hdh....hdh.t",  // 4 doors here
+      "t.............................",
+      "t......ppppppppppppp..........",
+      "t......p...........p..........",
+      "t......p..........fp..........",  // f = fence (decoration)
+      "t......p..........fp..........",
+      "t......p...........p..........",
+      "t......ppppppppppppp..........",
+      "t.............................",
+      "t..rrr....rrr.....rrr....rrr.t",
+      "t..rrr....rrr.....rrr....rrr.t",
+      "t..hhh....hhh.....hhh....hhh.t",
+      "t..hdh....hdh.....hdh....hdh.t",
+      "t.t.t.....t.t.....t.t....t.t.t",
+      "t.....t.t.t...........t.t.t.t.",
+      "t.t.t.t.t.t.t.t.t.t.t.t.t.t.t.",
+      "ttttttttttttttttttttttttttttt.",
     ],
     portals: {
-      "7,8":   { target: 'library', spawn: [10, 10] },
-      "32,8":  { target: 'cafe',    spawn: [10, 10] },
-      "10,20": { target: 'beach',   spawn: [10, 10] },
-      "32,20": { target: 'garden',  spawn: [10, 10] },
+      "3,5":   { target: 'library', spawn: [13, 12] },
+      "9,5":   { target: 'cafe',    spawn: [13, 12] },
+      "15,5":  { target: 'beach',   spawn: [13, 12] },
+      "21,5":  { target: 'garden',  spawn: [13, 12] },
+      "3,17":  { target: 'library', spawn: [13, 12] },
+      "9,17":  { target: 'cafe',    spawn: [13, 12] },
+      "15,17": { target: 'beach',   spawn: [13, 12] },
+      "21,17": { target: 'garden',  spawn: [13, 12] },
     },
+    labels: [
+      { x: 4, y: 3, text: '📚 Library' },
+      { x: 10, y: 3, text: '☕ Cafe' },
+      { x: 16, y: 3, text: '🏖️ Beach' },
+      { x: 22, y: 3, text: '🌸 Garden' },
+      { x: 4, y: 19, text: '🏛️ Hall' },
+      { x: 10, y: 19, text: '🏠 Cabin' },
+      { x: 16, y: 19, text: '🌙 Lounge' },
+      { x: 22, y: 19, text: '⭐ Studio' },
+    ],
   },
+
   library: {
     name: 'Library',
+    bgColor: 0xddccaa,
+    width: 27, height: 18,
     layout: [
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFTTTTTTTFFFFTTTTTTTFFFFTTTTTTTFFFFTTTFh",
-      "hFCCCCCCCFFFFCCCCCCCFFFFCCCCCCCFFFFCCCFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFCCCCCCCFFFFCCCCCCCFFFFCCCCCCCFFFFCCCFh",
-      "hFTTTTTTTFFFFTTTTTTTFFFFTTTTTTTFFFFTTTFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFTTTTTTTFFFFTTTTTTTFFFFTTTTTTTFFFFTTTFh",
-      "hFCCCCCCCFFFFCCCCCCCFFFFCCCCCCCFFFFCCCFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhdhhhhhhhhhhhhhhh",
-      "........................d...............",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
+      "hhhhhhhhhhhhhhhhhhhhhhhhhhh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
+      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",  // chairs around tables
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
+      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
+      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",  // exit door at col 17
+      ".................d.........",
+      "...........................",
+      "...........................",
     ],
-    portals: { "24,18": { target: 'hub', spawn: [7, 9] } },
+    portals: { "17,15": { target: 'hub', spawn: [3, 6] } },
+    labels: [],
   },
+
   cafe: {
     name: 'Cozy Cafe',
+    bgColor: 0xe0bfa0,
+    width: 27, height: 18,
     layout: [
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFFh",
-      "hFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFFFh",
-      "hFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFTFFFFFh",
-      "hFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFCCFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hhhhhhhhhhhhhhhhhhhhhhhhdhhhhhhhhhhhhhhh",
-      "........................d...............",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
+      "hhhhhhhhhhhhhhhhhhhhhhhhhhh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
+      "hFFTFFFTFFFTFFFTFFFTFFFTFFh",
+      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
+      "hFFTFFFTFFFTFFFTFFFTFFFTFFh",
+      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
+      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",
+      ".................d.........",
+      "...........................",
+      "...........................",
     ],
-    portals: { "24,18": { target: 'hub', spawn: [32, 9] } },
+    portals: { "17,15": { target: 'hub', spawn: [9, 6] } },
+    labels: [],
   },
+
   beach: {
     name: 'Sunset Beach',
+    bgColor: 0xf4d28e,
+    width: 27, height: 18,
     layout: [
-      "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "ppppppppppppppppppppppppppppppppppppppp.",
-      "pppCpppCppppCpppCppppCpppCppppCpppCppppp",
-      "pppTpppTppppTpppTppppTpppTppppTpppTppppp",
-      "ppppppppppppppppppppppppppppppppppppppp.",
-      "ppppppppppppppppppppppppppppppppppppppp.",
-      "pppCpppCppppCpppCppppCpppCppppCpppCppppp",
-      "pppTpppTppppTpppTppppTpppTppppTpppTppppp",
-      "ppppppppppppppppppppppppppppppppppppppp.",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "..........................d.............",
-      "..........................d.............",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
+      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "ppppppppppppppppppppppppppp",
+      "ppppppppppppppppppppppppppp",
+      "pppCpppppCpppppCpppppCppppp",
+      "pppTpppppTpppppTpppppTppppp",
+      "ppppppppppppppppppppppppppp",
+      "ppppppppppppppppppppppppppp",
+      "pppCpppppCpppppCpppppCppppp",
+      "pppTpppppTpppppTpppppTppppp",
+      "ppppppppppppppppppppppppppp",
+      "...........................",
+      "...........................",
+      ".................d.........",
+      ".................d.........",
+      "...........................",
+      "...........................",
     ],
-    portals: { "26,17": { target: 'hub', spawn: [10, 19] } },
+    portals: { "17,14": { target: 'hub', spawn: [15, 6] } },
+    labels: [],
   },
+
   garden: {
     name: 'Zen Garden',
+    bgColor: 0x9bc46f,
+    width: 27, height: 18,
     layout: [
-      ".....ttt....ttt....ttt....ttt....ttttt..",
-      "....ttttt..ttttt..ttttt..ttttt...ttttt..",
-      ".....ttt....ttt....ttt....ttt....ttttt..",
-      "........................................",
-      "........................................",
-      "....CCCCC........CCCCC........CCCCC.....",
-      "....TTTTT........TTTTT........TTTTT.....",
-      "........................................",
-      "........................................",
-      "....CCCCC........CCCCC........CCCCC.....",
-      "....TTTTT........TTTTT........TTTTT.....",
-      "........................................",
-      "........................................",
-      "....CCCCC........CCCCC........CCCCC.....",
-      "....TTTTT........TTTTT........TTTTT.....",
-      "........................................",
-      "........................................",
-      "..........................d.............",
-      "..........................d.............",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
-      "........................................",
+      ".....t.t...t.t...t.t...t.t.",
+      "....ttttt.ttttt.ttttt.ttttt",
+      ".....t.t...t.t...t.t...t.t.",
+      "...........................",
+      "...........................",
+      "....C.C.....C.C.....C.C....",
+      "....T.T.....T.T.....T.T....",
+      "...........................",
+      "...........................",
+      "....C.C.....C.C.....C.C....",
+      "....T.T.....T.T.....T.T....",
+      "...........................",
+      "...........................",
+      "....C.C.....C.C.....C.C....",
+      ".................d.........",
+      ".................d.........",
+      "...........................",
+      "...........................",
     ],
-    portals: { "26,17": { target: 'hub', spawn: [32, 19] } },
+    portals: { "17,14": { target: 'hub', spawn: [21, 6] } },
+    labels: [],
   },
 };
 
-// ── Phaser Scene ──────────────────────────────────────
 class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
@@ -421,7 +368,7 @@ class GameScene extends Phaser.Scene {
     this.tiles = [];
     this.players = {};
     this.lastSyncTime = 0;
-    this.syncInterval = 200;
+    this.syncInterval = 250;
     this.facing = 'down';
     this.mySprite = null;
     this.myLabel = null;
@@ -429,81 +376,58 @@ class GameScene extends Phaser.Scene {
     this.unsubChat = null;
     this.collisionMap = [];
     this.portalMap = {};
-    this.lastFrameTime = 0;
-    this.walkFrame = 0;
-    this.isMoving = false;
+    this.sittableMap = []; // [y][x] = true if chair
+    this.isSitting = false;
+    this.sittingAt = null;
   }
 
   preload() {
-    // Load all asset images (original file names with spaces)
-    this.load.spritesheet('char_0', 'assets/Basic Charakter Spritesheet.png', {
-      frameWidth: 48, frameHeight: 48
-    });
-    this.load.spritesheet('char_1', 'assets/Basic Charakter Actions.png', {
-      frameWidth: 48, frameHeight: 48
-    });
+    // Use URL-encoded paths for spaces
+    const enc = (path) => 'assets/' + encodeURIComponent(path);
 
-    // Tilesets
-    this.load.image('grass', 'assets/Grass.png');
-    this.load.image('hills', 'assets/Hills.png');
-    this.load.image('paths', 'assets/Paths.png');
-    this.load.image('water', 'assets/Water.png');
-    this.load.image('fences', 'assets/Fences.png');
-    this.load.image('doors', 'assets/Doors.png');
-    this.load.image('bridge', 'assets/Wood Bridge.png');
-    this.load.image('house', 'assets/Wooden House.png');
-    this.load.image('houseRoof', 'assets/Wooden House Roof Tilset.png');
-    this.load.image('houseWalls', 'assets/Wooden House Walls Tilset.png');
-    this.load.image('biom', 'assets/Basic Grass Biom things 1.png');
-    this.load.image('plants', 'assets/Basic Plants.png');
-    this.load.image('furniture', 'assets/Basic Furniture.png');
-    this.load.image('tools', 'assets/Tools.png');
+    this.load.spritesheet('char_0', enc('Basic Charakter Spritesheet.png'), { frameWidth: 48, frameHeight: 48 });
+    this.load.spritesheet('char_1', enc('Basic Charakter Actions.png'), { frameWidth: 48, frameHeight: 48 });
 
-    // Loading progress
-    this.load.on('progress', (value) => {
-      setStatus('Loading assets... ' + Math.floor(value * 100) + '%');
-    });
-    this.load.on('complete', () => {
-      setStatus('Assets loaded ✔');
-    });
-    this.load.on('loaderror', (file) => {
-      console.warn('Failed to load asset:', file.src);
-    });
+    this.load.image('grass', enc('Grass.png'));
+    this.load.image('hills', enc('Hills.png'));
+    this.load.image('paths', enc('Paths.png'));
+    this.load.image('water', enc('Water.png'));
+    this.load.image('fences', enc('Fences.png'));
+    this.load.image('doors', enc('Doors.png'));
+    this.load.image('bridge', enc('Wood Bridge.png'));
+    this.load.image('house', enc('Wooden House.png'));
+    this.load.image('houseRoof', enc('Wooden House Roof Tilset.png'));
+    this.load.image('houseWalls', enc('Wooden House Walls Tilset.png'));
+    this.load.image('biom', enc('Basic Grass Biom things 1.png'));
+    this.load.image('plants', enc('Basic Plants.png'));
+    this.load.image('furniture', enc('Basic Furniture.png'));
+
+    this.load.on('progress', v => setStatus('Loading... ' + Math.floor(v * 100) + '%'));
+    this.load.on('complete', () => setStatus('Game ready ✔'));
+    this.load.on('loaderror', file => console.warn('Failed:', file.src));
   }
 
   create() {
     currentScene = this;
-
-    // Create animations for character
     this.createCharAnimations(0);
     this.createCharAnimations(1);
-
-    // Build initial map
-    this.buildMap('hub', [20, 12]);
-
-    // Camera
-    this.cameras.main.setBounds(0, 0, MAP_W * TILE * SCALE, MAP_H * TILE * SCALE);
-    this.cameras.main.setZoom(1);
-
-    // Controls
+    this.buildMap('hub', [13, 11]);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       W: Phaser.Input.Keyboard.KeyCodes.W,
       A: Phaser.Input.Keyboard.KeyCodes.A,
       S: Phaser.Input.Keyboard.KeyCodes.S,
       D: Phaser.Input.Keyboard.KeyCodes.D,
+      SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
       ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
     });
 
     this.keys.ENTER.on('down', () => {
       const inp = document.getElementById('gameChat');
-      if (document.activeElement === inp) {
-        inp.blur();
-        gameSendChat();
-      } else {
-        inp.focus();
-      }
+      if (document.activeElement === inp) { inp.blur(); gameSendChat(); }
+      else inp.focus();
     });
+    this.keys.SPACE.on('down', () => this.tryInteract());
 
     this.subscribeToPlayers();
     this.subscribeToChat();
@@ -511,24 +435,16 @@ class GameScene extends Phaser.Scene {
   }
 
   createCharAnimations(idx) {
-    // Standard Sprout Lands: 6x4 sheet (6 frames per row, 4 directions: down, up, left, right)
-    // Or could be 4x4 (4 frames, 4 directions). We'll guess based on actual dimensions.
     const key = 'char_' + idx;
     if (!this.textures.exists(key)) return;
 
     const img = this.textures.get(key).getSourceImage();
     if (!img) return;
-
-    // We loaded with 48x48 frames, so layout is auto
     const cols = Math.floor(img.width / 48);
     const rows = Math.floor(img.height / 48);
-
     if (cols < 1 || rows < 1) return;
 
-    // Most Sprout Lands sheets: row 0 = down, row 1 = up, row 2 = left, row 3 = right
-    // Try to create animations with first 4 frames per row, fall back if fewer
     const framesPerRow = Math.min(cols, 6);
-
     const dirs = ['down', 'up', 'left', 'right'];
     dirs.forEach((dir, rowIdx) => {
       if (rowIdx >= rows) return;
@@ -540,7 +456,6 @@ class GameScene extends Phaser.Scene {
         frameRate: 8,
         repeat: -1
       });
-      // Idle = first frame of that row
       this.anims.create({
         key: 'idle_' + idx + '_' + dir,
         frames: [{ key, frame: start }],
@@ -553,160 +468,171 @@ class GameScene extends Phaser.Scene {
     const map = MAPS[mapId];
     if (!map) return;
     this.currentMap = mapId;
+    this.isSitting = false;
+    this.sittingAt = null;
 
-    // Clear existing
     this.tiles.forEach(t => t.destroy());
     this.tiles = [];
     this.collisionMap = [];
+    this.sittableMap = [];
     this.portalMap = map.portals || {};
 
-    // Background fill (grass/floor based on first tile of map)
-    const bgRect = this.add.rectangle(0, 0, MAP_W * TILE * SCALE, MAP_H * TILE * SCALE, 0x87b96b);
-    bgRect.setOrigin(0, 0);
-    bgRect.setDepth(-1);
-    this.tiles.push(bgRect);
+    const W = map.width, H = map.height;
 
-    // Build tiles
+    // Background
+    const bg = this.add.rectangle(0, 0, W * TS, H * TS, map.bgColor);
+    bg.setOrigin(0, 0);
+    bg.setDepth(-10);
+    this.tiles.push(bg);
+
+    // Tiles
     map.layout.forEach((row, y) => {
       this.collisionMap[y] = [];
+      this.sittableMap[y] = [];
       for (let x = 0; x < row.length; x++) {
         const ch = row[x];
-        const px = x * TILE * SCALE + (TILE * SCALE) / 2;
-        const py = y * TILE * SCALE + (TILE * SCALE) / 2;
-        let collides = false;
-        let depth = 0;
-        let tile = null;
+        const px = x * TS + TS / 2;
+        const py = y * TS + TS / 2;
+        let collides = false, sittable = false, depth = 0;
+        let textureKey = null;
 
         switch(ch) {
-          case '.': // grass
-            tile = this.addTileSprite(px, py, 'grass', 0, 0);
-            break;
-          case 'p': // path
-            tile = this.addTileSprite(px, py, 'paths', 0, 0);
-            break;
-          case 'w': // water
-            tile = this.addTileSprite(px, py, 'water', 0, 0);
-            collides = true;
-            break;
-          case 'f': // fence
-            tile = this.addTileSprite(px, py, 'fences', 0, 0);
-            collides = true;
-            break;
-          case 'd': // door
-            tile = this.addTileSprite(px, py, 'doors', 0, 0);
-            depth = 1;
-            break;
-          case 'h': // house wall
-            tile = this.addTileSprite(px, py, 'houseWalls', 0, 0);
-            collides = true;
-            depth = 5;
-            break;
-          case 'r': // roof
-            tile = this.addTileSprite(px, py, 'houseRoof', 0, 0);
-            collides = true;
-            depth = 6;
-            break;
-          case 'b': // bridge
-            tile = this.addTileSprite(px, py, 'bridge', 0, 0);
-            break;
-          case 't': // tree
-            tile = this.addTileSprite(px, py, 'biom', 0, 0);
-            collides = true;
-            depth = 3;
-            break;
-          case 's': // stone
-            tile = this.addTileSprite(px, py, 'biom', 0, 0);
-            collides = true;
-            break;
-          case 'F': // floor
-            tile = this.addTileSprite(px, py, 'paths', 0, 0);
-            tile.setTint(0xddccaa);
-            break;
-          case 'C': // chair
-            tile = this.addTileSprite(px, py, 'furniture', 0, 0);
-            depth = 2;
-            break;
-          case 'T': // table
-            tile = this.addTileSprite(px, py, 'furniture', 0, 0);
-            collides = true;
-            depth = 2;
-            break;
+          case '.': textureKey = 'grass'; break;
+          case 'p': textureKey = 'paths'; break;
+          case 'w': textureKey = 'water'; collides = true; break;
+          case 'f': textureKey = 'fences'; collides = true; depth = 2; break;
+          case 'd': textureKey = 'doors'; depth = 1; break;
+          case 'h': textureKey = 'houseWalls'; collides = true; depth = 5; break;
+          case 'r': textureKey = 'houseRoof'; collides = true; depth = 6; break;
+          case 'W': textureKey = 'house'; collides = true; depth = 5; break;
+          case 'b': textureKey = 'bridge'; break;
+          case 't': textureKey = 'biom'; collides = true; depth = 4; break;
+          case 's': textureKey = 'biom'; collides = true; break;
+          case 'F': textureKey = 'paths'; break; // floor uses paths
+          case '_': textureKey = 'paths'; break;
+          case 'C': textureKey = 'furniture'; sittable = true; depth = 2; break;
+          case 'T': textureKey = 'furniture'; collides = true; depth = 2; break;
         }
-        if (tile) {
-          tile.setDepth(depth);
-          this.tiles.push(tile);
+
+        if (textureKey) {
+          const tile = this.makeTile(px, py, textureKey, ch);
+          if (tile) {
+            tile.setDepth(depth);
+            this.tiles.push(tile);
+          }
         }
         this.collisionMap[y][x] = collides;
+        this.sittableMap[y][x] = sittable;
       }
     });
 
-    // Spawn character
-    if (this.mySprite) {
-      this.mySprite.destroy();
-      this.myLabel.destroy();
+    // Add labels
+    if (map.labels) {
+      map.labels.forEach(lbl => {
+        const px = lbl.x * TS + TS / 2;
+        const py = lbl.y * TS + TS / 2;
+        const txt = this.add.text(px, py, lbl.text, {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: '#ffffff',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          padding: { x: 5, y: 2 },
+        }).setOrigin(0.5).setDepth(7);
+        this.tiles.push(txt);
+      });
     }
-    const sx = spawnTile[0] * TILE * SCALE + (TILE * SCALE) / 2;
-    const sy = spawnTile[1] * TILE * SCALE + (TILE * SCALE) / 2;
+
+    // Spawn character
+    if (this.mySprite) { this.mySprite.destroy(); this.myLabel.destroy(); }
+    const sx = spawnTile[0] * TS + TS / 2;
+    const sy = spawnTile[1] * TS + TS / 2;
     this.mySprite = this.add.sprite(sx, sy, 'char_' + myCharIdx, 0);
     this.mySprite.setScale(SCALE);
     this.mySprite.setDepth(10);
-    this.myLabel = this.add.text(sx, sy - 32, currentUser, {
+    this.myLabel = this.add.text(sx, sy - 36, currentUser, {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#ffffff',
-      backgroundColor: 'rgba(0,0,0,0.7)',
+      backgroundColor: 'rgba(0,0,0,0.75)',
       padding: { x: 4, y: 1 },
     }).setOrigin(0.5).setDepth(11);
 
+    // Camera
+    this.cameras.main.setBounds(0, 0, W * TS, H * TS);
     this.cameras.main.startFollow(this.mySprite, true, 0.1, 0.1);
+    this.cameras.main.setZoom(1);
     document.getElementById('hudRoom').textContent = map.name;
 
     this.refreshRemotePlayers();
   }
 
-  addTileSprite(px, py, key, frameX, frameY) {
-    if (!this.textures.exists(key)) {
+  makeTile(px, py, textureKey, ch) {
+    if (!this.textures.exists(textureKey)) {
       // Fallback colored rect
       const colors = {
         grass: 0x87b96b, paths: 0xc19660, water: 0x6cb3d4,
         fences: 0x8b5a2b, doors: 0x6b4423, houseRoof: 0xc0392b,
         houseWalls: 0xd4a574, bridge: 0xa0826d, biom: 0x2d5a1f,
-        furniture: 0x8b4513
+        furniture: 0x8b4513, house: 0xd4a574
       };
-      const rect = this.add.rectangle(px, py, TILE * SCALE, TILE * SCALE, colors[key] || 0x666666);
-      return rect;
+      return this.add.rectangle(px, py, TS, TS, colors[textureKey] || 0x666666);
     }
-    // Just use the first part of the image as a tile (16x16 from top-left)
-    const img = this.add.image(px, py, key);
-    img.setDisplaySize(TILE * SCALE, TILE * SCALE);
-    // Crop to tile size from top-left of image
-    const sourceImg = this.textures.get(key).getSourceImage();
-    if (sourceImg && sourceImg.width > TILE) {
-      img.setCrop(0, 0, TILE, TILE);
-      img.setDisplaySize(TILE * SCALE, TILE * SCALE);
-    }
+
+    // Crop a 16x16 tile from top-left of the source image
+    const img = this.add.image(px, py, textureKey);
+    img.setCrop(0, 0, TILE, TILE);
+    img.setDisplaySize(TS, TS);
     return img;
+  }
+
+  tryInteract() {
+    if (this.isSitting) {
+      // Stand up
+      this.isSitting = false;
+      this.sittingAt = null;
+      setStatus('Stood up');
+      return;
+    }
+    // Find chair within 1 tile
+    const tx = Math.floor(this.mySprite.x / TS);
+    const ty = Math.floor(this.mySprite.y / TS);
+    const dirs = [[0,0],[0,1],[0,-1],[1,0],[-1,0]];
+    for (const [dx, dy] of dirs) {
+      const cx = tx + dx, cy = ty + dy;
+      if (this.sittableMap[cy] && this.sittableMap[cy][cx]) {
+        // Sit down — center on chair
+        this.mySprite.x = cx * TS + TS / 2;
+        this.mySprite.y = cy * TS + TS / 2;
+        this.isSitting = true;
+        this.sittingAt = [cx, cy];
+        this.facing = 'down';
+        const idleKey = 'idle_' + myCharIdx + '_down';
+        if (this.anims.exists(idleKey)) this.mySprite.play(idleKey);
+        this.syncMyPosition();
+        setStatus('📚 Studying — earn ⭐ +5 if pomodoro completes!');
+        return;
+      }
+    }
+    setStatus('No chair nearby. Walk close to one.');
   }
 
   update(time, delta) {
     if (!this.mySprite) return;
 
-    let vx = 0, vy = 0;
-    let newDir = this.facing;
     const focused = document.activeElement && document.activeElement.tagName === 'INPUT';
-    if (!focused) {
+    let vx = 0, vy = 0, newDir = this.facing;
+
+    if (!focused && !this.isSitting) {
       if (this.cursors.left.isDown || this.keys.A.isDown) { vx = -SPEED; newDir = 'left'; }
       else if (this.cursors.right.isDown || this.keys.D.isDown) { vx = SPEED; newDir = 'right'; }
       if (this.cursors.up.isDown || this.keys.W.isDown) { vy = -SPEED; newDir = 'up'; }
       else if (this.cursors.down.isDown || this.keys.S.isDown) { vy = SPEED; newDir = 'down'; }
     }
-
     if (vx && vy) { vx *= 0.707; vy *= 0.707; }
 
     const dt = delta / 1000;
     const newX = this.mySprite.x + vx * dt;
     const newY = this.mySprite.y + vy * dt;
-
     if (!this.tileBlocks(newX, this.mySprite.y)) this.mySprite.x = newX;
     if (!this.tileBlocks(this.mySprite.x, newY)) this.mySprite.y = newY;
 
@@ -725,11 +651,28 @@ class GameScene extends Phaser.Scene {
     }
 
     this.myLabel.x = this.mySprite.x;
-    this.myLabel.y = this.mySprite.y - 32;
+    this.myLabel.y = this.mySprite.y - 36;
+
+    // Show/hide interaction hint
+    const tx = Math.floor(this.mySprite.x / TS);
+    const ty = Math.floor(this.mySprite.y / TS);
+    let nearChair = false;
+    const dirs = [[0,0],[0,1],[0,-1],[1,0],[-1,0]];
+    for (const [dx, dy] of dirs) {
+      if (this.sittableMap[ty+dy] && this.sittableMap[ty+dy][tx+dx]) { nearChair = true; break; }
+    }
+    const hint = document.getElementById('interactHint');
+    if (this.isSitting) {
+      hint.style.display = 'block';
+      document.getElementById('hintText').textContent = 'to stand up';
+    } else if (nearChair) {
+      hint.style.display = 'block';
+      document.getElementById('hintText').textContent = 'to sit and study';
+    } else {
+      hint.style.display = 'none';
+    }
 
     // Portal check
-    const tx = Math.floor(this.mySprite.x / (TILE * SCALE));
-    const ty = Math.floor(this.mySprite.y / (TILE * SCALE));
     const portalKey = tx + ',' + ty;
     if (this.portalMap[portalKey]) {
       this.transitionTo(this.portalMap[portalKey].target, this.portalMap[portalKey].spawn);
@@ -745,10 +688,11 @@ class GameScene extends Phaser.Scene {
   }
 
   tileBlocks(x, y) {
-    const tx = Math.floor(x / (TILE * SCALE));
-    const ty = Math.floor(y / (TILE * SCALE));
-    if (tx < 0 || tx >= MAP_W || ty < 0 || ty >= MAP_H) return true;
-    return this.collisionMap[ty] && this.collisionMap[ty][tx];
+    const tx = Math.floor(x / TS);
+    const ty = Math.floor(y / TS);
+    if (tx < 0 || ty < 0) return true;
+    if (!this.collisionMap[ty]) return false;
+    return this.collisionMap[ty][tx] === true;
   }
 
   async transitionTo(mapId, spawnTile) {
@@ -770,6 +714,7 @@ class GameScene extends Phaser.Scene {
         dir: this.facing,
         char: myCharIdx,
         username: currentUser,
+        sitting: this.isSitting,
         lastSeen: Date.now()
       });
     } catch(e) {}
@@ -806,16 +751,15 @@ class GameScene extends Phaser.Scene {
       }
       return;
     }
-
     if (!this.players[name]) {
       const sprite = this.add.sprite(data.x, data.y, 'char_' + (data.char||0), 0);
       sprite.setScale(SCALE);
       sprite.setDepth(9);
-      const label = this.add.text(data.x, data.y - 32, name, {
+      const label = this.add.text(data.x, data.y - 36, name, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#ffffff',
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         padding: { x: 4, y: 1 },
       }).setOrigin(0.5).setDepth(11);
       this.players[name] = { sprite, label, lastX: data.x, lastY: data.y };
@@ -824,10 +768,9 @@ class GameScene extends Phaser.Scene {
     p.sprite.setVisible(true);
     p.label.setVisible(true);
 
-    // Detect movement direction
     const dx = data.x - p.lastX;
     const dy = data.y - p.lastY;
-    let dir = data.dir || 'down';
+    const dir = data.dir || 'down';
     if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
       const animKey = 'walk_' + (data.char||0) + '_' + dir;
       if (this.anims.exists(animKey) && (!p.sprite.anims.currentAnim || p.sprite.anims.currentAnim.key !== animKey)) {
@@ -841,8 +784,8 @@ class GameScene extends Phaser.Scene {
     }
     p.lastX = data.x; p.lastY = data.y;
 
-    this.tweens.add({ targets: p.sprite, x: data.x, y: data.y, duration: 180, ease: 'Linear' });
-    this.tweens.add({ targets: p.label, x: data.x, y: data.y - 32, duration: 180 });
+    this.tweens.add({ targets: p.sprite, x: data.x, y: data.y, duration: 220, ease: 'Linear' });
+    this.tweens.add({ targets: p.label, x: data.x, y: data.y - 36, duration: 220 });
 
     if (p.sprite.texture.key !== 'char_' + (data.char||0)) {
       p.sprite.setTexture('char_' + (data.char||0));
@@ -864,12 +807,8 @@ class GameScene extends Phaser.Scene {
       snap.docChanges().forEach(ch => {
         if (ch.type === 'added') {
           const data = ch.doc.data();
-          if (data.map === this.currentMap) {
-            this.showBubble(data.user, data.text);
-          }
-          setTimeout(async () => {
-            try { await deleteDoc(ch.doc.ref); } catch(e){}
-          }, 5000);
+          if (data.map === this.currentMap) this.showBubble(data.user, data.text);
+          setTimeout(async () => { try { await deleteDoc(ch.doc.ref); } catch(e){} }, 5000);
         }
       });
     });
@@ -880,10 +819,9 @@ class GameScene extends Phaser.Scene {
     if (username === currentUser) target = this.mySprite;
     else if (this.players[username]) target = this.players[username].sprite;
     if (!target) return;
-
     if (this.players[username]?.bubble) this.players[username].bubble.destroy();
 
-    const bubble = this.add.text(target.x, target.y - 50, text, {
+    const bubble = this.add.text(target.x, target.y - 56, text, {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#000',
@@ -891,7 +829,6 @@ class GameScene extends Phaser.Scene {
       padding: { x: 5, y: 2 },
       wordWrap: { width: 140 },
     }).setOrigin(0.5).setDepth(20);
-
     if (username !== currentUser) this.players[username].bubble = bubble;
     this.tweens.add({ targets: bubble, alpha: 0, duration: 400, delay: 4000, onComplete: () => bubble.destroy() });
   }
@@ -901,8 +838,8 @@ function initPhaser() {
   const config = {
     type: Phaser.AUTO,
     parent: 'phaser-game',
-    width: 800,
-    height: 480,
+    width: 900,
+    height: 540,
     pixelArt: true,
     backgroundColor: '#87b96b',
     scene: [GameScene],
@@ -921,7 +858,7 @@ window.gameSendChat = async () => {
       user: currentUser, text: text.slice(0, 80), map: currentScene.currentMap, timestamp: serverTimestamp()
     });
     inp.value = '';
-  } catch(e) {}
+  } catch(e) { console.error(e); }
 };
 
 document.getElementById('gameChat').addEventListener('keydown', e => {
@@ -929,8 +866,7 @@ document.getElementById('gameChat').addEventListener('keydown', e => {
 });
 
 // Pomodoro
-let gamePomoUnsub = null;
-let gamePomoInterval = null;
+let gamePomoUnsub = null, gamePomoInterval = null;
 let pomoConfig = { studyMin: 25, breakMin: 5 };
 
 async function loadPomoConfig() {
@@ -965,9 +901,7 @@ function updateGamePomo(pomo) {
   }
   const tick = () => {
     const elapsed = Date.now() - pomo.startedAt;
-    const studyMs = pomo.studyMs;
-    const breakMs = pomo.breakMs;
-    const totalMs = studyMs + breakMs;
+    const studyMs = pomo.studyMs, breakMs = pomo.breakMs, totalMs = studyMs + breakMs;
     let phase, remaining, pct;
     if (elapsed < studyMs) { phase='study'; remaining=studyMs-elapsed; pct=(elapsed/studyMs)*100; }
     else if (elapsed < totalMs) { phase='break'; remaining=totalMs-elapsed; pct=((elapsed-studyMs)/breakMs)*100; }
@@ -976,10 +910,10 @@ function updateGamePomo(pomo) {
       document.getElementById('gamePomoTime').textContent = '✓';
       document.getElementById('gamePomoStatus').textContent = '🎉 Pomodoro complete!';
       const lastReward = localStorage.getItem('dp_game_pomo_'+pomo.startedAt);
-      if (!lastReward && currentUser) {
+      if (!lastReward && currentUser && currentScene && currentScene.isSitting) {
         localStorage.setItem('dp_game_pomo_'+pomo.startedAt, '1');
         updateDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), { points: increment(5) }).catch(()=>{});
-        setStatus('🎉 +5 points!');
+        setStatus('🎉 +5 points for studying!');
       }
       if (pomo.startedBy === currentUser) gameStopPomo();
       return;
@@ -987,7 +921,7 @@ function updateGamePomo(pomo) {
     const mm = Math.floor(remaining / 60000), ss = Math.floor((remaining%60000)/1000);
     document.getElementById('gamePomoTime').textContent = String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
     document.getElementById('gamePomoTime').className = 'game-pomo-time '+phase;
-    document.getElementById('gamePomoStatus').textContent = phase==='study' ? '📚 STUDY TIME' : '☕ BREAK TIME';
+    document.getElementById('gamePomoStatus').textContent = phase==='study' ? '📚 STUDY TIME — sit on a chair!' : '☕ BREAK TIME';
     document.getElementById('gamePomoStatus').className = 'game-pomo-status '+phase;
     document.getElementById('gamePomoFill').style.width = pct+'%';
     document.getElementById('gamePomoFill').className = 'game-pomo-fill '+(phase==='break'?'break':'');
@@ -1006,7 +940,10 @@ window.gameStartPomo = async () => {
     await setDoc(doc(db, 'users', streamer, 'gameState', 'pomodoro'), {
       active: true, startedBy: currentUser, startedAt: Date.now(), studyMs, breakMs
     });
-  } catch(e) { alert('Error: ' + e.message); }
+    setStatus('Pomodoro started!');
+  } catch(e) {
+    alert('Error: ' + e.message + '\n\nMake sure Firestore Rules allow writing to gameState/');
+  }
 };
 window.gameStopPomo = async () => {
   try {
