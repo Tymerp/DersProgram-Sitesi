@@ -394,16 +394,23 @@
 
       <!-- Lounge URL -->
       <div class="groupbox">
-        <span class="groupbox-title">🛋️ Study Lounge</span>
+        <span class="groupbox-title">🛋️ Study Lounge & Game</span>
         <div class="alert-box" style="margin-bottom:12px">
           <div class="alert-icon">💡</div>
-          <div class="alert-msg">Multiplayer study rooms appear at the bottom of the forum page. Viewers pick a room, sit down with their character, and study together with shared pomodoro timers. Earn 5 points per completed pomodoro.</div>
+          <div class="alert-msg">Two versions available: <strong>Lite</strong> (quick emoji rooms inside forum) and <strong>Game</strong> (full pixel-art 2D world with WASD movement).</div>
         </div>
         <div class="form-row">
-          <label class="form-label">Forum + Lounge Page Link (share this with viewers):</label>
+          <label class="form-label">Forum + Lounge Page Link:</label>
           <div class="url-box">
             <div class="url-display" id="loungeUrl" style="font-size:11px">-</div>
             <button class="retro-btn" onclick="copyId('loungeUrl')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px">
+          <label class="form-label">🎮 Multiplayer Study Game (Pixel-art, WASD):</label>
+          <div class="url-box">
+            <div class="url-display" id="gameUrl" style="font-size:11px">-</div>
+            <button class="retro-btn" onclick="copyId('gameUrl')">📋 Copy</button>
           </div>
         </div>
         <div class="form-row" style="margin-top:10px">
@@ -824,6 +831,8 @@ function setOBSUrls(user) {
   // Lounge — link points to forum since lounge is now embedded there
   const loungeEl = document.getElementById('loungeUrl');
   if (loungeEl) loungeEl.textContent = base + 'forum.html?user=' + user;
+  const gameEl = document.getElementById('gameUrl');
+  if (gameEl) gameEl.textContent = base + 'study-game.html?user=' + user;
   const loungeOvEl = document.getElementById('loungeOverlayUrl');
   if (loungeOvEl) {
     loungeOvEl.textContent = base + 'lounge-overlay.html?user=' + user + '&count=' + lcCount;
