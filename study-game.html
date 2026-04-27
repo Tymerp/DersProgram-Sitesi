@@ -370,16 +370,20 @@ class GameScene extends Phaser.Scene {
     const enc = (path) => 'assets/' + encodeURIComponent(path);
     this.load.spritesheet('char_0', enc('Basic Charakter Spritesheet.png'), { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('char_1', enc('Basic Charakter Actions.png'), { frameWidth: 48, frameHeight: 48 });
-    this.load.image('grass', enc('Grass.png'));
-    this.load.image('paths', enc('Paths.png'));
-    this.load.image('water', enc('Water.png'));
-    this.load.image('fences', enc('Fences.png'));
-    this.load.image('doors', enc('Doors.png'));
+
+    // Load tilesets as spritesheets (16x16 tiles)
+    this.load.spritesheet('grass', enc('Grass.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('paths', enc('Paths.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('water', enc('Water.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('fences', enc('Fences.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('doors', enc('Doors.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('biom', enc('Basic Grass Biom things 1.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('plants', enc('Basic Plants.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('furniture', enc('Basic Furniture.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('hills', enc('Hills.png'), { frameWidth: 16, frameHeight: 16 });
+
+    // House is a full image (80x80 or similar) — load as image
     this.load.image('house', enc('Wooden House.png'));
-    this.load.image('biom', enc('Basic Grass Biom things 1.png'));
-    this.load.image('plants', enc('Basic Plants.png'));
-    this.load.image('furniture', enc('Basic Furniture.png'));
-    this.load.image('hills', enc('Hills.png'));
 
     this.load.on('progress', v => setStatus('Loading... ' + Math.floor(v * 100) + '%'));
     this.load.on('complete', () => setStatus('Game ready ✔'));
@@ -564,10 +568,24 @@ class GameScene extends Phaser.Scene {
       };
       return this.add.rectangle(px, py, TS, TS, colors[textureKey] || 0x666666);
     }
-    const img = this.add.image(px, py, textureKey);
-    img.setCrop(0, 0, TILE, TILE);
-    img.setDisplaySize(TS, TS);
-    return img;
+
+    // Frame index for solid/center variant of each tileset
+    // (Bitmask tilesets have many edges/corners — pick the "all sides surrounded" tile)
+    const frameMap = {
+      'grass':     5,    // try a center solid grass
+      'paths':     5,
+      'water':     0,
+      'fences':    0,
+      'doors':     0,
+      'biom':      0,
+      'plants':    0,
+      'furniture': 0,
+      'hills':     0,
+    };
+    const frame = frameMap[textureKey] || 0;
+    const sprite = this.add.sprite(px, py, textureKey, frame);
+    sprite.setScale(SCALE);
+    return sprite;
   }
 
   // ── SIT/STAND ─────────────────────────────────────
