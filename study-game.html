@@ -55,7 +55,7 @@
       <div class="profile-avatar" id="streamerAvatar">??</div>
       <div>
         <div class="profile-name" id="streamerName">Loading...</div>
-        <div class="profile-handle">🎮 Sprout Lands Study Game</div>
+        <div class="profile-handle">🏝️ Sprout Island Study</div>
       </div>
       <div style="margin-left:auto;display:flex;gap:6px">
         <a href="#" id="forumLink" class="retro-btn" style="font-size:11px;padding:4px 10px">💬 Forum</a>
@@ -70,7 +70,7 @@
     <div id="gameWrap" style="display:none">
       <div class="game-container">
         <div class="game-hud" id="gameHud">
-          <div class="hud-row"><span class="label">Map:</span> <span class="val" id="hudRoom">-</span></div>
+          <div class="hud-row"><span class="label">Place:</span> <span class="val" id="hudRoom">Sprout Island</span></div>
           <div class="hud-row"><span class="label">Players:</span> <span class="val" id="hudPlayers">0</span></div>
           <div class="hud-row"><span class="label">You:</span> <span class="val" id="hudMe">-</span></div>
         </div>
@@ -102,7 +102,7 @@
 
       <div class="game-controls">
         <div class="help">
-          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · <kbd>Space</kbd> sit/stand · <kbd>Enter</kbd> chat · Walk on doors
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · <kbd>Space</kbd> sit · <kbd>Enter</kbd> chat · During pomodoro <strong>everyone freezes!</strong>
         </div>
       </div>
     </div>
@@ -136,6 +136,8 @@ let currentUser = null;
 let phaserGame = null;
 let currentScene = null;
 let myCharIdx = parseInt(localStorage.getItem('dp_game_char') || '0');
+let pomodoroState = null; // global pomo state for freeze logic
+let pomoConfig = { studyMin: 25, breakMin: 5 };
 
 const setStatus = m => document.getElementById('statusText').textContent = m;
 
@@ -170,6 +172,13 @@ window.setChar = (idx) => {
   }
 };
 
+// Helper to check if pomodoro is in study phase (forces freeze)
+function isStudyPhase() {
+  if (!pomodoroState || !pomodoroState.active) return false;
+  const elapsed = Date.now() - pomodoroState.startedAt;
+  return elapsed < pomodoroState.studyMs;
+}
+
 // ════════════════════════════════════════════════════
 // PHASER GAME
 // ════════════════════════════════════════════════════
@@ -179,176 +188,32 @@ const SCALE = 2.5;
 const TS = TILE * SCALE; // 40px display tile
 const SPEED = 110;
 
-// Building objects: {type:'house', x,y (top-left tile), w,h (in tiles), portal:[doorX,doorY], target, spawn}
-// Houses are placed as full image at specific tile positions
-const HUB_BUILDINGS = [
-  // Top row of houses (4 buildings)
-  { x: 4, y: 4, target: 'library', label: '📚 Library' },
-  { x: 11, y: 4, target: 'cafe', label: '☕ Cafe' },
-  { x: 18, y: 4, target: 'beach', label: '🏖️ Beach' },
-  { x: 25, y: 4, target: 'garden', label: '🌸 Garden' },
+// Single island map: water around grass island
+// w = water, g = grass, s = sand/path, t = tree (collidable), C = chair (sittable), T = table (collidable), r = rock (collidable)
+const ISLAND_MAP = [
+  "wwwwwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwwwwww",
+  "wwwwsssssssssssssswwwww",  // sandy beach top
+  "wwwwsggggggggggggswwwww",
+  "wwwwsggttgggggggtgswwww",  // trees
+  "wwwwsgggggCggggggrswwww",  // chair, rock
+  "wwwwsgggggTggggggggswww",  // table
+  "wwwwsgggggCggggggggswww",  // chair
+  "wwwwsgggggggggggrgswwww",
+  "wwwwsggCgggggggCgggswww",  // 2 chairs
+  "wwwwsggTgggggggTgggswww",  // 2 tables
+  "wwwwsggCgggggggCgggswww",
+  "wwwwsgggggggggggggswwww",
+  "wwwwstggggggCgggttsweww",  // tree, chair
+  "wwwwsgggggggTggggggswww",  // table
+  "wwwwsggrggggggggrgswww.",
+  "wwwwsssssssssssssswwwww",  // sandy bottom
+  "wwwwwwwwwwwwwwwwwwwwwww",
 ];
-
-const MAPS = {
-  hub: {
-    name: 'Sprout Town',
-    bgColor: 0x87b96b,
-    width: 35, height: 22,
-    // Cleaner layout: just grass with paths, buildings are placed separately
-    layout: [
-      "...................................",
-      "...................................",
-      "...................................",
-      "...................................",
-      "...................................",
-      "...................................",
-      "...................................",
-      "...................................",
-      "...........pppppppppppppppp........",
-      "...........p..............p........",
-      "...........p..............p........",
-      "...........p..............p........",
-      "...........p..............p........",
-      "...........p..............p........",
-      "...........p..............p........",
-      "...........pppppppppppppppp........",
-      "...................................",
-      "..t.t.t....t.t.t....t.t.t....t.t.t.",
-      ".tttttt..ttttttt..tttttttt..ttttttt",
-      "..t.t.t....t.t.t....t.t.t....t.t.t.",
-      "...................................",
-      "...................................",
-    ],
-    buildings: HUB_BUILDINGS,
-    portals: {}, // portals are now on buildings (calculated)
-    labels: [],
-  },
-
-  library: {
-    name: 'Library',
-    bgColor: 0xddccaa,
-    width: 27, height: 18,
-    layout: [
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
-      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
-      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
-      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",
-      ".................d.........",
-      "...........................",
-      "...........................",
-    ],
-    portals: { "17,15": { target: 'hub', spawn: [13, 16] } },
-    labels: [],
-  },
-
-  cafe: {
-    name: 'Cozy Cafe',
-    bgColor: 0xe0bfa0,
-    width: 27, height: 18,
-    layout: [
-      "hhhhhhhhhhhhhhhhhhhhhhhhhhh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
-      "hFFTFFFTFFFTFFFTFFFTFFFTFFh",
-      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
-      "hFFTFFFTFFFTFFFTFFFTFFFTFFh",
-      "hFFCFFFCFFFCFFFCFFFCFFFCFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",
-      ".................d.........",
-      "...........................",
-      "...........................",
-    ],
-    portals: { "17,15": { target: 'hub', spawn: [13, 16] } },
-    labels: [],
-  },
-
-  beach: {
-    name: 'Sunset Beach',
-    bgColor: 0xf4d28e,
-    width: 27, height: 18,
-    layout: [
-      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "wwwwwwwwwwwwwwwwwwwwwwwwwww",
-      "ppppppppppppppppppppppppppp",
-      "ppppppppppppppppppppppppppp",
-      "pppCpppppCpppppCpppppCppppp",
-      "pppTpppppTpppppTpppppTppppp",
-      "ppppppppppppppppppppppppppp",
-      "ppppppppppppppppppppppppppp",
-      "pppCpppppCpppppCpppppCppppp",
-      "pppTpppppTpppppTpppppTppppp",
-      "ppppppppppppppppppppppppppp",
-      "...........................",
-      "...........................",
-      ".................d.........",
-      ".................d.........",
-      "...........................",
-      "...........................",
-    ],
-    portals: { "17,14": { target: 'hub', spawn: [13, 16] } },
-    labels: [],
-  },
-
-  garden: {
-    name: 'Zen Garden',
-    bgColor: 0x9bc46f,
-    width: 27, height: 18,
-    layout: [
-      ".....t.t...t.t...t.t...t.t.",
-      "....ttttt.ttttt.ttttt.ttttt",
-      ".....t.t...t.t...t.t...t.t.",
-      "...........................",
-      "...........................",
-      "....C.C.....C.C.....C.C....",
-      "....T.T.....T.T.....T.T....",
-      "...........................",
-      "...........................",
-      "....C.C.....C.C.....C.C....",
-      "....T.T.....T.T.....T.T....",
-      "...........................",
-      "...........................",
-      "....C.C.....C.C.....C.C....",
-      ".................d.........",
-      ".................d.........",
-      "...........................",
-      "...........................",
-    ],
-    portals: { "17,14": { target: 'hub', spawn: [13, 16] } },
-    labels: [],
-  },
-};
-
-// Add door positions to hub portals based on buildings
-HUB_BUILDINGS.forEach((b) => {
-  // House is 5 tiles wide × 5 tiles tall (estimated). Door at center-bottom of house: (x+2, y+5)
-  const doorX = b.x + 2;
-  const doorY = b.y + 5;
-  MAPS.hub.portals[doorX + ',' + doorY] = { target: b.target, spawn: [13, 16] };
-});
 
 class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
-    this.currentMap = 'hub';
     this.tiles = [];
     this.players = {};
     this.lastSyncTime = 0;
@@ -356,14 +221,15 @@ class GameScene extends Phaser.Scene {
     this.facing = 'down';
     this.mySprite = null;
     this.myLabel = null;
+    this.myStudyText = null;
     this.myBubble = null;
     this.mySitTween = null;
     this.unsubPlayers = null;
     this.unsubChat = null;
     this.collisionMap = [];
-    this.portalMap = {};
     this.sittableMap = [];
     this.isSitting = false;
+    this.studyStartTime = null; // when did I start studying
   }
 
   preload() {
@@ -371,38 +237,29 @@ class GameScene extends Phaser.Scene {
     this.load.spritesheet('char_0', enc('Basic Charakter Spritesheet.png'), { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('char_1', enc('Basic Charakter Actions.png'), { frameWidth: 48, frameHeight: 48 });
 
-    // Load tilesets as spritesheets (16x16 tiles)
-    this.load.spritesheet('grass', enc('Grass.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('paths', enc('Paths.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('water', enc('Water.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('fences', enc('Fences.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('doors', enc('Doors.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('biom', enc('Basic Grass Biom things 1.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('plants', enc('Basic Plants.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('furniture', enc('Basic Furniture.png'), { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('hills', enc('Hills.png'), { frameWidth: 16, frameHeight: 16 });
-
-    // House is a full image (80x80 or similar) — load as image
-    this.load.image('house', enc('Wooden House.png'));
+    // Load tilesets as spritesheets (16x16)
+    this.load.spritesheet('grass_ss', enc('Grass.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('paths_ss', enc('Paths.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('water_ss', enc('Water.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('biom_ss', enc('Basic Grass Biom things 1.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('plants_ss', enc('Basic Plants.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('furniture_ss', enc('Basic Furniture.png'), { frameWidth: 16, frameHeight: 16 });
 
     this.load.on('progress', v => setStatus('Loading... ' + Math.floor(v * 100) + '%'));
     this.load.on('complete', () => setStatus('Game ready ✔'));
-    this.load.on('loaderror', file => console.warn('Failed to load:', file.src));
+    this.load.on('loaderror', file => console.warn('Failed:', file.src));
   }
 
   create() {
     currentScene = this;
     this.createCharAnimations(0);
     this.createCharAnimations(1);
-    this.buildMap('hub', [19, 13]);
+    this.buildIsland();
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
-      W: Phaser.Input.Keyboard.KeyCodes.W,
-      A: Phaser.Input.Keyboard.KeyCodes.A,
-      S: Phaser.Input.Keyboard.KeyCodes.S,
-      D: Phaser.Input.Keyboard.KeyCodes.D,
-      SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
-      ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
+      W: Phaser.Input.Keyboard.KeyCodes.W, A: Phaser.Input.Keyboard.KeyCodes.A,
+      S: Phaser.Input.Keyboard.KeyCodes.S, D: Phaser.Input.Keyboard.KeyCodes.D,
+      SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE, ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
     });
     this.keys.ENTER.on('down', () => {
       const inp = document.getElementById('gameChat');
@@ -443,152 +300,130 @@ class GameScene extends Phaser.Scene {
     });
   }
 
-  buildMap(mapId, spawnTile) {
-    const map = MAPS[mapId];
-    if (!map) return;
-    this.currentMap = mapId;
-    this.isSitting = false;
-    if (this.mySitTween) { this.mySitTween.stop(); this.mySitTween = null; }
-
+  buildIsland() {
     this.tiles.forEach(t => t.destroy());
     this.tiles = [];
     this.collisionMap = [];
     this.sittableMap = [];
-    this.portalMap = map.portals || {};
 
-    const W = map.width, H = map.height;
+    const map = ISLAND_MAP;
+    const W = map[0].length, H = map.length;
 
-    // Background
-    const bg = this.add.rectangle(0, 0, W * TS, H * TS, map.bgColor);
-    bg.setOrigin(0, 0);
-    bg.setDepth(-10);
+    // Background — water-blue base
+    const bg = this.add.rectangle(0, 0, W * TS, H * TS, 0x6cb3d4);
+    bg.setOrigin(0, 0).setDepth(-10);
     this.tiles.push(bg);
 
-    // Tile fill — every empty cell still gets a grass tile for texture
-    map.layout.forEach((row, y) => {
+    // Generate tiles. Use random-ish offsets for grass to avoid pattern repeating
+    map.forEach((row, y) => {
       this.collisionMap[y] = [];
       this.sittableMap[y] = [];
       for (let x = 0; x < row.length; x++) {
         const ch = row[x];
         const px = x * TS + TS / 2;
         const py = y * TS + TS / 2;
-        let collides = false, sittable = false, depth = 0, textureKey = null;
+        let collides = false, sittable = false, depth = 0;
+        let sprite = null;
 
         switch(ch) {
-          case '.': textureKey = 'grass'; break;
-          case 'p': textureKey = 'paths'; break;
-          case 'w': textureKey = 'water'; collides = true; break;
-          case 'f': textureKey = 'fences'; collides = true; depth = 2; break;
-          case 'd': textureKey = 'doors'; depth = 1; break;
-          case 'h': textureKey = 'house'; collides = true; depth = 5; break;
-          case 't': textureKey = 'biom'; collides = true; depth = 4; break;
-          case 'F': textureKey = 'paths'; break;
-          case 'C': textureKey = 'furniture'; sittable = true; depth = 2; break;
-          case 'T': textureKey = 'furniture'; collides = true; depth = 2; break;
+          case 'w':
+            // Animated water: pick a frame
+            sprite = this.makeTile(px, py, 'water_ss', 0);
+            // Animate water frames
+            this.tweens.add({
+              targets: sprite, alpha: 0.85,
+              duration: 1500, yoyo: true, repeat: -1,
+              ease: 'Sine.inOut'
+            });
+            break;
+          case 'g': {
+            // Grass — try multiple frames for variety. Frame 7 is usually solid center grass
+            // Use deterministic but varied frame so it doesn't repeat ugly
+            const grassFrames = [7]; // Just use single solid grass
+            const f = grassFrames[(x * 7 + y * 13) % grassFrames.length];
+            sprite = this.makeTile(px, py, 'grass_ss', f);
+            break;
+          }
+          case 's':
+            // Sand path
+            sprite = this.makeTile(px, py, 'paths_ss', 5);
+            break;
+          case 't':
+            // Tree on grass
+            sprite = this.makeTile(px, py, 'grass_ss', 7);
+            const tree = this.add.sprite(px, py - TS/4, 'biom_ss', 0);
+            tree.setScale(SCALE);
+            tree.setDepth(4);
+            this.tiles.push(tree);
+            collides = true;
+            break;
+          case 'r':
+            // Rock on grass
+            sprite = this.makeTile(px, py, 'grass_ss', 7);
+            const rock = this.add.sprite(px, py, 'biom_ss', 6);
+            rock.setScale(SCALE);
+            rock.setDepth(3);
+            this.tiles.push(rock);
+            collides = true;
+            break;
+          case 'C':
+            // Chair on grass
+            sprite = this.makeTile(px, py, 'grass_ss', 7);
+            const chair = this.add.sprite(px, py, 'furniture_ss', 0);
+            chair.setScale(SCALE);
+            chair.setDepth(2);
+            this.tiles.push(chair);
+            sittable = true;
+            break;
+          case 'T':
+            // Table on grass
+            sprite = this.makeTile(px, py, 'grass_ss', 7);
+            const table = this.add.sprite(px, py, 'furniture_ss', 4);
+            table.setScale(SCALE);
+            table.setDepth(2);
+            this.tiles.push(table);
+            collides = true;
+            break;
         }
 
-        if (textureKey) {
-          const tile = this.makeTile(px, py, textureKey);
-          if (tile) {
-            tile.setDepth(depth);
-            this.tiles.push(tile);
-          }
+        if (sprite) {
+          sprite.setDepth(depth);
+          this.tiles.push(sprite);
         }
-        this.collisionMap[y][x] = collides;
+        this.collisionMap[y][x] = collides || ch === 'w'; // water blocks
         this.sittableMap[y][x] = sittable;
       }
     });
 
-    // Add full house images for hub buildings
-    if (map.buildings) {
-      map.buildings.forEach(b => {
-        // House is roughly 5x5 tiles. Place full image at (x*TS, y*TS)
-        const houseW = 5 * TS, houseH = 5 * TS;
-        const px = b.x * TS + houseW / 2;
-        const py = b.y * TS + houseH / 2;
-        const houseImg = this.add.image(px, py, 'house');
-        houseImg.setDisplaySize(houseW, houseH);
-        houseImg.setDepth(5);
-        this.tiles.push(houseImg);
-
-        // Make all tiles under house collidable EXCEPT the door tile
-        for (let dy = 0; dy < 5; dy++) {
-          for (let dx = 0; dx < 5; dx++) {
-            const tx = b.x + dx, ty = b.y + dy;
-            // Door is at bottom-center (dx=2, dy=4)
-            if (dx === 2 && dy === 4) continue; // door is walkable (portal)
-            if (this.collisionMap[ty]) this.collisionMap[ty][tx] = true;
-          }
-        }
-
-        // Label above the house
-        const lblX = b.x * TS + houseW / 2;
-        const lblY = b.y * TS - 10;
-        const lbl = this.add.text(lblX, lblY, b.label, {
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          color: '#ffffff',
-          backgroundColor: 'rgba(0,0,0,0.75)',
-          padding: { x: 5, y: 2 },
-        }).setOrigin(0.5).setDepth(7);
-        this.tiles.push(lbl);
-      });
-    }
-
-    // Spawn character
+    // Spawn character at center of island
+    const spawnX = 11 * TS + TS / 2;
+    const spawnY = 8 * TS + TS / 2;
     if (this.mySprite) this.mySprite.destroy();
     if (this.myLabel) this.myLabel.destroy();
-    if (this.myBubble) { this.myBubble.destroy(); this.myBubble = null; }
-    const sx = spawnTile[0] * TS + TS / 2;
-    const sy = spawnTile[1] * TS + TS / 2;
-    this.mySprite = this.add.sprite(sx, sy, 'char_' + myCharIdx, 0);
+    if (this.myStudyText) { this.myStudyText.destroy(); this.myStudyText = null; }
+
+    this.mySprite = this.add.sprite(spawnX, spawnY, 'char_' + myCharIdx, 0);
     this.mySprite.setScale(SCALE);
     this.mySprite.setDepth(10);
-    this.myLabel = this.add.text(sx, sy - 36, currentUser, {
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      color: '#ffffff',
-      backgroundColor: 'rgba(0,0,0,0.75)',
-      padding: { x: 4, y: 1 },
+    this.myLabel = this.add.text(spawnX, spawnY - 36, currentUser, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+      backgroundColor: 'rgba(0,0,0,0.75)', padding: { x: 4, y: 1 },
     }).setOrigin(0.5).setDepth(11);
 
     this.cameras.main.setBounds(0, 0, W * TS, H * TS);
     this.cameras.main.startFollow(this.mySprite, true, 0.1, 0.1);
     this.cameras.main.setZoom(1);
-    document.getElementById('hudRoom').textContent = map.name;
-    this.refreshRemotePlayers();
   }
 
-  makeTile(px, py, textureKey) {
+  makeTile(px, py, textureKey, frame) {
     if (!this.textures.exists(textureKey)) {
-      const colors = {
-        grass: 0x87b96b, paths: 0xc19660, water: 0x6cb3d4,
-        fences: 0x8b5a2b, doors: 0x6b4423, house: 0xc0392b,
-        biom: 0x2d5a1f, furniture: 0x8b4513
-      };
-      return this.add.rectangle(px, py, TS, TS, colors[textureKey] || 0x666666);
+      return this.add.rectangle(px, py, TS, TS, 0x666666);
     }
-
-    // Frame index for solid/center variant of each tileset
-    // (Bitmask tilesets have many edges/corners — pick the "all sides surrounded" tile)
-    const frameMap = {
-      'grass':     5,    // try a center solid grass
-      'paths':     5,
-      'water':     0,
-      'fences':    0,
-      'doors':     0,
-      'biom':      0,
-      'plants':    0,
-      'furniture': 0,
-      'hills':     0,
-    };
-    const frame = frameMap[textureKey] || 0;
     const sprite = this.add.sprite(px, py, textureKey, frame);
     sprite.setScale(SCALE);
     return sprite;
   }
 
-  // ── SIT/STAND ─────────────────────────────────────
   tryInteract() {
     if (this.isSitting) {
       this.standUp();
@@ -611,47 +446,80 @@ class GameScene extends Phaser.Scene {
     this.mySprite.x = cx * TS + TS / 2;
     this.mySprite.y = cy * TS + TS / 2;
     this.isSitting = true;
+    this.studyStartTime = Date.now();
     this.facing = 'down';
     const idleKey = 'idle_' + myCharIdx + '_down';
     if (this.anims.exists(idleKey)) this.mySprite.play(idleKey);
 
-    // Sit animation: gentle bobbing while studying
+    // Bobbing animation
     if (this.mySitTween) this.mySitTween.stop();
     const baseY = this.mySprite.y;
     this.mySitTween = this.tweens.add({
       targets: this.mySprite,
-      y: { from: baseY, to: baseY - 3 },
-      duration: 1200,
-      ease: 'Sine.inOut',
-      yoyo: true,
-      repeat: -1,
+      y: { from: baseY, to: baseY - 4 },
+      duration: 1200, ease: 'Sine.inOut', yoyo: true, repeat: -1,
     });
 
+    // Show study text above character
+    this.updateStudyText();
     this.syncMyPosition();
     setStatus('📚 Studying — earn ⭐ +5 if pomodoro completes!');
   }
 
   standUp() {
     this.isSitting = false;
+    this.studyStartTime = null;
     if (this.mySitTween) {
       this.mySitTween.stop();
       this.mySitTween = null;
-      // Snap Y back to tile center
       const ty = Math.floor(this.mySprite.y / TS);
       this.mySprite.y = ty * TS + TS / 2;
     }
+    if (this.myStudyText) { this.myStudyText.destroy(); this.myStudyText = null; }
     this.syncMyPosition();
     setStatus('Stood up');
   }
 
-  // ── UPDATE LOOP ───────────────────────────────────
+  updateStudyText() {
+    if (!this.isSitting && !isStudyPhase()) {
+      if (this.myStudyText) { this.myStudyText.destroy(); this.myStudyText = null; }
+      return;
+    }
+    let text = '';
+    if (isStudyPhase()) {
+      // Show pomodoro time remaining
+      const elapsed = Date.now() - pomodoroState.startedAt;
+      const remaining = Math.max(0, pomodoroState.studyMs - elapsed);
+      const mm = Math.floor(remaining / 60000);
+      const ss = Math.floor((remaining % 60000) / 1000);
+      text = '📚 STUDYING ' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    } else if (this.isSitting) {
+      // Show how long sitting (since started)
+      const elapsed = Date.now() - this.studyStartTime;
+      const mm = Math.floor(elapsed / 60000);
+      const ss = Math.floor((elapsed % 60000) / 1000);
+      text = '📚 ' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    }
+    if (!text) return;
+    if (!this.myStudyText) {
+      this.myStudyText = this.add.text(this.mySprite.x, this.mySprite.y - 50, text, {
+        fontFamily: 'monospace', fontSize: '11px', color: '#ffdd00',
+        backgroundColor: 'rgba(0,0,0,0.85)', padding: { x: 5, y: 2 },
+      }).setOrigin(0.5).setDepth(15);
+    } else {
+      this.myStudyText.setText(text);
+    }
+  }
+
   update(time, delta) {
     if (!this.mySprite) return;
 
     const focused = document.activeElement && document.activeElement.tagName === 'INPUT';
+    const studying = isStudyPhase();
     let vx = 0, vy = 0, newDir = this.facing;
 
-    if (!focused && !this.isSitting) {
+    // FREEZE during study phase (unless on break)
+    if (!focused && !this.isSitting && !studying) {
       if (this.cursors.left.isDown || this.keys.A.isDown) { vx = -SPEED; newDir = 'left'; }
       else if (this.cursors.right.isDown || this.keys.D.isDown) { vx = SPEED; newDir = 'right'; }
       if (this.cursors.up.isDown || this.keys.W.isDown) { vy = -SPEED; newDir = 'up'; }
@@ -659,13 +527,12 @@ class GameScene extends Phaser.Scene {
     }
     if (vx && vy) { vx *= 0.707; vy *= 0.707; }
 
-    if (!this.isSitting) {
+    if (!this.isSitting && !studying) {
       const dt = delta / 1000;
       const newX = this.mySprite.x + vx * dt;
       const newY = this.mySprite.y + vy * dt;
       if (!this.tileBlocks(newX, this.mySprite.y)) this.mySprite.x = newX;
       if (!this.tileBlocks(this.mySprite.x, newY)) this.mySprite.y = newY;
-
       const moving = vx !== 0 || vy !== 0;
       if (moving) {
         this.facing = newDir;
@@ -679,29 +546,42 @@ class GameScene extends Phaser.Scene {
           this.mySprite.play(idleKey);
         }
       }
+    } else if (studying && !this.isSitting) {
+      // Forced to stop — stay idle
+      const idleKey = 'idle_' + myCharIdx + '_' + this.facing;
+      if (this.anims.exists(idleKey) && (!this.mySprite.anims.currentAnim || this.mySprite.anims.currentAnim.key !== idleKey)) {
+        this.mySprite.play(idleKey);
+      }
     }
 
-    // CRITICAL: keep label and bubble following character every frame
+    // FOLLOW: label, bubble, study text follow character
     this.myLabel.x = this.mySprite.x;
     this.myLabel.y = this.mySprite.y - 36;
     if (this.myBubble) {
       this.myBubble.x = this.mySprite.x;
       this.myBubble.y = this.mySprite.y - 56;
     }
+    if (this.myStudyText) {
+      this.myStudyText.x = this.mySprite.x;
+      this.myStudyText.y = this.mySprite.y - 50;
+    }
 
-    // Also follow remote player labels and bubbles
+    // Remote players follow
     Object.values(this.players).forEach(p => {
-      if (p.label && p.sprite) {
-        p.label.x = p.sprite.x;
-        p.label.y = p.sprite.y - 36;
-      }
-      if (p.bubble && p.sprite) {
-        p.bubble.x = p.sprite.x;
-        p.bubble.y = p.sprite.y - 56;
-      }
+      if (p.label && p.sprite) { p.label.x = p.sprite.x; p.label.y = p.sprite.y - 36; }
+      if (p.bubble && p.sprite) { p.bubble.x = p.sprite.x; p.bubble.y = p.sprite.y - 56; }
+      if (p.studyText && p.sprite) { p.studyText.x = p.sprite.x; p.studyText.y = p.sprite.y - 50; }
     });
 
-    // Show interaction hint
+    // Update study text content
+    if (this.isSitting || studying) {
+      this.updateStudyText();
+    } else if (this.myStudyText) {
+      this.myStudyText.destroy();
+      this.myStudyText = null;
+    }
+
+    // Interaction hint
     const tx = Math.floor(this.mySprite.x / TS);
     const ty = Math.floor(this.mySprite.y / TS);
     let nearChair = false;
@@ -710,7 +590,10 @@ class GameScene extends Phaser.Scene {
       if (this.sittableMap[ty+dy] && this.sittableMap[ty+dy][tx+dx]) { nearChair = true; break; }
     }
     const hint = document.getElementById('interactHint');
-    if (this.isSitting) {
+    if (studying && !this.isSitting) {
+      hint.style.display = 'block';
+      document.getElementById('hintText').textContent = '🔒 Pomodoro running — sit on a chair!';
+    } else if (this.isSitting) {
       hint.style.display = 'block';
       document.getElementById('hintText').textContent = 'to stand up';
     } else if (nearChair) {
@@ -720,16 +603,7 @@ class GameScene extends Phaser.Scene {
       hint.style.display = 'none';
     }
 
-    // Portal check (only when not sitting)
-    if (!this.isSitting) {
-      const portalKey = tx + ',' + ty;
-      if (this.portalMap[portalKey]) {
-        this.transitionTo(this.portalMap[portalKey].target, this.portalMap[portalKey].spawn);
-        return;
-      }
-    }
-
-    // Sync position
+    // Sync
     if (Date.now() - this.lastSyncTime > this.syncInterval) {
       const moving = vx !== 0 || vy !== 0;
       if (moving || (Date.now() - this.lastSyncTime > 2000)) {
@@ -743,17 +617,8 @@ class GameScene extends Phaser.Scene {
     const tx = Math.floor(x / TS);
     const ty = Math.floor(y / TS);
     if (tx < 0 || ty < 0) return true;
-    if (!this.collisionMap[ty]) return false;
+    if (!this.collisionMap[ty]) return true;
     return this.collisionMap[ty][tx] === true;
-  }
-
-  async transitionTo(mapId, spawnTile) {
-    setStatus('Entering ' + (MAPS[mapId]?.name || mapId) + '...');
-    this.cameras.main.fadeOut(200);
-    await new Promise(r => setTimeout(r, 220));
-    this.buildMap(mapId, spawnTile);
-    this.cameras.main.fadeIn(200);
-    this.syncMyPosition();
   }
 
   async syncMyPosition() {
@@ -762,11 +627,12 @@ class GameScene extends Phaser.Scene {
       await setDoc(doc(db, 'users', streamer, 'gamePlayers', currentUser), {
         x: Math.round(this.mySprite.x),
         y: Math.round(this.mySprite.y),
-        map: this.currentMap,
+        map: 'island',
         dir: this.facing,
         char: myCharIdx,
         username: currentUser,
         sitting: this.isSitting,
+        studyStart: this.studyStartTime || 0,
         lastSeen: Date.now()
       });
     } catch(e) {}
@@ -788,6 +654,7 @@ class GameScene extends Phaser.Scene {
           if (this.players[name].sprite) this.players[name].sprite.destroy();
           if (this.players[name].label) this.players[name].label.destroy();
           if (this.players[name].bubble) this.players[name].bubble.destroy();
+          if (this.players[name].studyText) this.players[name].studyText.destroy();
           if (this.players[name].sitTween) this.players[name].sitTween.stop();
           delete this.players[name];
         }
@@ -797,56 +664,40 @@ class GameScene extends Phaser.Scene {
   }
 
   upsertRemotePlayer(name, data) {
-    if (data.map !== this.currentMap) {
-      if (this.players[name]) {
-        this.players[name].sprite.setVisible(false);
-        this.players[name].label.setVisible(false);
-        if (this.players[name].bubble) this.players[name].bubble.setVisible(false);
-      }
-      return;
-    }
     if (!this.players[name]) {
       const sprite = this.add.sprite(data.x, data.y, 'char_' + (data.char||0), 0);
-      sprite.setScale(SCALE);
-      sprite.setDepth(9);
+      sprite.setScale(SCALE).setDepth(9);
       const label = this.add.text(data.x, data.y - 36, name, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#ffffff',
-        backgroundColor: 'rgba(0,0,0,0.75)',
-        padding: { x: 4, y: 1 },
+        fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+        backgroundColor: 'rgba(0,0,0,0.75)', padding: { x: 4, y: 1 },
       }).setOrigin(0.5).setDepth(11);
-      this.players[name] = { sprite, label, lastX: data.x, lastY: data.y, wasSitting: false, sitTween: null };
+      this.players[name] = {
+        sprite, label, lastX: data.x, lastY: data.y,
+        wasSitting: false, sitTween: null,
+        studyText: null, studyStart: data.studyStart||0
+      };
     }
     const p = this.players[name];
-    p.sprite.setVisible(true);
-    p.label.setVisible(true);
-    if (p.bubble) p.bubble.setVisible(true);
-
-    const dx = data.x - p.lastX;
-    const dy = data.y - p.lastY;
+    const dx = data.x - p.lastX, dy = data.y - p.lastY;
     const dir = data.dir || 'down';
 
-    // Handle sitting state change
+    // Sitting state change
     if (data.sitting && !p.wasSitting) {
-      // Start sitting: stop walking anim, start bob tween
       const idleKey = 'idle_' + (data.char||0) + '_down';
       if (this.anims.exists(idleKey)) p.sprite.play(idleKey);
       if (p.sitTween) p.sitTween.stop();
       const baseY = data.y;
       p.sitTween = this.tweens.add({
         targets: p.sprite,
-        y: { from: baseY, to: baseY - 3 },
-        duration: 1200,
-        ease: 'Sine.inOut',
-        yoyo: true,
-        repeat: -1,
+        y: { from: baseY, to: baseY - 4 },
+        duration: 1200, ease: 'Sine.inOut', yoyo: true, repeat: -1,
       });
       p.wasSitting = true;
+      p.studyStart = data.studyStart || Date.now();
     } else if (!data.sitting && p.wasSitting) {
-      // Stand up
       if (p.sitTween) { p.sitTween.stop(); p.sitTween = null; }
       p.wasSitting = false;
+      if (p.studyText) { p.studyText.destroy(); p.studyText = null; }
     }
 
     if (!data.sitting) {
@@ -861,29 +712,44 @@ class GameScene extends Phaser.Scene {
           p.sprite.play(idleKey);
         }
       }
-      // Tween position if not sitting
       this.tweens.add({ targets: p.sprite, x: data.x, y: data.y, duration: 220, ease: 'Linear' });
     } else {
-      // If sitting, snap to position (tween bobs Y around it)
       p.sprite.x = data.x;
-      // Don't override y because tween manages it
+    }
+
+    // Update study text for remote player
+    if (data.sitting || isStudyPhase()) {
+      let text = '';
+      if (isStudyPhase()) {
+        const elapsed = Date.now() - pomodoroState.startedAt;
+        const remaining = Math.max(0, pomodoroState.studyMs - elapsed);
+        const mm = Math.floor(remaining / 60000);
+        const ss = Math.floor((remaining % 60000) / 1000);
+        text = '📚 ' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+      } else if (data.sitting && data.studyStart) {
+        const elapsed = Date.now() - data.studyStart;
+        const mm = Math.floor(elapsed / 60000);
+        const ss = Math.floor((elapsed % 60000) / 1000);
+        text = '📚 ' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+      }
+      if (text) {
+        if (!p.studyText) {
+          p.studyText = this.add.text(data.x, data.y - 50, text, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#ffdd00',
+            backgroundColor: 'rgba(0,0,0,0.85)', padding: { x: 5, y: 2 },
+          }).setOrigin(0.5).setDepth(15);
+        } else {
+          p.studyText.setText(text);
+        }
+      }
+    } else if (p.studyText) {
+      p.studyText.destroy(); p.studyText = null;
     }
 
     p.lastX = data.x; p.lastY = data.y;
-
     if (p.sprite.texture.key !== 'char_' + (data.char||0)) {
       p.sprite.setTexture('char_' + (data.char||0));
     }
-  }
-
-  refreshRemotePlayers() {
-    Object.values(this.players).forEach(p => {
-      if (p.sprite) p.sprite.destroy();
-      if (p.label) p.label.destroy();
-      if (p.bubble) p.bubble.destroy();
-      if (p.sitTween) p.sitTween.stop();
-    });
-    this.players = {};
   }
 
   subscribeToChat() {
@@ -892,7 +758,7 @@ class GameScene extends Phaser.Scene {
       snap.docChanges().forEach(ch => {
         if (ch.type === 'added') {
           const data = ch.doc.data();
-          if (data.map === this.currentMap) this.showBubble(data.user, data.text);
+          this.showBubble(data.user, data.text);
           setTimeout(async () => { try { await deleteDoc(ch.doc.ref); } catch(e){} }, 5000);
         }
       });
@@ -901,19 +767,13 @@ class GameScene extends Phaser.Scene {
 
   showBubble(username, text) {
     if (username === currentUser) {
-      // My bubble — store on scene, follow handled in update()
       if (this.myBubble) this.myBubble.destroy();
       this.myBubble = this.add.text(this.mySprite.x, this.mySprite.y - 56, text, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#000',
-        backgroundColor: '#fff',
-        padding: { x: 5, y: 2 },
-        wordWrap: { width: 140 },
+        fontFamily: 'monospace', fontSize: '12px', color: '#000',
+        backgroundColor: '#fff', padding: { x: 5, y: 2 }, wordWrap: { width: 140 },
       }).setOrigin(0.5).setDepth(20);
       const myBub = this.myBubble;
-      this.tweens.add({
-        targets: myBub, alpha: 0, duration: 400, delay: 4000,
+      this.tweens.add({ targets: myBub, alpha: 0, duration: 400, delay: 4000,
         onComplete: () => { myBub.destroy(); if (this.myBubble === myBub) this.myBubble = null; }
       });
     } else {
@@ -921,16 +781,11 @@ class GameScene extends Phaser.Scene {
       if (!p) return;
       if (p.bubble) p.bubble.destroy();
       p.bubble = this.add.text(p.sprite.x, p.sprite.y - 56, text, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#000',
-        backgroundColor: '#fff',
-        padding: { x: 5, y: 2 },
-        wordWrap: { width: 140 },
+        fontFamily: 'monospace', fontSize: '12px', color: '#000',
+        backgroundColor: '#fff', padding: { x: 5, y: 2 }, wordWrap: { width: 140 },
       }).setOrigin(0.5).setDepth(20);
       const theirBub = p.bubble;
-      this.tweens.add({
-        targets: theirBub, alpha: 0, duration: 400, delay: 4000,
+      this.tweens.add({ targets: theirBub, alpha: 0, duration: 400, delay: 4000,
         onComplete: () => { theirBub.destroy(); if (p.bubble === theirBub) p.bubble = null; }
       });
     }
@@ -939,14 +794,9 @@ class GameScene extends Phaser.Scene {
 
 function initPhaser() {
   const config = {
-    type: Phaser.AUTO,
-    parent: 'phaser-game',
-    width: 900,
-    height: 540,
-    pixelArt: true,
-    backgroundColor: '#87b96b',
-    scene: [GameScene],
-    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    type: Phaser.AUTO, parent: 'phaser-game',
+    width: 900, height: 540, pixelArt: true, backgroundColor: '#6cb3d4',
+    scene: [GameScene], scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   };
   phaserGame = new Phaser.Game(config);
 }
@@ -958,7 +808,7 @@ window.gameSendChat = async () => {
   if (!text) return;
   try {
     await setDoc(doc(db, 'users', streamer, 'gameChat', Date.now().toString()), {
-      user: currentUser, text: text.slice(0, 80), map: currentScene.currentMap, timestamp: serverTimestamp()
+      user: currentUser, text: text.slice(0, 80), map: 'island', timestamp: serverTimestamp()
     });
     inp.value = '';
   } catch(e) { console.error(e); }
@@ -970,7 +820,6 @@ document.getElementById('gameChat').addEventListener('keydown', e => {
 
 // Pomodoro
 let gamePomoUnsub = null, gamePomoInterval = null;
-let pomoConfig = { studyMin: 25, breakMin: 5 };
 
 async function loadPomoConfig() {
   try {
@@ -985,8 +834,12 @@ async function loadPomoConfig() {
 function listenToPomodoro() {
   if (gamePomoUnsub) gamePomoUnsub();
   gamePomoUnsub = onSnapshot(doc(db, 'users', streamer, 'gameState', 'pomodoro'), snap => {
-    if (snap.exists()) updateGamePomo(snap.data());
-    else updateGamePomo(null);
+    if (snap.exists()) {
+      pomodoroState = snap.data();
+    } else {
+      pomodoroState = null;
+    }
+    updateGamePomo(pomodoroState);
   });
 }
 
@@ -1013,7 +866,7 @@ function updateGamePomo(pomo) {
       document.getElementById('gamePomoTime').textContent = '✓';
       document.getElementById('gamePomoStatus').textContent = '🎉 Pomodoro complete!';
       const lastReward = localStorage.getItem('dp_game_pomo_'+pomo.startedAt);
-      if (!lastReward && currentUser && currentScene && currentScene.isSitting) {
+      if (!lastReward && currentUser) {
         localStorage.setItem('dp_game_pomo_'+pomo.startedAt, '1');
         updateDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), { points: increment(5) }).catch(()=>{});
         setStatus('🎉 +5 points!');
@@ -1024,7 +877,7 @@ function updateGamePomo(pomo) {
     const mm = Math.floor(remaining / 60000), ss = Math.floor((remaining%60000)/1000);
     document.getElementById('gamePomoTime').textContent = String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
     document.getElementById('gamePomoTime').className = 'game-pomo-time '+phase;
-    document.getElementById('gamePomoStatus').textContent = phase==='study' ? '📚 STUDY TIME — sit on a chair!' : '☕ BREAK TIME';
+    document.getElementById('gamePomoStatus').textContent = phase==='study' ? '📚 STUDY TIME — everyone freezes!' : '☕ BREAK TIME — move freely!';
     document.getElementById('gamePomoStatus').className = 'game-pomo-status '+phase;
     document.getElementById('gamePomoFill').style.width = pct+'%';
     document.getElementById('gamePomoFill').className = 'game-pomo-fill '+(phase==='break'?'break':'');
@@ -1043,10 +896,8 @@ window.gameStartPomo = async () => {
     await setDoc(doc(db, 'users', streamer, 'gameState', 'pomodoro'), {
       active: true, startedBy: currentUser, startedAt: Date.now(), studyMs, breakMs
     });
-    setStatus('Pomodoro started!');
-  } catch(e) {
-    alert('Error: ' + e.message + '\n\nDid you update Firestore Rules to include gameState?');
-  }
+    setStatus('Pomodoro started! Everyone is now frozen.');
+  } catch(e) { alert('Error: ' + e.message + '\n\nDid you update Firestore Rules?'); }
 };
 window.gameStopPomo = async () => {
   try {
