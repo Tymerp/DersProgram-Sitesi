@@ -102,7 +102,7 @@
 
       <div class="game-controls">
         <div class="help">
-          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows · <kbd>Space</kbd> to sit · <kbd>Enter</kbd> to chat · Walk on doors to enter buildings
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · <kbd>Space</kbd> sit/stand · <kbd>Enter</kbd> chat · Walk on doors
         </div>
       </div>
     </div>
@@ -175,77 +175,53 @@ window.setChar = (idx) => {
 // ════════════════════════════════════════════════════
 
 const TILE = 16;
-const SCALE = 2.5;             // Bigger scale = better visibility
+const SCALE = 2.5;
+const TS = TILE * SCALE; // 40px display tile
 const SPEED = 110;
-const TS = TILE * SCALE;       // Tile size in pixels (40px)
 
-// Tile codes:
-// .  grass
-// p  path
-// w  water
-// f  fence (collidable)
-// d  door portal
-// h  house wall (collidable)
-// r  roof (collidable, decorative)
-// W  house facade (collidable, with window/details — uses Wooden House full image)
-// b  bridge
-// t  tree (collidable)
-// s  stone (collidable)
-// F  interior floor
-// C  chair (study spot — sittable!)
-// T  table (collidable)
-// _  carpet (interior floor variant)
-// |  door frame (just wall visual)
+// Building objects: {type:'house', x,y (top-left tile), w,h (in tiles), portal:[doorX,doorY], target, spawn}
+// Houses are placed as full image at specific tile positions
+const HUB_BUILDINGS = [
+  // Top row of houses (4 buildings)
+  { x: 4, y: 4, target: 'library', label: '📚 Library' },
+  { x: 11, y: 4, target: 'cafe', label: '☕ Cafe' },
+  { x: 18, y: 4, target: 'beach', label: '🏖️ Beach' },
+  { x: 25, y: 4, target: 'garden', label: '🌸 Garden' },
+];
 
 const MAPS = {
   hub: {
     name: 'Sprout Town',
     bgColor: 0x87b96b,
-    width: 30, height: 22,
+    width: 35, height: 22,
+    // Cleaner layout: just grass with paths, buildings are placed separately
     layout: [
-      "ttttttttttttttttttttttttttttt.",  // top row of trees
-      "t.....t.t.t...........t.t.t.t.",
-      "t..rrr....rrr.....rrr....rrr.t",
-      "t..rrr....rrr.....rrr....rrr.t",
-      "t..hhh....hhh.....hhh....hhh.t",
-      "t..hdh....hdh.....hdh....hdh.t",  // 4 doors here
-      "t.............................",
-      "t......ppppppppppppp..........",
-      "t......p...........p..........",
-      "t......p..........fp..........",  // f = fence (decoration)
-      "t......p..........fp..........",
-      "t......p...........p..........",
-      "t......ppppppppppppp..........",
-      "t.............................",
-      "t..rrr....rrr.....rrr....rrr.t",
-      "t..rrr....rrr.....rrr....rrr.t",
-      "t..hhh....hhh.....hhh....hhh.t",
-      "t..hdh....hdh.....hdh....hdh.t",
-      "t.t.t.....t.t.....t.t....t.t.t",
-      "t.....t.t.t...........t.t.t.t.",
-      "t.t.t.t.t.t.t.t.t.t.t.t.t.t.t.",
-      "ttttttttttttttttttttttttttttt.",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...................................",
+      "...........pppppppppppppppp........",
+      "...........p..............p........",
+      "...........p..............p........",
+      "...........p..............p........",
+      "...........p..............p........",
+      "...........p..............p........",
+      "...........p..............p........",
+      "...........pppppppppppppppp........",
+      "...................................",
+      "..t.t.t....t.t.t....t.t.t....t.t.t.",
+      ".tttttt..ttttttt..tttttttt..ttttttt",
+      "..t.t.t....t.t.t....t.t.t....t.t.t.",
+      "...................................",
+      "...................................",
     ],
-    portals: {
-      "3,5":   { target: 'library', spawn: [13, 12] },
-      "9,5":   { target: 'cafe',    spawn: [13, 12] },
-      "15,5":  { target: 'beach',   spawn: [13, 12] },
-      "21,5":  { target: 'garden',  spawn: [13, 12] },
-      "3,17":  { target: 'library', spawn: [13, 12] },
-      "9,17":  { target: 'cafe',    spawn: [13, 12] },
-      "15,17": { target: 'beach',   spawn: [13, 12] },
-      "21,17": { target: 'garden',  spawn: [13, 12] },
-    },
-    labels: [
-      { x: 4, y: 3, text: '📚 Library' },
-      { x: 10, y: 3, text: '☕ Cafe' },
-      { x: 16, y: 3, text: '🏖️ Beach' },
-      { x: 22, y: 3, text: '🌸 Garden' },
-      { x: 4, y: 19, text: '🏛️ Hall' },
-      { x: 10, y: 19, text: '🏠 Cabin' },
-      { x: 16, y: 19, text: '🌙 Lounge' },
-      { x: 22, y: 19, text: '⭐ Studio' },
-    ],
+    buildings: HUB_BUILDINGS,
+    portals: {}, // portals are now on buildings (calculated)
+    labels: [],
   },
 
   library: {
@@ -257,7 +233,7 @@ const MAPS = {
       "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
       "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
       "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
-      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",  // chairs around tables
+      "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
       "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
       "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
       "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
@@ -267,12 +243,12 @@ const MAPS = {
       "hFTTTFFFTTTFFFTTTFFFTTTFFFh",
       "hFCFCFFFCFCFFFCFCFFFCFCFFFh",
       "hFFFFFFFFFFFFFFFFFFFFFFFFFh",
-      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",  // exit door at col 17
+      "hhhhhhhhhhhhhhhhhdhhhhhhhhh",
       ".................d.........",
       "...........................",
       "...........................",
     ],
-    portals: { "17,15": { target: 'hub', spawn: [3, 6] } },
+    portals: { "17,15": { target: 'hub', spawn: [13, 16] } },
     labels: [],
   },
 
@@ -300,7 +276,7 @@ const MAPS = {
       "...........................",
       "...........................",
     ],
-    portals: { "17,15": { target: 'hub', spawn: [9, 6] } },
+    portals: { "17,15": { target: 'hub', spawn: [13, 16] } },
     labels: [],
   },
 
@@ -328,7 +304,7 @@ const MAPS = {
       "...........................",
       "...........................",
     ],
-    portals: { "17,14": { target: 'hub', spawn: [15, 6] } },
+    portals: { "17,14": { target: 'hub', spawn: [13, 16] } },
     labels: [],
   },
 
@@ -356,10 +332,18 @@ const MAPS = {
       "...........................",
       "...........................",
     ],
-    portals: { "17,14": { target: 'hub', spawn: [21, 6] } },
+    portals: { "17,14": { target: 'hub', spawn: [13, 16] } },
     labels: [],
   },
 };
+
+// Add door positions to hub portals based on buildings
+HUB_BUILDINGS.forEach((b) => {
+  // House is 5 tiles wide × 5 tiles tall (estimated). Door at center-bottom of house: (x+2, y+5)
+  const doorX = b.x + 2;
+  const doorY = b.y + 5;
+  MAPS.hub.portals[doorX + ',' + doorY] = { target: b.target, spawn: [13, 16] };
+});
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -372,46 +356,41 @@ class GameScene extends Phaser.Scene {
     this.facing = 'down';
     this.mySprite = null;
     this.myLabel = null;
+    this.myBubble = null;
+    this.mySitTween = null;
     this.unsubPlayers = null;
     this.unsubChat = null;
     this.collisionMap = [];
     this.portalMap = {};
-    this.sittableMap = []; // [y][x] = true if chair
+    this.sittableMap = [];
     this.isSitting = false;
-    this.sittingAt = null;
   }
 
   preload() {
-    // Use URL-encoded paths for spaces
     const enc = (path) => 'assets/' + encodeURIComponent(path);
-
     this.load.spritesheet('char_0', enc('Basic Charakter Spritesheet.png'), { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('char_1', enc('Basic Charakter Actions.png'), { frameWidth: 48, frameHeight: 48 });
-
     this.load.image('grass', enc('Grass.png'));
-    this.load.image('hills', enc('Hills.png'));
     this.load.image('paths', enc('Paths.png'));
     this.load.image('water', enc('Water.png'));
     this.load.image('fences', enc('Fences.png'));
     this.load.image('doors', enc('Doors.png'));
-    this.load.image('bridge', enc('Wood Bridge.png'));
     this.load.image('house', enc('Wooden House.png'));
-    this.load.image('houseRoof', enc('Wooden House Roof Tilset.png'));
-    this.load.image('houseWalls', enc('Wooden House Walls Tilset.png'));
     this.load.image('biom', enc('Basic Grass Biom things 1.png'));
     this.load.image('plants', enc('Basic Plants.png'));
     this.load.image('furniture', enc('Basic Furniture.png'));
+    this.load.image('hills', enc('Hills.png'));
 
     this.load.on('progress', v => setStatus('Loading... ' + Math.floor(v * 100) + '%'));
     this.load.on('complete', () => setStatus('Game ready ✔'));
-    this.load.on('loaderror', file => console.warn('Failed:', file.src));
+    this.load.on('loaderror', file => console.warn('Failed to load:', file.src));
   }
 
   create() {
     currentScene = this;
     this.createCharAnimations(0);
     this.createCharAnimations(1);
-    this.buildMap('hub', [13, 11]);
+    this.buildMap('hub', [19, 13]);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       W: Phaser.Input.Keyboard.KeyCodes.W,
@@ -421,14 +400,12 @@ class GameScene extends Phaser.Scene {
       SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
       ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
     });
-
     this.keys.ENTER.on('down', () => {
       const inp = document.getElementById('gameChat');
       if (document.activeElement === inp) { inp.blur(); gameSendChat(); }
       else inp.focus();
     });
     this.keys.SPACE.on('down', () => this.tryInteract());
-
     this.subscribeToPlayers();
     this.subscribeToChat();
     document.getElementById('hudMe').textContent = currentUser;
@@ -437,13 +414,11 @@ class GameScene extends Phaser.Scene {
   createCharAnimations(idx) {
     const key = 'char_' + idx;
     if (!this.textures.exists(key)) return;
-
     const img = this.textures.get(key).getSourceImage();
     if (!img) return;
     const cols = Math.floor(img.width / 48);
     const rows = Math.floor(img.height / 48);
     if (cols < 1 || rows < 1) return;
-
     const framesPerRow = Math.min(cols, 6);
     const dirs = ['down', 'up', 'left', 'right'];
     dirs.forEach((dir, rowIdx) => {
@@ -469,7 +444,7 @@ class GameScene extends Phaser.Scene {
     if (!map) return;
     this.currentMap = mapId;
     this.isSitting = false;
-    this.sittingAt = null;
+    if (this.mySitTween) { this.mySitTween.stop(); this.mySitTween = null; }
 
     this.tiles.forEach(t => t.destroy());
     this.tiles = [];
@@ -485,7 +460,7 @@ class GameScene extends Phaser.Scene {
     bg.setDepth(-10);
     this.tiles.push(bg);
 
-    // Tiles
+    // Tile fill — every empty cell still gets a grass tile for texture
     map.layout.forEach((row, y) => {
       this.collisionMap[y] = [];
       this.sittableMap[y] = [];
@@ -493,8 +468,7 @@ class GameScene extends Phaser.Scene {
         const ch = row[x];
         const px = x * TS + TS / 2;
         const py = y * TS + TS / 2;
-        let collides = false, sittable = false, depth = 0;
-        let textureKey = null;
+        let collides = false, sittable = false, depth = 0, textureKey = null;
 
         switch(ch) {
           case '.': textureKey = 'grass'; break;
@@ -502,20 +476,15 @@ class GameScene extends Phaser.Scene {
           case 'w': textureKey = 'water'; collides = true; break;
           case 'f': textureKey = 'fences'; collides = true; depth = 2; break;
           case 'd': textureKey = 'doors'; depth = 1; break;
-          case 'h': textureKey = 'houseWalls'; collides = true; depth = 5; break;
-          case 'r': textureKey = 'houseRoof'; collides = true; depth = 6; break;
-          case 'W': textureKey = 'house'; collides = true; depth = 5; break;
-          case 'b': textureKey = 'bridge'; break;
+          case 'h': textureKey = 'house'; collides = true; depth = 5; break;
           case 't': textureKey = 'biom'; collides = true; depth = 4; break;
-          case 's': textureKey = 'biom'; collides = true; break;
-          case 'F': textureKey = 'paths'; break; // floor uses paths
-          case '_': textureKey = 'paths'; break;
+          case 'F': textureKey = 'paths'; break;
           case 'C': textureKey = 'furniture'; sittable = true; depth = 2; break;
           case 'T': textureKey = 'furniture'; collides = true; depth = 2; break;
         }
 
         if (textureKey) {
-          const tile = this.makeTile(px, py, textureKey, ch);
+          const tile = this.makeTile(px, py, textureKey);
           if (tile) {
             tile.setDepth(depth);
             this.tiles.push(tile);
@@ -526,24 +495,46 @@ class GameScene extends Phaser.Scene {
       }
     });
 
-    // Add labels
-    if (map.labels) {
-      map.labels.forEach(lbl => {
-        const px = lbl.x * TS + TS / 2;
-        const py = lbl.y * TS + TS / 2;
-        const txt = this.add.text(px, py, lbl.text, {
+    // Add full house images for hub buildings
+    if (map.buildings) {
+      map.buildings.forEach(b => {
+        // House is roughly 5x5 tiles. Place full image at (x*TS, y*TS)
+        const houseW = 5 * TS, houseH = 5 * TS;
+        const px = b.x * TS + houseW / 2;
+        const py = b.y * TS + houseH / 2;
+        const houseImg = this.add.image(px, py, 'house');
+        houseImg.setDisplaySize(houseW, houseH);
+        houseImg.setDepth(5);
+        this.tiles.push(houseImg);
+
+        // Make all tiles under house collidable EXCEPT the door tile
+        for (let dy = 0; dy < 5; dy++) {
+          for (let dx = 0; dx < 5; dx++) {
+            const tx = b.x + dx, ty = b.y + dy;
+            // Door is at bottom-center (dx=2, dy=4)
+            if (dx === 2 && dy === 4) continue; // door is walkable (portal)
+            if (this.collisionMap[ty]) this.collisionMap[ty][tx] = true;
+          }
+        }
+
+        // Label above the house
+        const lblX = b.x * TS + houseW / 2;
+        const lblY = b.y * TS - 10;
+        const lbl = this.add.text(lblX, lblY, b.label, {
           fontFamily: 'monospace',
-          fontSize: '13px',
+          fontSize: '12px',
           color: '#ffffff',
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: 'rgba(0,0,0,0.75)',
           padding: { x: 5, y: 2 },
         }).setOrigin(0.5).setDepth(7);
-        this.tiles.push(txt);
+        this.tiles.push(lbl);
       });
     }
 
     // Spawn character
-    if (this.mySprite) { this.mySprite.destroy(); this.myLabel.destroy(); }
+    if (this.mySprite) this.mySprite.destroy();
+    if (this.myLabel) this.myLabel.destroy();
+    if (this.myBubble) { this.myBubble.destroy(); this.myBubble = null; }
     const sx = spawnTile[0] * TS + TS / 2;
     const sy = spawnTile[1] * TS + TS / 2;
     this.mySprite = this.add.sprite(sx, sy, 'char_' + myCharIdx, 0);
@@ -557,65 +548,85 @@ class GameScene extends Phaser.Scene {
       padding: { x: 4, y: 1 },
     }).setOrigin(0.5).setDepth(11);
 
-    // Camera
     this.cameras.main.setBounds(0, 0, W * TS, H * TS);
     this.cameras.main.startFollow(this.mySprite, true, 0.1, 0.1);
     this.cameras.main.setZoom(1);
     document.getElementById('hudRoom').textContent = map.name;
-
     this.refreshRemotePlayers();
   }
 
-  makeTile(px, py, textureKey, ch) {
+  makeTile(px, py, textureKey) {
     if (!this.textures.exists(textureKey)) {
-      // Fallback colored rect
       const colors = {
         grass: 0x87b96b, paths: 0xc19660, water: 0x6cb3d4,
-        fences: 0x8b5a2b, doors: 0x6b4423, houseRoof: 0xc0392b,
-        houseWalls: 0xd4a574, bridge: 0xa0826d, biom: 0x2d5a1f,
-        furniture: 0x8b4513, house: 0xd4a574
+        fences: 0x8b5a2b, doors: 0x6b4423, house: 0xc0392b,
+        biom: 0x2d5a1f, furniture: 0x8b4513
       };
       return this.add.rectangle(px, py, TS, TS, colors[textureKey] || 0x666666);
     }
-
-    // Crop a 16x16 tile from top-left of the source image
     const img = this.add.image(px, py, textureKey);
     img.setCrop(0, 0, TILE, TILE);
     img.setDisplaySize(TS, TS);
     return img;
   }
 
+  // ── SIT/STAND ─────────────────────────────────────
   tryInteract() {
     if (this.isSitting) {
-      // Stand up
-      this.isSitting = false;
-      this.sittingAt = null;
-      setStatus('Stood up');
+      this.standUp();
       return;
     }
-    // Find chair within 1 tile
     const tx = Math.floor(this.mySprite.x / TS);
     const ty = Math.floor(this.mySprite.y / TS);
     const dirs = [[0,0],[0,1],[0,-1],[1,0],[-1,0]];
     for (const [dx, dy] of dirs) {
       const cx = tx + dx, cy = ty + dy;
       if (this.sittableMap[cy] && this.sittableMap[cy][cx]) {
-        // Sit down — center on chair
-        this.mySprite.x = cx * TS + TS / 2;
-        this.mySprite.y = cy * TS + TS / 2;
-        this.isSitting = true;
-        this.sittingAt = [cx, cy];
-        this.facing = 'down';
-        const idleKey = 'idle_' + myCharIdx + '_down';
-        if (this.anims.exists(idleKey)) this.mySprite.play(idleKey);
-        this.syncMyPosition();
-        setStatus('📚 Studying — earn ⭐ +5 if pomodoro completes!');
+        this.sitDown(cx, cy);
         return;
       }
     }
-    setStatus('No chair nearby. Walk close to one.');
+    setStatus('No chair nearby');
   }
 
+  sitDown(cx, cy) {
+    this.mySprite.x = cx * TS + TS / 2;
+    this.mySprite.y = cy * TS + TS / 2;
+    this.isSitting = true;
+    this.facing = 'down';
+    const idleKey = 'idle_' + myCharIdx + '_down';
+    if (this.anims.exists(idleKey)) this.mySprite.play(idleKey);
+
+    // Sit animation: gentle bobbing while studying
+    if (this.mySitTween) this.mySitTween.stop();
+    const baseY = this.mySprite.y;
+    this.mySitTween = this.tweens.add({
+      targets: this.mySprite,
+      y: { from: baseY, to: baseY - 3 },
+      duration: 1200,
+      ease: 'Sine.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.syncMyPosition();
+    setStatus('📚 Studying — earn ⭐ +5 if pomodoro completes!');
+  }
+
+  standUp() {
+    this.isSitting = false;
+    if (this.mySitTween) {
+      this.mySitTween.stop();
+      this.mySitTween = null;
+      // Snap Y back to tile center
+      const ty = Math.floor(this.mySprite.y / TS);
+      this.mySprite.y = ty * TS + TS / 2;
+    }
+    this.syncMyPosition();
+    setStatus('Stood up');
+  }
+
+  // ── UPDATE LOOP ───────────────────────────────────
   update(time, delta) {
     if (!this.mySprite) return;
 
@@ -630,30 +641,49 @@ class GameScene extends Phaser.Scene {
     }
     if (vx && vy) { vx *= 0.707; vy *= 0.707; }
 
-    const dt = delta / 1000;
-    const newX = this.mySprite.x + vx * dt;
-    const newY = this.mySprite.y + vy * dt;
-    if (!this.tileBlocks(newX, this.mySprite.y)) this.mySprite.x = newX;
-    if (!this.tileBlocks(this.mySprite.x, newY)) this.mySprite.y = newY;
+    if (!this.isSitting) {
+      const dt = delta / 1000;
+      const newX = this.mySprite.x + vx * dt;
+      const newY = this.mySprite.y + vy * dt;
+      if (!this.tileBlocks(newX, this.mySprite.y)) this.mySprite.x = newX;
+      if (!this.tileBlocks(this.mySprite.x, newY)) this.mySprite.y = newY;
 
-    const moving = vx !== 0 || vy !== 0;
-    if (moving) {
-      this.facing = newDir;
-      const animKey = 'walk_' + myCharIdx + '_' + this.facing;
-      if (this.anims.exists(animKey) && (!this.mySprite.anims.currentAnim || this.mySprite.anims.currentAnim.key !== animKey)) {
-        this.mySprite.play(animKey);
-      }
-    } else {
-      const idleKey = 'idle_' + myCharIdx + '_' + this.facing;
-      if (this.anims.exists(idleKey) && (!this.mySprite.anims.currentAnim || this.mySprite.anims.currentAnim.key !== idleKey)) {
-        this.mySprite.play(idleKey);
+      const moving = vx !== 0 || vy !== 0;
+      if (moving) {
+        this.facing = newDir;
+        const animKey = 'walk_' + myCharIdx + '_' + this.facing;
+        if (this.anims.exists(animKey) && (!this.mySprite.anims.currentAnim || this.mySprite.anims.currentAnim.key !== animKey)) {
+          this.mySprite.play(animKey);
+        }
+      } else {
+        const idleKey = 'idle_' + myCharIdx + '_' + this.facing;
+        if (this.anims.exists(idleKey) && (!this.mySprite.anims.currentAnim || this.mySprite.anims.currentAnim.key !== idleKey)) {
+          this.mySprite.play(idleKey);
+        }
       }
     }
 
+    // CRITICAL: keep label and bubble following character every frame
     this.myLabel.x = this.mySprite.x;
     this.myLabel.y = this.mySprite.y - 36;
+    if (this.myBubble) {
+      this.myBubble.x = this.mySprite.x;
+      this.myBubble.y = this.mySprite.y - 56;
+    }
 
-    // Show/hide interaction hint
+    // Also follow remote player labels and bubbles
+    Object.values(this.players).forEach(p => {
+      if (p.label && p.sprite) {
+        p.label.x = p.sprite.x;
+        p.label.y = p.sprite.y - 36;
+      }
+      if (p.bubble && p.sprite) {
+        p.bubble.x = p.sprite.x;
+        p.bubble.y = p.sprite.y - 56;
+      }
+    });
+
+    // Show interaction hint
     const tx = Math.floor(this.mySprite.x / TS);
     const ty = Math.floor(this.mySprite.y / TS);
     let nearChair = false;
@@ -672,14 +702,18 @@ class GameScene extends Phaser.Scene {
       hint.style.display = 'none';
     }
 
-    // Portal check
-    const portalKey = tx + ',' + ty;
-    if (this.portalMap[portalKey]) {
-      this.transitionTo(this.portalMap[portalKey].target, this.portalMap[portalKey].spawn);
-      return;
+    // Portal check (only when not sitting)
+    if (!this.isSitting) {
+      const portalKey = tx + ',' + ty;
+      if (this.portalMap[portalKey]) {
+        this.transitionTo(this.portalMap[portalKey].target, this.portalMap[portalKey].spawn);
+        return;
+      }
     }
 
+    // Sync position
     if (Date.now() - this.lastSyncTime > this.syncInterval) {
+      const moving = vx !== 0 || vy !== 0;
       if (moving || (Date.now() - this.lastSyncTime > 2000)) {
         this.syncMyPosition();
         this.lastSyncTime = Date.now();
@@ -736,6 +770,7 @@ class GameScene extends Phaser.Scene {
           if (this.players[name].sprite) this.players[name].sprite.destroy();
           if (this.players[name].label) this.players[name].label.destroy();
           if (this.players[name].bubble) this.players[name].bubble.destroy();
+          if (this.players[name].sitTween) this.players[name].sitTween.stop();
           delete this.players[name];
         }
       });
@@ -748,6 +783,7 @@ class GameScene extends Phaser.Scene {
       if (this.players[name]) {
         this.players[name].sprite.setVisible(false);
         this.players[name].label.setVisible(false);
+        if (this.players[name].bubble) this.players[name].bubble.setVisible(false);
       }
       return;
     }
@@ -762,30 +798,60 @@ class GameScene extends Phaser.Scene {
         backgroundColor: 'rgba(0,0,0,0.75)',
         padding: { x: 4, y: 1 },
       }).setOrigin(0.5).setDepth(11);
-      this.players[name] = { sprite, label, lastX: data.x, lastY: data.y };
+      this.players[name] = { sprite, label, lastX: data.x, lastY: data.y, wasSitting: false, sitTween: null };
     }
     const p = this.players[name];
     p.sprite.setVisible(true);
     p.label.setVisible(true);
+    if (p.bubble) p.bubble.setVisible(true);
 
     const dx = data.x - p.lastX;
     const dy = data.y - p.lastY;
     const dir = data.dir || 'down';
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-      const animKey = 'walk_' + (data.char||0) + '_' + dir;
-      if (this.anims.exists(animKey) && (!p.sprite.anims.currentAnim || p.sprite.anims.currentAnim.key !== animKey)) {
-        p.sprite.play(animKey);
-      }
-    } else {
-      const idleKey = 'idle_' + (data.char||0) + '_' + dir;
-      if (this.anims.exists(idleKey) && (!p.sprite.anims.currentAnim || p.sprite.anims.currentAnim.key !== idleKey)) {
-        p.sprite.play(idleKey);
-      }
-    }
-    p.lastX = data.x; p.lastY = data.y;
 
-    this.tweens.add({ targets: p.sprite, x: data.x, y: data.y, duration: 220, ease: 'Linear' });
-    this.tweens.add({ targets: p.label, x: data.x, y: data.y - 36, duration: 220 });
+    // Handle sitting state change
+    if (data.sitting && !p.wasSitting) {
+      // Start sitting: stop walking anim, start bob tween
+      const idleKey = 'idle_' + (data.char||0) + '_down';
+      if (this.anims.exists(idleKey)) p.sprite.play(idleKey);
+      if (p.sitTween) p.sitTween.stop();
+      const baseY = data.y;
+      p.sitTween = this.tweens.add({
+        targets: p.sprite,
+        y: { from: baseY, to: baseY - 3 },
+        duration: 1200,
+        ease: 'Sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      });
+      p.wasSitting = true;
+    } else if (!data.sitting && p.wasSitting) {
+      // Stand up
+      if (p.sitTween) { p.sitTween.stop(); p.sitTween = null; }
+      p.wasSitting = false;
+    }
+
+    if (!data.sitting) {
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        const animKey = 'walk_' + (data.char||0) + '_' + dir;
+        if (this.anims.exists(animKey) && (!p.sprite.anims.currentAnim || p.sprite.anims.currentAnim.key !== animKey)) {
+          p.sprite.play(animKey);
+        }
+      } else {
+        const idleKey = 'idle_' + (data.char||0) + '_' + dir;
+        if (this.anims.exists(idleKey) && (!p.sprite.anims.currentAnim || p.sprite.anims.currentAnim.key !== idleKey)) {
+          p.sprite.play(idleKey);
+        }
+      }
+      // Tween position if not sitting
+      this.tweens.add({ targets: p.sprite, x: data.x, y: data.y, duration: 220, ease: 'Linear' });
+    } else {
+      // If sitting, snap to position (tween bobs Y around it)
+      p.sprite.x = data.x;
+      // Don't override y because tween manages it
+    }
+
+    p.lastX = data.x; p.lastY = data.y;
 
     if (p.sprite.texture.key !== 'char_' + (data.char||0)) {
       p.sprite.setTexture('char_' + (data.char||0));
@@ -797,6 +863,7 @@ class GameScene extends Phaser.Scene {
       if (p.sprite) p.sprite.destroy();
       if (p.label) p.label.destroy();
       if (p.bubble) p.bubble.destroy();
+      if (p.sitTween) p.sitTween.stop();
     });
     this.players = {};
   }
@@ -815,22 +882,40 @@ class GameScene extends Phaser.Scene {
   }
 
   showBubble(username, text) {
-    let target;
-    if (username === currentUser) target = this.mySprite;
-    else if (this.players[username]) target = this.players[username].sprite;
-    if (!target) return;
-    if (this.players[username]?.bubble) this.players[username].bubble.destroy();
-
-    const bubble = this.add.text(target.x, target.y - 56, text, {
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      color: '#000',
-      backgroundColor: '#fff',
-      padding: { x: 5, y: 2 },
-      wordWrap: { width: 140 },
-    }).setOrigin(0.5).setDepth(20);
-    if (username !== currentUser) this.players[username].bubble = bubble;
-    this.tweens.add({ targets: bubble, alpha: 0, duration: 400, delay: 4000, onComplete: () => bubble.destroy() });
+    if (username === currentUser) {
+      // My bubble — store on scene, follow handled in update()
+      if (this.myBubble) this.myBubble.destroy();
+      this.myBubble = this.add.text(this.mySprite.x, this.mySprite.y - 56, text, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#000',
+        backgroundColor: '#fff',
+        padding: { x: 5, y: 2 },
+        wordWrap: { width: 140 },
+      }).setOrigin(0.5).setDepth(20);
+      const myBub = this.myBubble;
+      this.tweens.add({
+        targets: myBub, alpha: 0, duration: 400, delay: 4000,
+        onComplete: () => { myBub.destroy(); if (this.myBubble === myBub) this.myBubble = null; }
+      });
+    } else {
+      const p = this.players[username];
+      if (!p) return;
+      if (p.bubble) p.bubble.destroy();
+      p.bubble = this.add.text(p.sprite.x, p.sprite.y - 56, text, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#000',
+        backgroundColor: '#fff',
+        padding: { x: 5, y: 2 },
+        wordWrap: { width: 140 },
+      }).setOrigin(0.5).setDepth(20);
+      const theirBub = p.bubble;
+      this.tweens.add({
+        targets: theirBub, alpha: 0, duration: 400, delay: 4000,
+        onComplete: () => { theirBub.destroy(); if (p.bubble === theirBub) p.bubble = null; }
+      });
+    }
   }
 }
 
@@ -913,7 +998,7 @@ function updateGamePomo(pomo) {
       if (!lastReward && currentUser && currentScene && currentScene.isSitting) {
         localStorage.setItem('dp_game_pomo_'+pomo.startedAt, '1');
         updateDoc(doc(db, 'users', streamer, 'forumUsers', currentUser), { points: increment(5) }).catch(()=>{});
-        setStatus('🎉 +5 points for studying!');
+        setStatus('🎉 +5 points!');
       }
       if (pomo.startedBy === currentUser) gameStopPomo();
       return;
@@ -942,7 +1027,7 @@ window.gameStartPomo = async () => {
     });
     setStatus('Pomodoro started!');
   } catch(e) {
-    alert('Error: ' + e.message + '\n\nMake sure Firestore Rules allow writing to gameState/');
+    alert('Error: ' + e.message + '\n\nDid you update Firestore Rules to include gameState?');
   }
 };
 window.gameStopPomo = async () => {
