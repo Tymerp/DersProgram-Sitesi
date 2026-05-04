@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Editor</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.editor-wrap{display:flex;gap:10px;height:calc(100vh - 280px);min-height:500px;flex-wrap:wrap}
+
+/* Left palette panel */
+.palette-panel{
+  width:300px;flex-shrink:0;
+  background:var(--win-bg);
+  border:1px solid var(--win-dark);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.palette-header{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#fff;padding:6px 10px;
+  font-size:11px;font-weight:bold;
+  font-family:var(--font-main);
+}
+.palette-tabs{
+  display:flex;flex-wrap:wrap;
+  background:#ddd;border-bottom:1px solid #888;
+}
+.pal-tab{
+  padding:5px 9px;font-size:10px;
+  cursor:pointer;font-family:var(--font-main);
+  border-right:1px solid #aaa;
+  background:#e8e8e8;
+}
+.pal-tab.active{background:#fff;font-weight:bold;color:#000080}
+.pal-tab:hover{background:#f0f0f0}
+
+.palette-tiles{
+  flex:1;overflow-y:auto;
+  padding:6px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(40px,1fr));
+  gap:2px;
+  align-content:flex-start;
+}
+.pal-tile{
+  width:40px;height:40px;
+  background:#fff;border:2px solid #aaa;
+  cursor:pointer;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  position:relative;
+  overflow:hidden;
+}
+.pal-tile:hover{border-color:var(--accent2)}
+.pal-tile.selected{border-color:#fdfd00;box-shadow:0 0 0 2px #ff8800}
+.pal-tile.eraser{background:#ffeeee;color:#cc4444;display:flex;align-items:center;justify-content:center;font-size:18px}
+.pal-tile.eraser.selected{background:#ffe0e0}
+.pal-tile-emoji{font-size:24px;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+
+.tile-info{
+  padding:6px 10px;background:#f0f0f0;
+  border-top:1px solid #888;font-size:10px;
+  font-family:var(--font-main);color:#444;
+}
+
+/* Center canvas */
+.canvas-panel{
+  flex:1;min-width:300px;
+  background:#000;border:1px solid var(--win-dark);
+  position:relative;
+  overflow:auto;
+}
+#editor-canvas{
+  display:block;
+  image-rendering:pixelated;
+  background:#6cb3d4;
+  cursor:crosshair;
+}
+
+/* Right tool panel */
+.tool-panel{
+  width:200px;flex-shrink:0;
+  background:var(--win-bg);
+  border:1px solid var(--win-dark);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.tool-section{padding:8px 10px;border-bottom:1px solid #aaa}
+.tool-section h4{margin:0 0 6px;font-size:11px;color:#000080;font-family:var(--font-main)}
+.tool-row{display:flex;gap:4px;align-items:center;margin-bottom:5px;flex-wrap:wrap}
+.tool-row label{font-size:10px;color:#444;font-family:var(--font-main);flex:1}
+.tool-row input[type=number]{width:60px;font-family:var(--font-main);font-size:11px;padding:2px 4px}
+.tool-row input[type=checkbox]{margin-right:4px}
+
+.layer-btn{
+  padding:6px 8px;font-size:11px;
+  background:#fff;border:1px solid #888;
+  cursor:pointer;font-family:var(--font-main);
+  text-align:left;
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:3px;
+  width:100%;
+}
+.layer-btn.active{background:var(--accent);color:#fff;border-color:#000040}
+.layer-btn:hover{background:#e0e8ff}
+.layer-btn.active:hover{background:var(--accent2)}
+
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tools-grid button{
+  padding:5px;font-size:11px;
+  background:#fff;border:1px solid #888;
+  cursor:pointer;font-family:var(--font-main);
+}
+.tools-grid button.active{background:#cce0ff;border-color:#000040;font-weight:bold}
+
+.action-btn{
+  width:100%;padding:7px;
+  font-family:var(--font-main);font-size:12px;
+  margin-bottom:5px;cursor:pointer;
+  border:1px solid #404040;
+}
+.action-btn.primary{background:var(--accent);color:#fff;font-weight:bold}
+.action-btn.primary:hover{background:var(--accent2)}
+.action-btn.danger{background:#ffeeee;color:#cc4444;border-color:#cc4444}
+.action-btn.danger:hover{background:#ffd0d0}
+.action-btn:not(.primary):not(.danger){background:#e8e8e8}
+
+/* Status bar */
+.editor-status{
+  padding:5px 10px;background:#f0f0f0;
+  border-top:1px solid #888;
+  font-size:11px;font-family:var(--font-main);
+  display:flex;gap:14px;flex-wrap:wrap;
+  color:#333;
+}
+.editor-status .stat{display:flex;align-items:center;gap:4px}
+.editor-status .stat strong{color:#000080}
+
+@media(max-width:900px){
+  .editor-wrap{flex-direction:column;height:auto}
+  .palette-panel,.tool-panel{width:100%;max-height:300px}
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="window-titlebar">
+    <div class="window-title"><div class="window-title-icon"></div><span>Map Editor — LessonSchedule</span></div>
+    <div class="window-controls"><div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div></div>
+  </div>
+  <div class="menubar">
+    <div class="menu-item">File</div>
+    <div class="menu-item">Edit</div>
+    <div class="menu-item">View</div>
+    <div class="menu-item">Help</div>
+  </div>
+  <div class="addressbar">
+    <div class="addr-btn">◀</div><div class="addr-btn">▶</div><div class="addr-btn">⌂</div>
+    <div class="addr-label">Address:</div>
+    <input class="addr-input" id="addrBar" value="" readonly><div class="addr-go">▶</div>
+  </div>
+
+  <div class="window-content">
+    <!-- Loading / not auth -->
+    <div id="loadingMsg" style="text-align:center;padding:40px;font-family:var(--font-main);color:#888;font-size:13px">
+      Loading editor...
+    </div>
+
+    <div id="notAuthMsg" style="display:none;padding:20px;text-align:center;background:#fffae8;border:1px solid #cc9900;color:#aa6600;font-family:var(--font-main);font-size:13px">
+      🔒 Only the streamer can edit the map. Please <a href="index.html" style="color:#000080;font-weight:bold">sign in</a>.
+    </div>
+
+    <div id="editorMain" style="display:none">
+      <!-- Header info -->
+      <div class="alert-box" style="margin-bottom:10px">
+        <div class="alert-icon">🗺️</div>
+        <div class="alert-msg">Design your study island! Pick a tile from the left, click on the map to place. Right-click to erase. Multi-layer support: place ground first, then objects.</div>
+      </div>
+
+      <div class="editor-wrap">
+
+        <!-- LEFT: Tile Palette -->
+        <div class="palette-panel">
+          <div class="palette-header">🎨 TILES</div>
+          <div class="palette-tabs" id="palTabs"></div>
+          <div class="palette-tiles" id="palTiles"></div>
+          <div class="tile-info" id="tileInfo">Select a tile to place</div>
+        </div>
+
+        <!-- CENTER: Canvas -->
+        <div class="canvas-panel">
+          <canvas id="editor-canvas" width="1200" height="864"></canvas>
+        </div>
+
+        <!-- RIGHT: Tools -->
+        <div class="tool-panel">
+          <div class="tool-section">
+            <h4>📐 MAP SIZE</h4>
+            <div class="tool-row">
+              <label>Width:</label>
+              <input type="number" id="mapW" value="25" min="10" max="60">
+            </div>
+            <div class="tool-row">
+              <label>Height:</label>
+              <input type="number" id="mapH" value="18" min="10" max="40">
+            </div>
+            <button class="action-btn" onclick="resizeMap()">📏 Resize</button>
+          </div>
+
+          <div class="tool-section">
+            <h4>🗂️ LAYERS</h4>
+            <button class="layer-btn active" data-layer="ground" onclick="setLayer('ground')">🌱 Ground</button>
+            <button class="layer-btn" data-layer="objects" onclick="setLayer('objects')">🌳 Objects</button>
+            <button class="layer-btn" data-layer="furniture" onclick="setLayer('furniture')">🪑 Furniture</button>
+          </div>
+
+          <div class="tool-section">
+            <h4>🛠️ TOOL</h4>
+            <div class="tools-grid">
+              <button id="toolPaint" class="active" onclick="setTool('paint')">✏️ Paint</button>
+              <button id="toolErase" onclick="setTool('erase')">🧹 Erase</button>
+              <button id="toolBucket" onclick="setTool('bucket')">🪣 Fill</button>
+              <button id="toolPick" onclick="setTool('pick')">💧 Pick</button>
+            </div>
+          </div>
+
+          <div class="tool-section">
+            <h4>⚙️ TILE PROPS</h4>
+            <div class="tool-row">
+              <input type="checkbox" id="tileCollides">
+              <label>🚫 Collides (block movement)</label>
+            </div>
+            <div class="tool-row">
+              <input type="checkbox" id="tileSittable">
+              <label>🪑 Sittable (chair)</label>
+            </div>
+          </div>
+
+          <div class="tool-section">
+            <h4>👤 SPAWN POINT</h4>
+            <button class="action-btn" id="spawnBtn" onclick="setTool('spawn')">📍 Set Spawn Point</button>
+            <div style="font-size:10px;color:#666;margin-top:4px">Players appear here</div>
+          </div>
+
+          <div class="tool-section">
+            <h4>💾 ACTIONS</h4>
+            <button class="action-btn primary" onclick="saveMap()">💾 Save Map</button>
+            <button class="action-btn" onclick="testMap()">▶ Test Game</button>
+            <button class="action-btn" onclick="exportMap()">📤 Export JSON</button>
+            <button class="action-btn" onclick="importMap()">📥 Import JSON</button>
+            <button class="action-btn danger" onclick="clearMap()">🗑️ Clear All</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="editor-status">
+        <div class="stat">📍 Position: <strong id="statPos">-</strong></div>
+        <div class="stat">🎨 Selected: <strong id="statSel">none</strong></div>
+        <div class="stat">🗂️ Layer: <strong id="statLayer">ground</strong></div>
+        <div class="stat">🛠️ Tool: <strong id="statTool">paint</strong></div>
+        <div class="stat">📊 Tiles placed: <strong id="statCount">0</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status-panel" id="statusText">Loading...</div>
+    <div class="status-panel" style="flex:0 0 140px">Editor 🗺️</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYkgd-zKX-AzE5bXKnUWuwSMIT__4Z7OA",
+  authDomain: "dersprogram-31d2d.firebaseapp.com",
+  projectId: "dersprogram-31d2d",
+  storageBucket: "dersprogram-31d2d.firebasestorage.app",
+  messagingSenderId: "910271309823",
+  appId: "1:910271309823:web:87684f55e386e0ef5e29ca"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let mapData = {
+  width: 25,
+  height: 18,
+  ground: [],     // 2D array of tile keys, or null
+  objects: [],    // 2D array — trees, decorations
+  furniture: [],  // 2D array — chairs, tables
+  collisions: [], // 2D array — boolean
+  sittable: [],   // 2D array — boolean
+  spawn: [12, 9],
+};
+let currentLayer = 'ground';
+let currentTool = 'paint';
+let selectedTile = null;
+let selectedCategory = 'ground';
+
+const TILE_DISPLAY = 48; // each editor tile is 48px
+
+// All tile assets — definitions
+// Each tile has: key (texture), frame (in spritesheet), name, category, defaultProps
+const TILESETS = {
+  grass: { src: 'Grass.png', cols: 5, rows: 4 },
+  paths: { src: 'Paths.png', cols: 5, rows: 4 },
+  water: { src: 'Water.png', cols: 4, rows: 1 },
+  fences: { src: 'Fences.png', cols: 5, rows: 4 },
+  doors: { src: 'Doors.png', cols: 3, rows: 1 },
+  hills: { src: 'Hills.png', cols: 5, rows: 4 },
+  biom: { src: 'Basic Grass Biom things 1.png', cols: 8, rows: 5 },
+  plants: { src: 'Basic Plants.png', cols: 8, rows: 3 },
+  furniture: { src: 'Basic Furniture.png', cols: 8, rows: 4 },
+  tools: { src: 'Tools.png', cols: 6, rows: 6 },
+  tilledDirt: { src: 'Tilled Dirt.png', cols: 4, rows: 4 },
+  woodBridge: { src: 'Wood Bridge.png', cols: 2, rows: 2 },
+};
+
+// Categories shown in palette
+const CATEGORIES = [
+  { id: 'ground', name: '🌱 Ground', tilesets: ['grass', 'paths', 'water', 'hills', 'tilledDirt'] },
+  { id: 'objects', name: '🌳 Objects', tilesets: ['biom', 'plants'] },
+  { id: 'furniture', name: '🪑 Furniture', tilesets: ['furniture'] },
+  { id: 'special', name: '⚙️ Special', tilesets: ['fences', 'doors', 'woodBridge'] },
+];
+
+// Loaded image cache
+const imgCache = {};
+
+async function loadAllImages() {
+  const promises = [];
+  for (const [key, ts] of Object.entries(TILESETS)) {
+    promises.push(new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => { imgCache[key] = img; resolve(); };
+      img.onerror = () => { console.warn('Failed to load:', ts.src); resolve(); };
+      img.src = 'assets/' + encodeURIComponent(ts.src);
+    }));
+  }
+  await Promise.all(promises);
+}
+
+// Initialize empty map data
+function initMapData(w, h) {
+  mapData.width = w;
+  mapData.height = h;
+  mapData.ground = Array(h).fill(null).map(() => Array(w).fill(null));
+  mapData.objects = Array(h).fill(null).map(() => Array(w).fill(null));
+  mapData.furniture = Array(h).fill(null).map(() => Array(w).fill(null));
+  mapData.collisions = Array(h).fill(null).map(() => Array(w).fill(false));
+  mapData.sittable = Array(h).fill(null).map(() => Array(w).fill(false));
+  if (mapData.spawn[0] >= w) mapData.spawn[0] = Math.floor(w/2);
+  if (mapData.spawn[1] >= h) mapData.spawn[1] = Math.floor(h/2);
+}
+
+// ── Build palette UI ──────────────────────────────────
+function buildPalette() {
+  // Tabs
+  const tabsEl = document.getElementById('palTabs');
+  tabsEl.innerHTML = CATEGORIES.map(cat => `
+    <div class="pal-tab ${cat.id===selectedCategory?'active':''}" onclick="selectCategory('${cat.id}')">${cat.name}</div>
+  `).join('');
+
+  // Tiles in active category
+  const tilesEl = document.getElementById('palTiles');
+  tilesEl.innerHTML = '';
+
+  // Eraser tile
+  const eraser = document.createElement('div');
+  eraser.className = 'pal-tile eraser';
+  eraser.innerHTML = '🧹';
+  eraser.title = 'Eraser';
+  eraser.onclick = () => { selectedTile = null; setTool('erase'); refreshSelection(); };
+  tilesEl.appendChild(eraser);
+
+  const cat = CATEGORIES.find(c => c.id === selectedCategory);
+  if (!cat) return;
+
+  cat.tilesets.forEach(tsKey => {
+    const ts = TILESETS[tsKey];
+    if (!ts) return;
+    const total = ts.cols * ts.rows;
+    for (let i = 0; i < total; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'pal-tile';
+      tile.title = tsKey + ' #' + i;
+      tile.dataset.key = tsKey + ':' + i;
+
+      // Render the tile preview from the source image
+      if (imgCache[tsKey]) {
+        const img = imgCache[tsKey];
+        // Each frame is 16x16 in source
+        const sx = (i % ts.cols) * 16;
+        const sy = Math.floor(i / ts.cols) * 16;
+        const canvas = document.createElement('canvas');
+        canvas.width = 32; canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, sx, sy, 16, 16, 0, 0, 32, 32);
+        tile.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        tile.style.backgroundSize = 'cover';
+      } else {
+        // Fallback: gray with index
+        tile.style.background = '#888';
+        tile.style.color = '#fff';
+        tile.style.fontSize = '9px';
+        tile.style.textAlign = 'center';
+        tile.style.lineHeight = '36px';
+        tile.textContent = i;
+      }
+
+      tile.onclick = () => {
+        selectedTile = tsKey + ':' + i;
+        setTool('paint');
+        refreshSelection();
+      };
+      tilesEl.appendChild(tile);
+    }
+  });
+}
+
+window.selectCategory = (id) => {
+  selectedCategory = id;
+  buildPalette();
+};
+
+function refreshSelection() {
+  document.querySelectorAll('.pal-tile').forEach(el => {
+    el.classList.toggle('selected', el.dataset.key === selectedTile);
+  });
+  if (selectedTile) {
+    const [tsKey, idx] = selectedTile.split(':');
+    document.getElementById('tileInfo').textContent = `${tsKey} → frame ${idx}`;
+    document.getElementById('statSel').textContent = tsKey + '#' + idx;
+  } else {
+    document.getElementById('tileInfo').textContent = 'Eraser selected';
+    document.getElementById('statSel').textContent = 'eraser';
+  }
+}
+
+// ── Tools ─────────────────────────────────────────────
+window.setTool = (t) => {
+  currentTool = t;
+  document.querySelectorAll('.tools-grid button').forEach(b => b.classList.remove('active'));
+  if (document.getElementById('tool' + t.charAt(0).toUpperCase() + t.slice(1))) {
+    document.getElementById('tool' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+  }
+  document.getElementById('statTool').textContent = t;
+};
+
+window.setLayer = (l) => {
+  currentLayer = l;
+  document.querySelectorAll('.layer-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.layer === l);
+  });
+  document.getElementById('statLayer').textContent = l;
+  // Auto-switch palette category to match layer
+  const layerToCat = { ground: 'ground', objects: 'objects', furniture: 'furniture' };
+  if (layerToCat[l]) { selectedCategory = layerToCat[l]; buildPalette(); }
+};
+
+// ── Canvas drawing ────────────────────────────────────
+function drawCanvas() {
+  const canvas = document.getElementById('editor-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  // Set proper canvas dimensions
+  canvas.width = mapData.width * TILE_DISPLAY;
+  canvas.height = mapData.height * TILE_DISPLAY;
+
+  // Background (water-blue)
+  ctx.fillStyle = '#6cb3d4';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw layers in order: ground, objects, furniture
+  const drawLayer = (layerName) => {
+    const layer = mapData[layerName];
+    if (!layer) return;
+    for (let y = 0; y < mapData.height; y++) {
+      for (let x = 0; x < mapData.width; x++) {
+        const tileKey = layer[y]?.[x];
+        if (!tileKey) continue;
+        const [tsKey, idxStr] = tileKey.split(':');
+        const idx = parseInt(idxStr);
+        const ts = TILESETS[tsKey];
+        const img = imgCache[tsKey];
+        if (!img || !ts) continue;
+        const sx = (idx % ts.cols) * 16;
+        const sy = Math.floor(idx / ts.cols) * 16;
+        ctx.drawImage(img, sx, sy, 16, 16, x * TILE_DISPLAY, y * TILE_DISPLAY, TILE_DISPLAY, TILE_DISPLAY);
+      }
+    }
+  };
+  drawLayer('ground');
+  drawLayer('objects');
+  drawLayer('furniture');
+
+  // Draw collision overlay (red border on collidable tiles)
+  for (let y = 0; y < mapData.height; y++) {
+    for (let x = 0; x < mapData.width; x++) {
+      if (mapData.collisions[y]?.[x]) {
+        ctx.strokeStyle = 'rgba(255,0,0,0.6)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x * TILE_DISPLAY + 1, y * TILE_DISPLAY + 1, TILE_DISPLAY - 2, TILE_DISPLAY - 2);
+      }
+      if (mapData.sittable[y]?.[x]) {
+        ctx.strokeStyle = 'rgba(255,255,0,0.8)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x * TILE_DISPLAY + 2, y * TILE_DISPLAY + 2, TILE_DISPLAY - 4, TILE_DISPLAY - 4);
+      }
+    }
+  }
+
+  // Spawn point marker
+  const sx = mapData.spawn[0] * TILE_DISPLAY + TILE_DISPLAY / 2;
+  const sy = mapData.spawn[1] * TILE_DISPLAY + TILE_DISPLAY / 2;
+  ctx.fillStyle = 'rgba(0,200,0,0.4)';
+  ctx.fillRect(mapData.spawn[0] * TILE_DISPLAY, mapData.spawn[1] * TILE_DISPLAY, TILE_DISPLAY, TILE_DISPLAY);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 16px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('📍', sx, sy);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= mapData.width; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * TILE_DISPLAY, 0);
+    ctx.lineTo(x * TILE_DISPLAY, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= mapData.height; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * TILE_DISPLAY);
+    ctx.lineTo(canvas.width, y * TILE_DISPLAY);
+    ctx.stroke();
+  }
+
+  // Update stats
+  let count = 0;
+  ['ground', 'objects', 'furniture'].forEach(l => {
+    mapData[l].forEach(row => row.forEach(c => { if (c) count++; }));
+  });
+  document.getElementById('statCount').textContent = count;
+}
+
+// ── Canvas event handlers ─────────────────────────────
+function setupCanvas() {
+  const canvas = document.getElementById('editor-canvas');
+  let isMouseDown = false;
+  let lastPlacedTile = null;
+
+  const getTileFromEvent = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const tx = Math.floor(x / TILE_DISPLAY);
+    const ty = Math.floor(y / TILE_DISPLAY);
+    if (tx < 0 || ty < 0 || tx >= mapData.width || ty >= mapData.height) return null;
+    return { tx, ty };
+  };
+
+  const placeTile = (tx, ty, isErasing) => {
+    const key = tx + ',' + ty;
+    if (lastPlacedTile === key) return; // Don't re-place same tile while dragging
+    lastPlacedTile = key;
+
+    if (currentTool === 'spawn') {
+      mapData.spawn = [tx, ty];
+      drawCanvas();
+      return;
+    }
+
+    if (currentTool === 'pick') {
+      const tile = mapData[currentLayer][ty][tx];
+      if (tile) {
+        selectedTile = tile;
+        setTool('paint');
+        refreshSelection();
+      }
+      return;
+    }
+
+    if (currentTool === 'bucket') {
+      // Flood fill — only on current layer
+      const targetTile = mapData[currentLayer][ty][tx];
+      if (targetTile === selectedTile) return;
+      floodFill(tx, ty, targetTile, selectedTile);
+      drawCanvas();
+      return;
+    }
+
+    if (isErasing || currentTool === 'erase') {
+      mapData[currentLayer][ty][tx] = null;
+      // Also clear properties
+      mapData.collisions[ty][tx] = false;
+      mapData.sittable[ty][tx] = false;
+    } else if (selectedTile) {
+      mapData[currentLayer][ty][tx] = selectedTile;
+      // Apply current tile properties
+      if (document.getElementById('tileCollides').checked) {
+        mapData.collisions[ty][tx] = true;
+      }
+      if (document.getElementById('tileSittable').checked) {
+        mapData.sittable[ty][tx] = true;
+      }
+    }
+    drawCanvas();
+  };
+
+  canvas.addEventListener('mousedown', e => {
+    e.preventDefault();
+    isMouseDown = true;
+    lastPlacedTile = null;
+    const pos = getTileFromEvent(e);
+    if (!pos) return;
+    placeTile(pos.tx, pos.ty, e.button === 2);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    const pos = getTileFromEvent(e);
+    if (pos) document.getElementById('statPos').textContent = pos.tx + ', ' + pos.ty;
+    if (isMouseDown && pos) {
+      placeTile(pos.tx, pos.ty, e.buttons === 2);
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => { isMouseDown = false; lastPlacedTile = null; });
+  canvas.addEventListener('mouseleave', () => { isMouseDown = false; lastPlacedTile = null; });
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+function floodFill(startX, startY, targetTile, replaceTile) {
+  if (targetTile === replaceTile) return;
+  const stack = [[startX, startY]];
+  const seen = new Set();
+  let count = 0;
+  while (stack.length && count < 5000) {
+    const [x, y] = stack.pop();
+    const k = x + ',' + y;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    if (x < 0 || y < 0 || x >= mapData.width || y >= mapData.height) continue;
+    if (mapData[currentLayer][y][x] !== targetTile) continue;
+    mapData[currentLayer][y][x] = replaceTile;
+    count++;
+    stack.push([x+1, y], [x-1, y], [x, y+1], [x, y-1]);
+  }
+}
+
+// ── Map operations ────────────────────────────────────
+window.resizeMap = () => {
+  const w = parseInt(document.getElementById('mapW').value) || 25;
+  const h = parseInt(document.getElementById('mapH').value) || 18;
+  if (!confirm(`Resize map to ${w}x${h}? Tiles outside the new bounds will be lost.`)) return;
+  // Preserve existing data within new bounds
+  const old = JSON.parse(JSON.stringify(mapData));
+  initMapData(w, h);
+  for (let y = 0; y < Math.min(h, old.height); y++) {
+    for (let x = 0; x < Math.min(w, old.width); x++) {
+      mapData.ground[y][x] = old.ground[y][x];
+      mapData.objects[y][x] = old.objects[y][x];
+      mapData.furniture[y][x] = old.furniture[y][x];
+      mapData.collisions[y][x] = old.collisions[y][x];
+      mapData.sittable[y][x] = old.sittable[y][x];
+    }
+  }
+  drawCanvas();
+};
+
+window.clearMap = () => {
+  if (!confirm('Clear the entire map? This cannot be undone.')) return;
+  initMapData(mapData.width, mapData.height);
+  drawCanvas();
+};
+
+window.saveMap = async () => {
+  if (!currentUser) return;
+  setStatus('Saving...');
+  try {
+    await setDoc(doc(db, 'users', currentUser, 'gameMap', 'main'), {
+      ...mapData,
+      updatedAt: Date.now()
+    });
+    setStatus('Map saved ✔');
+    alert('Map saved successfully! Test it with the "Test Game" button.');
+  } catch(e) { alert('Error: ' + e.message); setStatus('Error'); }
+};
+
+window.testMap = () => {
+  window.open('study-game.html?user=' + currentUser, '_blank');
+};
+
+window.exportMap = () => {
+  const json = JSON.stringify(mapData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'map.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+window.importMap = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        Object.assign(mapData, data);
+        document.getElementById('mapW').value = mapData.width;
+        document.getElementById('mapH').value = mapData.height;
+        drawCanvas();
+        setStatus('Map imported ✔');
+      } catch(err) { alert('Invalid map file: ' + err.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+const setStatus = m => document.getElementById('statusText').textContent = m;
+
+// ── Auth ──────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = localStorage.getItem('dp_current') || user.email.replace('@lessonschedule.app','');
+    document.getElementById('addrBar').value = 'lessonschedule.app/map-editor';
+
+    // Load existing map if any
+    try {
+      const snap = await getDoc(doc(db, 'users', currentUser, 'gameMap', 'main'));
+      if (snap.exists()) {
+        Object.assign(mapData, snap.data());
+        document.getElementById('mapW').value = mapData.width;
+        document.getElementById('mapH').value = mapData.height;
+      } else {
+        initMapData(25, 18);
+      }
+    } catch(e) {
+      initMapData(25, 18);
+    }
+
+    await loadAllImages();
+
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('editorMain').style.display = 'block';
+    buildPalette();
+    setupCanvas();
+    drawCanvas();
+    setStatus('Editor ready — paint your world!');
+  } else {
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('notAuthMsg').style.display = 'block';
+    setStatus('Not signed in');
+  }
+});
+</script>
+</body>
+</html>

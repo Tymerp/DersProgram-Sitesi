@@ -237,13 +237,27 @@ class GameScene extends Phaser.Scene {
     this.load.spritesheet('char_0', enc('Basic Charakter Spritesheet.png'), { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('char_1', enc('Basic Charakter Actions.png'), { frameWidth: 48, frameHeight: 48 });
 
-    // Load tilesets as spritesheets (16x16)
+    // Default tilesets (used by ISLAND_MAP)
     this.load.spritesheet('grass_ss', enc('Grass.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('paths_ss', enc('Paths.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('water_ss', enc('Water.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('biom_ss', enc('Basic Grass Biom things 1.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('plants_ss', enc('Basic Plants.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('furniture_ss', enc('Basic Furniture.png'), { frameWidth: 16, frameHeight: 16 });
+
+    // Map-editor tilesets (use same keys as the editor's TILESETS for matching)
+    this.load.spritesheet('grass', enc('Grass.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('paths', enc('Paths.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('water', enc('Water.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('fences', enc('Fences.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('doors', enc('Doors.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('hills', enc('Hills.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('biom', enc('Basic Grass Biom things 1.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('plants', enc('Basic Plants.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('furniture', enc('Basic Furniture.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('tools', enc('Tools.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('tilledDirt', enc('Tilled Dirt.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('woodBridge', enc('Wood Bridge.png'), { frameWidth: 16, frameHeight: 16 });
 
     this.load.on('progress', v => setStatus('Loading... ' + Math.floor(v * 100) + '%'));
     this.load.on('complete', () => setStatus('Game ready ✔'));
@@ -254,7 +268,16 @@ class GameScene extends Phaser.Scene {
     currentScene = this;
     this.createCharAnimations(0);
     this.createCharAnimations(1);
-    this.buildIsland();
+
+    // Try loading custom map from Firestore
+    this.loadCustomMap().then(customMap => {
+      if (customMap && customMap.ground) {
+        this.buildCustomMap(customMap);
+      } else {
+        this.buildIsland();
+      }
+    });
+
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       W: Phaser.Input.Keyboard.KeyCodes.W, A: Phaser.Input.Keyboard.KeyCodes.A,
@@ -298,6 +321,83 @@ class GameScene extends Phaser.Scene {
         frameRate: 1
       });
     });
+  }
+
+  async loadCustomMap() {
+    try {
+      const snap = await getDoc(doc(db, 'users', streamer, 'gameMap', 'main'));
+      if (snap.exists()) return snap.data();
+    } catch(e) { console.warn('Could not load custom map:', e); }
+    return null;
+  }
+
+  buildCustomMap(map) {
+    this.tiles.forEach(t => t.destroy());
+    this.tiles = [];
+    this.collisionMap = [];
+    this.sittableMap = [];
+
+    const W = map.width, H = map.height;
+
+    // Background
+    const bg = this.add.rectangle(0, 0, W * TS, H * TS, 0x6cb3d4);
+    bg.setOrigin(0, 0).setDepth(-10);
+    this.tiles.push(bg);
+
+    // Init collision/sittable maps
+    for (let y = 0; y < H; y++) {
+      this.collisionMap[y] = [];
+      this.sittableMap[y] = [];
+      for (let x = 0; x < W; x++) {
+        this.collisionMap[y][x] = !!(map.collisions?.[y]?.[x]);
+        this.sittableMap[y][x] = !!(map.sittable?.[y]?.[x]);
+      }
+    }
+
+    // Render layers
+    const renderLayer = (layerData, baseDepth) => {
+      if (!layerData) return;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const tileKey = layerData[y]?.[x];
+          if (!tileKey) continue;
+          const [tsKey, idxStr] = tileKey.split(':');
+          const idx = parseInt(idxStr);
+          if (!this.textures.exists(tsKey)) continue;
+          const px = Math.round(x * TS + TS / 2);
+          const py = Math.round(y * TS + TS / 2);
+          const sprite = this.add.sprite(px, py, tsKey, idx);
+          sprite.setScale(SCALE);
+          sprite.setDepth(baseDepth);
+          this.tiles.push(sprite);
+        }
+      }
+    };
+    renderLayer(map.ground, 0);
+    renderLayer(map.objects, 3);
+    renderLayer(map.furniture, 2);
+
+    // Spawn character
+    const spawn = map.spawn || [Math.floor(W/2), Math.floor(H/2)];
+    const spawnX = spawn[0] * TS + TS / 2;
+    const spawnY = spawn[1] * TS + TS / 2;
+
+    if (this.mySprite) this.mySprite.destroy();
+    if (this.myLabel) this.myLabel.destroy();
+    if (this.myStudyText) { this.myStudyText.destroy(); this.myStudyText = null; }
+
+    this.mySprite = this.add.sprite(spawnX, spawnY, 'char_' + myCharIdx, 0);
+    this.mySprite.setScale(SCALE);
+    this.mySprite.setDepth(10);
+    this.myLabel = this.add.text(spawnX, spawnY - 36, currentUser, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+      backgroundColor: 'rgba(0,0,0,0.75)', padding: { x: 4, y: 1 },
+    }).setOrigin(0.5).setDepth(11);
+
+    this.cameras.main.setBounds(0, 0, W * TS, H * TS);
+    this.cameras.main.startFollow(this.mySprite, true, 0.1, 0.1);
+    this.cameras.main.setZoom(1);
+    setStatus('Custom map loaded ✔');
   }
 
   buildIsland() {
