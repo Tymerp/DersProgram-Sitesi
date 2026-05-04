@@ -184,9 +184,9 @@ function isStudyPhase() {
 // ════════════════════════════════════════════════════
 
 const TILE = 16;
-const SCALE = 2.5;
-const TS = TILE * SCALE; // 40px display tile
-const SPEED = 110;
+const SCALE = 3;  // Integer scale for crisp pixels
+const TS = TILE * SCALE; // 48px display tile
+const SPEED = 130;
 
 // Single island map: water around grass island
 // w = water, g = grass, s = sand/path, t = tree (collidable), C = chair (sittable), T = table (collidable), r = rock (collidable)
@@ -417,9 +417,10 @@ class GameScene extends Phaser.Scene {
 
   makeTile(px, py, textureKey, frame) {
     if (!this.textures.exists(textureKey)) {
-      return this.add.rectangle(px, py, TS, TS, 0x666666);
+      return this.add.rectangle(Math.round(px), Math.round(py), TS, TS, 0x666666);
     }
-    const sprite = this.add.sprite(px, py, textureKey, frame);
+    // Round positions to prevent sub-pixel rendering
+    const sprite = this.add.sprite(Math.round(px), Math.round(py), textureKey, frame);
     sprite.setScale(SCALE);
     return sprite;
   }
@@ -795,8 +796,17 @@ class GameScene extends Phaser.Scene {
 function initPhaser() {
   const config = {
     type: Phaser.AUTO, parent: 'phaser-game',
-    width: 900, height: 540, pixelArt: true, backgroundColor: '#6cb3d4',
-    scene: [GameScene], scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    width: 900, height: 540,
+    pixelArt: true,
+    roundPixels: true,
+    backgroundColor: '#6cb3d4',
+    scene: [GameScene],
+    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    render: {
+      pixelArt: true,
+      antialias: false,
+      roundPixels: true,
+    }
   };
   phaserGame = new Phaser.Game(config);
 }

@@ -621,72 +621,15 @@
       </div>
     </div>
 
-    <!-- ═════════════ STUDY LOUNGE ═════════════ -->
+    <!-- ═════════════ STUDY GAME BANNER ═════════════ -->
     <div class="lounge-section" id="loungeSection">
-      <!-- Game link banner -->
-      <div style="background:linear-gradient(90deg,#aa00aa,#0088cc);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid var(--win-dark);font-family:var(--font-main);flex-wrap:wrap;margin-bottom:0">
-        <div style="font-size:24px">🎮</div>
+      <div style="background:linear-gradient(90deg,#aa00aa,#0088cc);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid var(--win-dark);font-family:var(--font-main);flex-wrap:wrap">
+        <div style="font-size:36px">🎮</div>
         <div style="flex:1;min-width:200px">
-          <div style="font-weight:bold;font-size:13px">NEW! Multiplayer Study Game</div>
-          <div style="font-size:11px;opacity:0.9">Pixel-art 2D world, walk around with WASD, study together!</div>
+          <div style="font-weight:bold;font-size:15px;margin-bottom:3px">Multiplayer Study Game</div>
+          <div style="font-size:11px;opacity:0.9">Pixel-art 2D world · Walk with WASD · Sit on chairs to study with others · Earn ⭐ +5 per completed pomodoro</div>
         </div>
-        <a href="#" id="playGameBtn" class="retro-btn primary" style="font-size:12px;padding:6px 14px">🎮 Play Game</a>
-      </div>
-
-      <div class="lounge-header">
-        <h3>🛋️ Study Lounge (Lite)</h3>
-        <span style="font-size:11px;opacity:0.9">Quick version — Pick a room and study together! Earn ⭐ +5 per pomodoro.</span>
-      </div>
-
-      <!-- Room tabs -->
-      <div class="lounge-rooms-tabs" id="loungeRoomTabs"></div>
-
-      <!-- Pomodoro bar -->
-      <div class="lc-pomo" id="lcPomo" style="display:none">
-        <div>
-          <div class="lc-pomo-time idle" id="lcPomoTime">--:--</div>
-          <div class="lc-pomo-status" id="lcPomoStatus">Idle</div>
-        </div>
-        <div class="lc-pomo-progress"><div class="lc-pomo-fill" id="lcPomoFill"></div></div>
-        <div class="lc-pomo-actions" id="lcPomoActions">
-          <button class="retro-btn primary" id="lcPomoStart" onclick="lcStartPomo()" style="font-size:11px">▶ Start</button>
-          <button class="retro-btn" id="lcPomoStop" onclick="lcStopPomo()" style="display:none;font-size:11px">⏹ Stop</button>
-        </div>
-      </div>
-
-      <!-- Canvas -->
-      <div class="lounge-canvas-wrap">
-        <div class="lounge-canvas lc-beach" id="lcCanvas">
-          <div class="lc-empty" id="lcEmpty">👈 Pick a room to enter</div>
-        </div>
-      </div>
-
-      <!-- Controls -->
-      <div class="lc-controls" id="lcControls" style="display:none">
-        <div class="lc-char-picker">
-          <span class="lc-char-picker-label">Character:</span>
-          <span class="lc-char-opt" data-char="🧑‍🎓" onclick="lcSetChar('🧑‍🎓')">🧑‍🎓</span>
-          <span class="lc-char-opt" data-char="👩‍🎓" onclick="lcSetChar('👩‍🎓')">👩‍🎓</span>
-          <span class="lc-char-opt" data-char="🧑" onclick="lcSetChar('🧑')">🧑</span>
-          <span class="lc-char-opt" data-char="👨" onclick="lcSetChar('👨')">👨</span>
-          <span class="lc-char-opt" data-char="👩" onclick="lcSetChar('👩')">👩</span>
-          <span class="lc-char-opt" data-char="🧓" onclick="lcSetChar('🧓')">🧓</span>
-          <span class="lc-char-opt" data-char="🧑‍💻" onclick="lcSetChar('🧑‍💻')">🧑‍💻</span>
-          <span class="lc-char-opt" data-char="🧑‍🎨" onclick="lcSetChar('🧑‍🎨')">🧑‍🎨</span>
-          <span class="lc-char-opt" data-char="🐱" onclick="lcSetChar('🐱')">🐱</span>
-          <span class="lc-char-opt" data-char="🐶" onclick="lcSetChar('🐶')">🐶</span>
-          <span class="lc-char-opt" data-char="🦊" onclick="lcSetChar('🦊')">🦊</span>
-          <span class="lc-char-opt" data-char="🐼" onclick="lcSetChar('🐼')">🐼</span>
-          <span class="lc-char-opt" data-char="🐰" onclick="lcSetChar('🐰')">🐰</span>
-          <span class="lc-char-opt" data-char="🦁" onclick="lcSetChar('🦁')">🦁</span>
-          <span class="lc-char-opt" data-char="🐨" onclick="lcSetChar('🐨')">🐨</span>
-          <span class="lc-char-opt" data-char="🦄" onclick="lcSetChar('🦄')">🦄</span>
-        </div>
-        <div class="lc-chat-row">
-          <input type="text" id="lcChatInput" placeholder="Say something..." maxlength="80" onkeydown="if(event.key==='Enter')lcSendBubble()">
-          <button class="retro-btn primary" onclick="lcSendBubble()" style="font-size:11px">💬 Say</button>
-          <button class="retro-btn" onclick="lcLeaveRoom()" style="font-size:11px;background:#ffeeee">🚪 Leave</button>
-        </div>
+        <a href="#" id="playGameBtn" class="retro-btn primary" style="font-size:13px;padding:8px 16px">🎮 Play Now</a>
       </div>
     </div>
 
@@ -1392,7 +1335,7 @@ onAuthStateChanged(auth, async user => {
 if (!streamer) {
   document.querySelector('.window-content').innerHTML = '<div class="alert-box"><div class="alert-icon">⚠</div><div class="alert-msg">Missing ?user=USERNAME in URL!</div></div>';
 } else {
-  loadStreamerInfo().then(() => { loadTopics(); lcInit(); });
+  loadStreamerInfo().then(() => { loadTopics(); });
 }
 
 // ═══════════════════ STUDY LOUNGE ═══════════════════
