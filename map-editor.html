@@ -572,6 +572,24 @@ function setupCanvas() {
     return { tx, ty };
   };
 
+  // Determine which layer a tile belongs to based on its tileset
+  const getTileLayer = (tileKey) => {
+    if (!tileKey) return currentLayer;
+    const tsKey = tileKey.split(':')[0];
+    // Ground tilesets
+    if (['grass', 'paths', 'water', 'hills', 'tilledDirt', 'woodBridge'].includes(tsKey)) return 'ground';
+    // Furniture
+    if (['furniture'].includes(tsKey)) return 'furniture';
+    // Special (fences, doors) → objects
+    // Objects (trees, rocks, plants)
+    if (['biom', 'plants', 'fences', 'doors', 'tools'].includes(tsKey)) return 'objects';
+    return 'objects';
+  };
+
+  // Default ground tile to use as background
+  // Try to find a "good" grass frame (frame 7 or middle area)
+  const DEFAULT_GROUND = 'grass:7';
+
   const placeTile = (tx, ty, isErasing) => {
     const key = tx + ',' + ty;
     if (lastPlacedTile === key) return; // Don't re-place same tile while dragging
@@ -584,17 +602,20 @@ function setupCanvas() {
     }
 
     if (currentTool === 'pick') {
-      const tile = mapData[currentLayer][ty][tx];
+      // Pick from any layer (top-down)
+      let tile = mapData.furniture[ty][tx] || mapData.objects[ty][tx] || mapData.ground[ty][tx];
       if (tile) {
         selectedTile = tile;
         setTool('paint');
         refreshSelection();
+        // Switch to that tile's layer too
+        const lyr = getTileLayer(tile);
+        setLayer(lyr);
       }
       return;
     }
 
     if (currentTool === 'bucket') {
-      // Flood fill — only on current layer
       const targetTile = mapData[currentLayer][ty][tx];
       if (targetTile === selectedTile) return;
       floodFill(tx, ty, targetTile, selectedTile);
@@ -603,18 +624,37 @@ function setupCanvas() {
     }
 
     if (isErasing || currentTool === 'erase') {
+      // Erase from current layer only
       mapData[currentLayer][ty][tx] = null;
-      // Also clear properties
-      mapData.collisions[ty][tx] = false;
-      mapData.sittable[ty][tx] = false;
+      // Only clear properties if this cell is fully empty across all layers
+      const isEmpty = !mapData.ground[ty][tx] && !mapData.objects[ty][tx] && !mapData.furniture[ty][tx];
+      if (isEmpty || currentLayer === 'objects' || currentLayer === 'furniture') {
+        mapData.collisions[ty][tx] = false;
+        mapData.sittable[ty][tx] = false;
+      }
     } else if (selectedTile) {
-      mapData[currentLayer][ty][tx] = selectedTile;
+      // SMART LAYER: Auto-detect which layer this tile should go to
+      const targetLayer = getTileLayer(selectedTile);
+
+      // If placing a non-ground tile and ground is empty, auto-fill ground with grass
+      if (targetLayer !== 'ground' && !mapData.ground[ty][tx]) {
+        mapData.ground[ty][tx] = DEFAULT_GROUND;
+      }
+
+      // Place tile in correct layer
+      mapData[targetLayer][ty][tx] = selectedTile;
+
       // Apply current tile properties
       if (document.getElementById('tileCollides').checked) {
         mapData.collisions[ty][tx] = true;
       }
       if (document.getElementById('tileSittable').checked) {
         mapData.sittable[ty][tx] = true;
+      }
+
+      // Auto-switch layer indicator (visual feedback)
+      if (targetLayer !== currentLayer) {
+        setLayer(targetLayer);
       }
     }
     drawCanvas();

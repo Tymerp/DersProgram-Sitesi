@@ -284,10 +284,20 @@ class GameScene extends Phaser.Scene {
       S: Phaser.Input.Keyboard.KeyCodes.S, D: Phaser.Input.Keyboard.KeyCodes.D,
       SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE, ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
     });
+
+    // CRITICAL: When chat input is focused, disable Phaser keyboard so WASD/Space go to the input
+    const chatInp = document.getElementById('gameChat');
+    chatInp.addEventListener('focus', () => {
+      this.input.keyboard.enabled = false;
+    });
+    chatInp.addEventListener('blur', () => {
+      this.input.keyboard.enabled = true;
+    });
+
+    // ENTER key on canvas area focuses chat input
     this.keys.ENTER.on('down', () => {
       const inp = document.getElementById('gameChat');
-      if (document.activeElement === inp) { inp.blur(); gameSendChat(); }
-      else inp.focus();
+      inp.focus();
     });
     this.keys.SPACE.on('down', () => this.tryInteract());
     this.subscribeToPlayers();
@@ -925,7 +935,16 @@ window.gameSendChat = async () => {
 };
 
 document.getElementById('gameChat').addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); gameSendChat(); }
+  // Stop event from bubbling to Phaser
+  e.stopPropagation();
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    gameSendChat();
+    e.target.blur(); // Close chat after sending
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    e.target.blur();
+  }
 });
 
 // Pomodoro
