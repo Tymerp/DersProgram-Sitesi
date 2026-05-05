@@ -731,7 +731,7 @@ window.saveMap = async () => {
   setStatus('Saving...');
   try {
     // Firestore doesn't support nested arrays.
-    // Flatten 2D arrays to a single string with \n separators (rows) and , separators (cols)
+    // Flatten 2D arrays to a single string with \n separators (rows) and | separators (cols)
     const flatten2D = (arr) => {
       if (!arr || !Array.isArray(arr)) return '';
       return arr.map(row =>
@@ -745,13 +745,25 @@ window.saveMap = async () => {
       ).join('\n');
     };
 
+    const groundFlat = flatten2D(mapData.ground);
+    const objectsFlat = flatten2D(mapData.objects);
+    const furnitureFlat = flatten2D(mapData.furniture);
+
+    // DIAGNOSTIC: log first row of ground to see what's being saved
+    console.log('[SAVE] Map dims:', mapData.width, 'x', mapData.height);
+    console.log('[SAVE] Ground first row:', mapData.ground[0]);
+    console.log('[SAVE] Furniture first non-null:',
+      mapData.furniture.flat().find(x => x));
+    console.log('[SAVE] Ground flat sample:', groundFlat.split('\n')[0].slice(0, 100));
+    console.log('[SAVE] Furniture flat sample:', furnitureFlat.slice(0, 200));
+
     const dataToSave = {
       width: mapData.width,
       height: mapData.height,
       spawn: mapData.spawn || [12, 9],
-      groundFlat: flatten2D(mapData.ground),
-      objectsFlat: flatten2D(mapData.objects),
-      furnitureFlat: flatten2D(mapData.furniture),
+      groundFlat,
+      objectsFlat,
+      furnitureFlat,
       collisionsFlat: flattenBool2D(mapData.collisions),
       sittableFlat: flattenBool2D(mapData.sittable),
       updatedAt: Date.now()
