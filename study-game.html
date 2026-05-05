@@ -336,7 +336,52 @@ class GameScene extends Phaser.Scene {
   async loadCustomMap() {
     try {
       const snap = await getDoc(doc(db, 'users', streamer, 'gameMap', 'main'));
-      if (snap.exists()) return snap.data();
+      if (snap.exists()) {
+        const data = snap.data();
+
+        // Unflatten helpers
+        const unflatten2D = (str) => {
+          if (!str) return [];
+          return str.split('\n').map(row =>
+            row.split('|').map(cell => cell === '' ? null : cell)
+          );
+        };
+        const unflattenBool2D = (str) => {
+          if (!str) return [];
+          return str.split('\n').map(row =>
+            row.split('').map(c => c === '1')
+          );
+        };
+        const parseJSON = (val) => {
+          if (typeof val === 'string') {
+            try { return JSON.parse(val); } catch(e) { return null; }
+          }
+          return val;
+        };
+
+        const map = {
+          width: data.width || 25,
+          height: data.height || 18,
+          spawn: data.spawn || [12, 9],
+        };
+
+        if (data.groundFlat !== undefined) {
+          // New flat format
+          map.ground = unflatten2D(data.groundFlat);
+          map.objects = unflatten2D(data.objectsFlat);
+          map.furniture = unflatten2D(data.furnitureFlat);
+          map.collisions = unflattenBool2D(data.collisionsFlat);
+          map.sittable = unflattenBool2D(data.sittableFlat);
+        } else {
+          // Old JSON-string format
+          map.ground = parseJSON(data.ground) || [];
+          map.objects = parseJSON(data.objects) || [];
+          map.furniture = parseJSON(data.furniture) || [];
+          map.collisions = parseJSON(data.collisions) || [];
+          map.sittable = parseJSON(data.sittable) || [];
+        }
+        return map;
+      }
     } catch(e) { console.warn('Could not load custom map:', e); }
     return null;
   }

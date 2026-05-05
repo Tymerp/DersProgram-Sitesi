@@ -730,13 +730,36 @@ window.saveMap = async () => {
   if (!currentUser) return;
   setStatus('Saving...');
   try {
-    await setDoc(doc(db, 'users', currentUser, 'gameMap', 'main'), {
-      ...mapData,
+    // Firestore doesn't support nested arrays.
+    // Flatten 2D arrays to a single string with \n separators (rows) and , separators (cols)
+    const flatten2D = (arr) => {
+      if (!arr || !Array.isArray(arr)) return '';
+      return arr.map(row =>
+        Array.isArray(row) ? row.map(cell => cell == null ? '' : String(cell)).join('|') : ''
+      ).join('\n');
+    };
+    const flattenBool2D = (arr) => {
+      if (!arr || !Array.isArray(arr)) return '';
+      return arr.map(row =>
+        Array.isArray(row) ? row.map(cell => cell ? '1' : '0').join('') : ''
+      ).join('\n');
+    };
+
+    const dataToSave = {
+      width: mapData.width,
+      height: mapData.height,
+      spawn: mapData.spawn || [12, 9],
+      groundFlat: flatten2D(mapData.ground),
+      objectsFlat: flatten2D(mapData.objects),
+      furnitureFlat: flatten2D(mapData.furniture),
+      collisionsFlat: flattenBool2D(mapData.collisions),
+      sittableFlat: flattenBool2D(mapData.sittable),
       updatedAt: Date.now()
-    });
+    };
+    await setDoc(doc(db, 'users', currentUser, 'gameMap', 'main'), dataToSave);
     setStatus('Map saved ✔');
     alert('Map saved successfully! Test it with the "Test Game" button.');
-  } catch(e) { alert('Error: ' + e.message); setStatus('Error'); }
+  } catch(e) { alert('Error: ' + e.message); setStatus('Error'); console.error(e); }
 };
 
 window.testMap = () => {
@@ -789,13 +812,60 @@ onAuthStateChanged(auth, async user => {
     try {
       const snap = await getDoc(doc(db, 'users', currentUser, 'gameMap', 'main'));
       if (snap.exists()) {
-        Object.assign(mapData, snap.data());
+        const data = snap.data();
+
+        // Helpers to unflatten data back into 2D arrays
+        const unflatten2D = (str) => {
+          if (!str) return [];
+          return str.split('\n').map(row =>
+            row.split('|').map(cell => cell === '' ? null : cell)
+          );
+        };
+        const unflattenBool2D = (str) => {
+          if (!str) return [];
+          return str.split('\n').map(row =>
+            row.split('').map(c => c === '1')
+          );
+        };
+        const parseJSON = (val) => {
+          if (typeof val === 'string') {
+            try { return JSON.parse(val); } catch(e) { return null; }
+          }
+          return val;
+        };
+
+        mapData.width = data.width || 25;
+        mapData.height = data.height || 18;
+        mapData.spawn = data.spawn || [12, 9];
+
+        // Try new flat format first, then old JSON-string format, then fail to fresh
+        if (data.groundFlat !== undefined) {
+          mapData.ground = unflatten2D(data.groundFlat);
+          mapData.objects = unflatten2D(data.objectsFlat);
+          mapData.furniture = unflatten2D(data.furnitureFlat);
+          mapData.collisions = unflattenBool2D(data.collisionsFlat);
+          mapData.sittable = unflattenBool2D(data.sittableFlat);
+        } else {
+          mapData.ground = parseJSON(data.ground) || [];
+          mapData.objects = parseJSON(data.objects) || [];
+          mapData.furniture = parseJSON(data.furniture) || [];
+          mapData.collisions = parseJSON(data.collisions) || [];
+          mapData.sittable = parseJSON(data.sittable) || [];
+        }
+
+        // Validate dimensions, init fresh if broken
+        if (!mapData.ground || mapData.ground.length !== mapData.height ||
+            !mapData.ground[0] || mapData.ground[0].length !== mapData.width) {
+          initMapData(mapData.width, mapData.height);
+        }
+
         document.getElementById('mapW').value = mapData.width;
         document.getElementById('mapH').value = mapData.height;
       } else {
         initMapData(25, 18);
       }
     } catch(e) {
+      console.warn('Load error, starting fresh:', e);
       initMapData(25, 18);
     }
 
