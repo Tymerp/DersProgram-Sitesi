@@ -339,6 +339,15 @@ class GameScene extends Phaser.Scene {
       if (snap.exists()) {
         const data = snap.data();
 
+        // DIAGNOSTIC
+        console.log('[MAP] Raw Firestore data:', {
+          hasGroundFlat: data.groundFlat !== undefined,
+          hasGround: data.ground !== undefined,
+          width: data.width, height: data.height,
+          groundFlatLen: data.groundFlat?.length,
+          groundFlatRows: data.groundFlat?.split?.('\n')?.length,
+        });
+
         // Unflatten helpers
         const unflatten2D = (str) => {
           if (!str) return [];
@@ -394,6 +403,21 @@ class GameScene extends Phaser.Scene {
 
     const W = map.width, H = map.height;
 
+    // DIAGNOSTIC: log the dimensions
+    console.log('[MAP] Building custom map:', { W, H,
+      groundRows: map.ground?.length,
+      groundCols: map.ground?.[0]?.length,
+      sample: map.ground?.[0]?.slice(0, 5)
+    });
+
+    // VALIDATE: if dimensions don't match, the map is corrupted
+    if (!map.ground || map.ground.length === 0 || map.ground[0]?.length !== W || map.ground.length !== H) {
+      console.warn('[MAP] Map dimensions mismatch! Falling back to default island.');
+      console.warn('Expected:', W, 'x', H, 'Got:', map.ground?.[0]?.length, 'x', map.ground?.length);
+      this.buildIsland();
+      return;
+    }
+
     // Background
     const bg = this.add.rectangle(0, 0, W * TS, H * TS, 0x6cb3d4);
     bg.setOrigin(0, 0).setDepth(-10);
@@ -413,12 +437,19 @@ class GameScene extends Phaser.Scene {
     const renderLayer = (layerData, baseDepth) => {
       if (!layerData) return;
       for (let y = 0; y < H; y++) {
+        if (!layerData[y]) continue;
         for (let x = 0; x < W; x++) {
           const tileKey = layerData[y]?.[x];
-          if (!tileKey) continue;
-          const [tsKey, idxStr] = tileKey.split(':');
-          const idx = parseInt(idxStr);
-          if (!this.textures.exists(tsKey)) continue;
+          if (!tileKey || tileKey === '') continue;
+          const parts = tileKey.split(':');
+          if (parts.length !== 2) continue;
+          const tsKey = parts[0];
+          const idx = parseInt(parts[1]);
+          if (isNaN(idx)) continue;
+          if (!this.textures.exists(tsKey)) {
+            console.warn('Missing texture:', tsKey);
+            continue;
+          }
           const px = Math.round(x * TS + TS / 2);
           const py = Math.round(y * TS + TS / 2);
           const sprite = this.add.sprite(px, py, tsKey, idx);
